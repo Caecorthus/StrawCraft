@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "strawcraft",
+  "version": "${version}",
+  "name": "StrawCraft",
+  "description": "Caecorthus gameplay changes for Wathe.",
+  "authors": [
+    "Caecorthus"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Caecorthus/StrawCraft",
+    "sources": "https://github.com/Caecorthus/StrawCraft"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.caecorthus.strawcraft.StrawCraft"
+    ]
+  },
+  "mixins": [
+    "strawcraft.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "wathe": "${wathe_version}"
+  }
+}

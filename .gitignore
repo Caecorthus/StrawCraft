@@ -1,0 +1,10 @@
+.gradle/
+build/
+out/
+run/
+logs/
+
+# Local compile-only Wathe artifacts. Wathe is ARR, so keep its jar out of git.
+libs/*.jar
+
+.DS_Store
