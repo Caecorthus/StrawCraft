@@ -15,6 +15,8 @@ class ShopEntryViewStateTest {
         assertTrue(state.active());
         assertEquals("300", state.priceText());
         assertTrue(state.status().isEmpty());
+        assertTrue(state.cooldownStatus().isEmpty());
+        assertTrue(state.stockStatus().isEmpty());
     }
 
     @Test
@@ -31,6 +33,8 @@ class ShopEntryViewStateTest {
         assertFalse(state.active());
         assertEquals("2s", state.status().orElseThrow().text());
         assertEquals(ShopEntryViewState.UNAVAILABLE_STATUS_COLOR, state.status().orElseThrow().color());
+        assertEquals("2s", state.cooldownStatus().orElseThrow().text());
+        assertTrue(state.stockStatus().isEmpty());
     }
 
     @Test
@@ -58,5 +62,22 @@ class ShopEntryViewStateTest {
         assertFalse(soldOut.active());
         assertEquals("0", soldOut.status().orElseThrow().text());
         assertEquals(ShopEntryViewState.UNAVAILABLE_STATUS_COLOR, soldOut.status().orElseThrow().color());
+    }
+
+    @Test
+    void cooldownAndStockCanRenderAtTheSameTime() {
+        ShopEntryViewState state = ShopEntryViewState.fromSnapshot(new ShopEntryViewState.Snapshot(
+                300,
+                true,
+                45,
+                3,
+                2,
+                true
+        ));
+
+        assertFalse(state.active());
+        assertEquals("2s", state.cooldownStatus().orElseThrow().text());
+        assertEquals("2", state.stockStatus().orElseThrow().text());
+        assertEquals("2s", state.status().orElseThrow().text());
     }
 }

@@ -37,6 +37,24 @@ class MixinConfigurationTest {
         assertFalse(serverPlayerMixin.contains("wathe$interceptVanillaDeath"));
     }
 
+    @Test
+    void customShopScreenDoesNotInstantiateWatheLimitedInventoryUi() throws IOException {
+        String shopScreen = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/client/StrawCraftShopScreen.java"),
+                StandardCharsets.UTF_8
+        );
+        String slotRenderer = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/client/WatheShopSlotRenderer.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertFalse(shopScreen.contains("LimitedInventoryScreen"));
+        assertFalse(shopScreen.contains("StoreItemWidget"));
+        assertFalse(slotRenderer.contains("LimitedInventoryScreen"));
+        assertFalse(slotRenderer.contains("StoreItemWidget"));
+        assertTrue(slotRenderer.contains("entry.type().getTexture()"));
+    }
+
     private static String readMixinConfig() throws IOException {
         return Files.readString(Path.of("src/main/resources/strawcraft.mixins.json"), StandardCharsets.UTF_8);
     }

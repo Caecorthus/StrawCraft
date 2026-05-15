@@ -28,7 +28,6 @@ public final class StrawCraftShopScreen extends Screen {
     private static final int PANEL_COLOR = 0xE0181820;
     private static final int PANEL_BORDER = 0xFFB8B8B8;
     private static final int PANEL_INNER_BORDER = 0xFF3B3B46;
-    private static final int UNAVAILABLE_OVERLAY = 0xAA000000;
     private static final int BALANCE_COLOR = 0xFFFFE07A;
 
     private final List<ShopEntryButton> itemButtons = new ArrayList<>();
@@ -176,35 +175,12 @@ public final class StrawCraftShopScreen extends Screen {
 
             int x = getX();
             int y = getY();
-            int background = this.isHovered() ? 0xFF4A4A56 : 0xFF30303A;
-            context.fill(x, y, x + this.width, y + this.height, background);
-            context.drawBorder(x, y, this.width, this.height, this.active ? 0xFFE0E0E0 : 0xFF777777);
-            context.drawItem(this.entry.displayStack(), x + 7, y + 5);
-
-            if (!this.active) {
-                context.fill(x + 1, y + 1, x + this.width - 1, y + this.height - 1, UNAVAILABLE_OVERLAY);
-            }
-
-            drawStatus(context, state);
-            drawPrice(context, state);
+            WatheShopSlotRenderer.render(context, MinecraftClient.getInstance().textRenderer, this.entry, state, x, y);
         }
 
         @Override
         protected void appendClickableNarrations(NarrationMessageBuilder builder) {
             this.appendDefaultNarrations(builder);
-        }
-
-        private void drawStatus(DrawContext context, ShopEntryViewState state) {
-            state.status().ifPresent(status -> {
-                int textX = getX() + this.width - MinecraftClient.getInstance().textRenderer.getWidth(status.text()) - 3;
-                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, status.text(), textX, getY() + 2, status.color());
-            });
-        }
-
-        private void drawPrice(DrawContext context, ShopEntryViewState state) {
-            int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(state.priceText());
-            int textX = getX() + (this.width - textWidth) / 2;
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, state.priceText(), textX, getY() + this.height - 9, BALANCE_COLOR);
         }
 
         private PlayerShopComponent shopComponent() {

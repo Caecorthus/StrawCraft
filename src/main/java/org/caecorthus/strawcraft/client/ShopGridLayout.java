@@ -2,8 +2,9 @@ package org.caecorthus.strawcraft.client;
 
 public final class ShopGridLayout {
     public static final int SLOT_SIZE = 30;
-    public static final int SLOT_GAP = 10;
-    public static final int TOP_PADDING = 36;
+    public static final int COLUMN_SPACING = 38;
+    public static final int ROW_SPACING = 60;
+    public static final int TOP_PADDING = 48;
     public static final int BOTTOM_PADDING = 32;
     public static final int SIDE_PADDING = 18;
 
@@ -19,7 +20,10 @@ public final class ShopGridLayout {
         }
 
         int usableWidth = Math.max(0, availableWidth - SIDE_PADDING * 2);
-        int columnsByWidth = Math.max(MIN_COLUMNS, (usableWidth + SLOT_GAP) / (SLOT_SIZE + SLOT_GAP));
+        int columnsByWidth = MIN_COLUMNS;
+        if (usableWidth > SLOT_SIZE) {
+            columnsByWidth += (usableWidth - SLOT_SIZE) / COLUMN_SPACING;
+        }
         return Math.min(Math.min(entryCount, MAX_COLUMNS), columnsByWidth);
     }
 
@@ -34,22 +38,22 @@ public final class ShopGridLayout {
         if (columns <= 0) {
             return SIDE_PADDING * 2;
         }
-        return SIDE_PADDING * 2 + columns * SLOT_SIZE + (columns - 1) * SLOT_GAP;
+        return SIDE_PADDING * 2 + SLOT_SIZE + (columns - 1) * COLUMN_SPACING;
     }
 
     public static int panelHeight(int rows) {
         if (rows <= 0) {
             return TOP_PADDING + BOTTOM_PADDING;
         }
-        return TOP_PADDING + BOTTOM_PADDING + rows * SLOT_SIZE + (rows - 1) * SLOT_GAP;
+        return TOP_PADDING + BOTTOM_PADDING + SLOT_SIZE + (rows - 1) * ROW_SPACING;
     }
 
     public static int slotX(int panelX, int index, int columns) {
-        return panelX + SIDE_PADDING + column(index, columns) * (SLOT_SIZE + SLOT_GAP);
+        return panelX + SIDE_PADDING + column(index, columns) * COLUMN_SPACING;
     }
 
     public static int slotY(int panelY, int index, int columns) {
-        return panelY + TOP_PADDING + row(index, columns) * (SLOT_SIZE + SLOT_GAP);
+        return panelY + TOP_PADDING + row(index, columns) * ROW_SPACING;
     }
 
     static int column(int index, int columns) {

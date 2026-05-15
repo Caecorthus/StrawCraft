@@ -21,7 +21,14 @@ class ShopGridLayoutTest {
     void shopGridPositionsSlotsFromPanelOrigin() {
         int columns = 3;
 
-        assertEquals(68, ShopGridLayout.slotX(10, 4, columns));
-        assertEquals(106, ShopGridLayout.slotY(30, 4, columns));
+        assertEquals(66, ShopGridLayout.slotX(10, 4, columns));
+        assertEquals(138, ShopGridLayout.slotY(30, 4, columns));
+    }
+
+    @Test
+    void shopGridUsesWatheStyleSlotSpacing() {
+        assertEquals(30, ShopGridLayout.SLOT_SIZE);
+        assertEquals(38, ShopGridLayout.COLUMN_SPACING);
+        assertEquals(60, ShopGridLayout.ROW_SPACING);
     }
 }
