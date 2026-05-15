@@ -1,17 +1,20 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.event.BuildShopEntries;
-import dev.doctor4t.wathe.index.WatheItems;
 import dev.doctor4t.wathe.util.ShopEntry;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public final class KillerShopLoadout {
     public static final TaczGunProfile KILLER_GUN = TaczGunProfiles.P320;
 
+    private static final String WATHE_REVOLVER_SHOP_ID = "revolver";
     private static final String KILLER_GUN_SHOP_ID = "p320";
 
     private KillerShopLoadout() {
@@ -22,33 +25,35 @@ public final class KillerShopLoadout {
     }
 
     static void replaceDisabledWatheGuns(BuildShopEntries.ShopContext context) {
-        replaceDisabledWatheGuns(
-                context,
-                KillerShopLoadout::createP320Stack,
-                KillerShopLoadout::isWatheRevolverStack,
-                WeaponBalance::isDisabledWatheGun
+        List<ShopEntry> rewrittenEntries = rewriteEntries(context.getEntries());
+        context.clearEntries();
+        rewrittenEntries.forEach(context::addEntry);
+    }
+
+    static List<ShopEntry> rewriteEntries(List<ShopEntry> originalEntries) {
+        return rewriteEntries(
+                originalEntries,
+                KillerShopLoadout::replacementEntryForRevolver,
+                KillerShopLoadout::containsDisabledWatheGun
         );
     }
 
-    static void replaceDisabledWatheGuns(
-            BuildShopEntries.ShopContext context,
-            Supplier<ItemStack> p320StackFactory,
-            Predicate<ItemStack> revolverPredicate,
-            Predicate<ItemStack> disabledGunPredicate
+    static List<ShopEntry> rewriteEntries(
+            List<ShopEntry> originalEntries,
+            Function<ShopEntry, Optional<ShopEntry>> revolverReplacementFactory,
+            Predicate<ShopEntry> disabledGunPredicate
     ) {
-        for (int index = 0; index < context.size(); index++) {
-            ShopEntry entry = context.getEntry(index);
-            if (containsStack(entry, revolverPredicate)) {
-                ItemStack p320 = p320StackFactory.get();
-                if (p320.isEmpty()) {
-                    context.removeEntry(index--);
-                    continue;
-                }
-                context.setEntry(index, replacementEntry(entry, p320));
-            } else if (containsStack(entry, disabledGunPredicate)) {
-                context.removeEntry(index--);
+        List<ShopEntry> rewrittenEntries = new ArrayList<>(originalEntries.size());
+        for (ShopEntry entry : originalEntries) {
+            if (isWatheRevolverShopEntry(entry)) {
+                revolverReplacementFactory.apply(entry).ifPresent(rewrittenEntries::add);
+                continue;
+            }
+            if (!disabledGunPredicate.test(entry)) {
+                rewrittenEntries.add(entry);
             }
         }
+        return List.copyOf(rewrittenEntries);
     }
 
     static ItemStack createP320Stack() {
@@ -57,6 +62,14 @@ public final class KillerShopLoadout {
 
     static NbtComponent createP320CustomData() {
         return TaczGunStacks.createGunCustomData(KILLER_GUN);
+    }
+
+    private static Optional<ShopEntry> replacementEntryForRevolver(ShopEntry original) {
+        ItemStack p320 = createP320Stack();
+        if (p320.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(replacementEntry(original, p320));
     }
 
     private static ShopEntry replacementEntry(ShopEntry original, ItemStack replacementStack) {
@@ -92,12 +105,20 @@ public final class KillerShopLoadout {
         );
     }
 
-    private static boolean isWatheRevolverStack(ItemStack stack) {
-        return stack.isOf(WatheItems.REVOLVER);
+    private static boolean isWatheRevolverShopEntry(ShopEntry entry) {
+        return WATHE_REVOLVER_SHOP_ID.equals(entry.id());
+    }
+
+    private static boolean containsDisabledWatheGun(ShopEntry entry) {
+        return containsStack(entry, WeaponBalance::isDisabledWatheGun);
     }
 
     private static boolean containsStack(ShopEntry entry, Predicate<ItemStack> predicate) {
-        return predicate.test(entry.displayStack()) || predicate.test(entry.getActualStack());
+        return matchesStack(entry.displayStack(), predicate) || matchesStack(entry.getActualStack(), predicate);
+    }
+
+    private static boolean matchesStack(ItemStack stack, Predicate<ItemStack> predicate) {
+        return stack != null && !stack.isEmpty() && predicate.test(stack);
     }
 
     record ReplacementSettings(

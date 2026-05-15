@@ -23,4 +23,14 @@ class VigilanteLoadoutTest {
         assertFalse(VigilanteLoadout.shouldReplaceAssignedRole(WatheRoles.KILLER));
         assertFalse(VigilanteLoadout.shouldReplaceAssignedRole(WatheRoles.VETERAN));
     }
+
+    @Test
+    void roleAssignedAdapterCleansInventoryForEveryRoleAndOnlyGrantsVigilanteGunToVigilantes() {
+        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(true, true),
+                RoleAssignedLoadouts.planAssignedLoadout(WatheRoles.VIGILANTE, false));
+        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(true, false),
+                RoleAssignedLoadouts.planAssignedLoadout(WatheRoles.KILLER, false));
+        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(false, false),
+                RoleAssignedLoadouts.planAssignedLoadout(WatheRoles.VIGILANTE, true));
+    }
 }

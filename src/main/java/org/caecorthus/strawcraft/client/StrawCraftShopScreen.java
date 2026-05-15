@@ -1,12 +1,8 @@
 package org.caecorthus.strawcraft.client;
 
-import dev.doctor4t.wathe.cca.PlayerShopComponent;
 import dev.doctor4t.wathe.util.ShopEntry;
-import dev.doctor4t.wathe.util.ShopUtils;
-import dev.doctor4t.wathe.util.StoreBuyPayload;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -30,35 +26,34 @@ public final class StrawCraftShopScreen extends Screen {
     private static final int PANEL_INNER_BORDER = 0xFF3B3B46;
     private static final int BALANCE_COLOR = 0xFFFFE07A;
 
+    private final WatheShopClientAdapter shopAdapter;
     private final List<ShopEntryButton> itemButtons = new ArrayList<>();
-    private List<ShopEntry> entries = List.of();
+    private WatheShopClientAdapter.ShopSnapshot snapshot = WatheShopClientAdapter.ShopSnapshot.empty();
     private int panelX;
     private int panelY;
     private int panelWidth;
     private int panelHeight;
 
     public StrawCraftShopScreen() {
+        this(new WatheShopClientAdapter());
+    }
+
+    StrawCraftShopScreen(WatheShopClientAdapter shopAdapter) {
         super(TITLE);
+        this.shopAdapter = shopAdapter;
     }
 
     public static boolean canOpen(MinecraftClient client) {
-        if (client.player == null) {
-            return false;
-        }
-        try {
-            return !ShopUtils.getShopEntriesForPlayer(client.player).isEmpty();
-        } catch (RuntimeException ignored) {
-            return false;
-        }
+        return new WatheShopClientAdapter().canOpen(client);
     }
 
     @Override
     protected void init() {
         this.itemButtons.clear();
-        this.entries = getEntries();
+        this.snapshot = this.shopAdapter.snapshot(this.client);
 
-        int columns = ShopGridLayout.columnsFor(this.entries.size(), this.width - 40);
-        int rows = ShopGridLayout.rowsFor(this.entries.size(), columns);
+        int columns = ShopGridLayout.columnsFor(this.snapshot.entries().size(), this.width - 40);
+        int rows = ShopGridLayout.rowsFor(this.snapshot.entries().size(), columns);
         this.panelWidth = Math.max(176, ShopGridLayout.panelWidth(columns));
         this.panelHeight = Math.max(130, ShopGridLayout.panelHeight(rows));
         this.panelX = (this.width - this.panelWidth) / 2;
@@ -69,13 +64,15 @@ public final class StrawCraftShopScreen extends Screen {
                 .tooltip(Tooltip.of(Text.literal("Back to vanilla inventory")))
                 .build());
 
-        for (int index = 0; index < this.entries.size(); index++) {
-            ShopEntry entry = this.entries.get(index);
+        for (int index = 0; index < this.snapshot.entries().size(); index++) {
+            ShopEntry entry = this.snapshot.entries().get(index);
             ShopEntryButton button = new ShopEntryButton(
                     ShopGridLayout.slotX(this.panelX, index, columns),
                     ShopGridLayout.slotY(this.panelY, index, columns),
                     index,
-                    entry
+                    entry,
+                    this.snapshot.entryStates().get(index),
+                    this.shopAdapter
             );
             this.itemButtons.add(button);
             this.addDrawableChild(button);
@@ -108,13 +105,15 @@ public final class StrawCraftShopScreen extends Screen {
         context.drawBorder(this.panelX + 2, this.panelY + 2, this.panelWidth - 4, this.panelHeight - 4, PANEL_INNER_BORDER);
         context.drawCenteredTextWithShadow(this.textRenderer, TITLE, this.width / 2, this.panelY + 10, 0xFFFFFF);
 
-        ClientPlayerEntity player = getPlayer();
-        if (player != null) {
-            PlayerShopComponent shop = PlayerShopComponent.KEY.get(player);
-            context.drawTextWithShadow(this.textRenderer, Text.literal("Balance: " + shop.getBalance()), this.panelX + 12, this.panelY + 22, BALANCE_COLOR);
-        }
+        this.snapshot.balance().ifPresent(balance -> context.drawTextWithShadow(
+                this.textRenderer,
+                Text.literal("Balance: " + balance),
+                this.panelX + 12,
+                this.panelY + 22,
+                BALANCE_COLOR
+        ));
 
-        if (this.entries.isEmpty()) {
+        if (this.snapshot.entries().isEmpty()) {
             context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("No shop entries"), this.width / 2, this.panelY + 58, 0xA0A0A0);
         }
     }
@@ -135,18 +134,6 @@ public final class StrawCraftShopScreen extends Screen {
         }
     }
 
-    private List<ShopEntry> getEntries() {
-        ClientPlayerEntity player = getPlayer();
-        if (player == null) {
-            return List.of();
-        }
-        try {
-            return ShopUtils.getShopEntriesForPlayer(player);
-        } catch (RuntimeException ignored) {
-            return List.of();
-        }
-    }
-
     private ClientPlayerEntity getPlayer() {
         return this.client == null ? null : this.client.player;
     }
@@ -154,52 +141,34 @@ public final class StrawCraftShopScreen extends Screen {
     private static final class ShopEntryButton extends PressableWidget {
         private final int index;
         private final ShopEntry entry;
+        private final ShopEntryViewState state;
+        private final WatheShopClientAdapter shopAdapter;
 
-        private ShopEntryButton(int x, int y, int index, ShopEntry entry) {
+        private ShopEntryButton(int x, int y, int index, ShopEntry entry, ShopEntryViewState state, WatheShopClientAdapter shopAdapter) {
             super(x, y, ShopGridLayout.SLOT_SIZE, ShopGridLayout.SLOT_SIZE, entry.displayStack().getName());
             this.index = index;
             this.entry = entry;
+            this.state = state;
+            this.shopAdapter = shopAdapter;
         }
 
         @Override
         public void onPress() {
-            // Wathe revalidates the index server-side before completing the purchase.
-            ClientPlayNetworking.send(new StoreBuyPayload(this.index));
+            this.shopAdapter.buy(this.index);
         }
 
         @Override
         protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-            PlayerShopComponent shop = shopComponent();
-            ShopEntryViewState state = viewState(shop);
-            this.active = state.active();
+            this.active = this.state.active();
 
             int x = getX();
             int y = getY();
-            WatheShopSlotRenderer.render(context, MinecraftClient.getInstance().textRenderer, this.entry, state, x, y);
+            WatheShopSlotRenderer.render(context, MinecraftClient.getInstance().textRenderer, this.entry, this.state, x, y);
         }
 
         @Override
         protected void appendClickableNarrations(NarrationMessageBuilder builder) {
             this.appendDefaultNarrations(builder);
-        }
-
-        private PlayerShopComponent shopComponent() {
-            ClientPlayerEntity player = MinecraftClient.getInstance().player;
-            return player == null ? null : PlayerShopComponent.KEY.get(player);
-        }
-
-        private ShopEntryViewState viewState(PlayerShopComponent shop) {
-            if (shop == null) {
-                return ShopEntryViewState.withoutShop(this.entry.price());
-            }
-            return ShopEntryViewState.fromSnapshot(new ShopEntryViewState.Snapshot(
-                    this.entry.price(),
-                    shop.isOnCooldown(this.entry.id()),
-                    shop.getRemainingCooldown(this.entry.id()),
-                    shop.getMaxStock(this.entry.id()),
-                    shop.getRemainingStock(this.entry.id()),
-                    shop.isInStock(this.entry.id())
-            ));
         }
     }
 }

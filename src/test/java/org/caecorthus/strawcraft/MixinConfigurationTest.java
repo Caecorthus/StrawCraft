@@ -50,9 +50,31 @@ class MixinConfigurationTest {
 
         assertFalse(shopScreen.contains("LimitedInventoryScreen"));
         assertFalse(shopScreen.contains("StoreItemWidget"));
+        assertFalse(shopScreen.contains("ShopUtils"));
+        assertFalse(shopScreen.contains("PlayerShopComponent"));
+        assertFalse(shopScreen.contains("StoreBuyPayload"));
         assertFalse(slotRenderer.contains("LimitedInventoryScreen"));
         assertFalse(slotRenderer.contains("StoreItemWidget"));
         assertTrue(slotRenderer.contains("entry.type().getTexture()"));
+    }
+
+    @Test
+    void roleAssignedAdapterOwnsRoleLoadoutEventRegistration() throws IOException {
+        String strawCraft = Files.readString(Path.of("src/main/java/org/caecorthus/strawcraft/StrawCraft.java"), StandardCharsets.UTF_8);
+        String vigilanteLoadout = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/VigilanteLoadout.java"),
+                StandardCharsets.UTF_8
+        );
+        String roleAssignedLoadouts = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/RoleAssignedLoadouts.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(strawCraft.contains("RoleAssignedLoadouts.register()"));
+        assertFalse(vigilanteLoadout.contains("RoleAssigned.EVENT"));
+        assertTrue(roleAssignedLoadouts.contains("RoleAssigned.EVENT.register"));
+        assertTrue(roleAssignedLoadouts.contains("RoundInventoryCleanup.removeDisabledWatheGuns"));
+        assertTrue(roleAssignedLoadouts.contains("VigilanteLoadout.giveAssignedLoadout"));
     }
 
     private static String readMixinConfig() throws IOException {

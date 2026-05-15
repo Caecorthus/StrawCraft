@@ -2,11 +2,8 @@ package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.Role;
 import dev.doctor4t.wathe.api.WatheRoles;
-import dev.doctor4t.wathe.api.event.RoleAssigned;
-import dev.doctor4t.wathe.index.WatheItems;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 
 public final class VigilanteLoadout {
@@ -15,27 +12,17 @@ public final class VigilanteLoadout {
     private VigilanteLoadout() {
     }
 
-    public static void registerRoleAssignedHandler() {
-        RoleAssigned.EVENT.register(VigilanteLoadout::replaceAssignedLoadout);
-    }
-
     static boolean shouldReplaceAssignedRole(Role role) {
         return role == WatheRoles.VIGILANTE;
     }
 
-    private static void replaceAssignedLoadout(PlayerEntity player, Role role) {
-        if (!shouldReplaceAssignedRole(role) || player.getWorld().isClient()) {
-            return;
-        }
-
+    static void giveAssignedLoadout(PlayerEntity player) {
         ItemStack rhino357 = createRhino357Stack();
         if (rhino357.isEmpty()) {
             return;
         }
 
-        // Wathe's own RoleAssigned handler grants a Wathe revolver to vigilantes first.
-        // Replace that role loadout item only; killer shop entries are handled separately.
-        removeFirstWatheRevolver(player);
+        // RoleAssignedLoadouts cleans disabled Wathe guns before granting this StrawCraft loadout.
         player.giveItemStack(rhino357);
     }
 
@@ -45,20 +32,5 @@ public final class VigilanteLoadout {
 
     static NbtComponent createRhino357CustomData() {
         return TaczGunStacks.createGunCustomData(VIGILANTE_GUN);
-    }
-
-    private static boolean removeFirstWatheRevolver(PlayerEntity player) {
-        PlayerInventory inventory = player.getInventory();
-        for (int slot = 0; slot < inventory.size(); slot++) {
-            ItemStack stack = inventory.getStack(slot);
-            if (stack.isOf(WatheItems.REVOLVER)) {
-                stack.decrement(1);
-                if (stack.isEmpty()) {
-                    inventory.setStack(slot, ItemStack.EMPTY);
-                }
-                return true;
-            }
-        }
-        return false;
     }
 }

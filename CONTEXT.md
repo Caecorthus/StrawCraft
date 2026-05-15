@@ -12,6 +12,10 @@ _Avoid_: game, session
 The StrawCraft rule set that converts Wathe kill requests into normal Minecraft damage and death bookkeeping.
 _Avoid_: damage handler, death fix
 
+**Wathe Round Participant Lifecycle**:
+The StrawCraft rule set that stops tracking a player when they leave alive Wathe Round participation, and mirrors vanilla deaths into Wathe bookkeeping.
+_Avoid_: cleanup hook, death cleanup
+
 **Role Loadout**:
 Items granted because Wathe assigned a player role.
 _Avoid_: kit, starting inventory
@@ -45,6 +49,8 @@ _Avoid_: ammo timer, refill cooldown
 - An **Ammo Refill Cycle** decides when a **TACZ Gun Stack** receives a StrawCraft ammo cycle id.
 - The **Vanilla Health Bridge** operates during a **Wathe Round**.
 - The **Vanilla Health Bridge** cancels Wathe kill requests after applying any matching vanilla damage.
+- The **Wathe Round Participant Lifecycle** clears StrawCraft runtime state when a player is no longer an alive **Wathe Round** participant.
+- The **Wathe Round Participant Lifecycle** mirrors vanilla deaths into Wathe bookkeeping without changing death reason policy.
 
 ## Example Dialogue
 

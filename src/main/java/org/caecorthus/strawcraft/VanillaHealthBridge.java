@@ -1,7 +1,6 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.event.KillPlayer;
-import dev.doctor4t.wathe.cca.GameWorldComponent;
 import dev.doctor4t.wathe.game.GameConstants;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -37,23 +36,6 @@ public final class VanillaHealthBridge {
                 hasKiller ? DamageSourceKind.PLAYER_ATTACK : DamageSourceKind.GENERIC,
                 true
         );
-    }
-
-    public static void markPlayerDeadAfterVanillaDeath(ServerPlayerEntity player) {
-        GameWorldComponent game = GameWorldComponent.KEY.get(player.getWorld());
-        if (shouldMarkPlayerDeadAfterVanillaDeath(
-                game.isRunning(),
-                game.hasAnyRole(player.getUuid()),
-                game.isPlayerDead(player.getUuid())
-        )) {
-            // Keep Wathe's win-condition bookkeeping aware of vanilla deaths.
-            game.markPlayerDead(player.getUuid());
-            game.sync();
-        }
-    }
-
-    static boolean shouldMarkPlayerDeadAfterVanillaDeath(boolean watheRoundRunning, boolean hasAnyRole, boolean alreadyDead) {
-        return watheRoundRunning && hasAnyRole && !alreadyDead;
     }
 
     private static DamageSource getDamageSource(ServerPlayerEntity victim, ServerPlayerEntity killer, KillRequestPlan plan) {

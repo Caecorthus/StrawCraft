@@ -53,13 +53,8 @@ public final class TaczAmmoRefillTimers {
     }
 
     private static void scanPlayer(ServerPlayerEntity player) {
-        if (!player.isAlive()) {
-            CYCLE_MANAGER.clearHolder(player.getUuid());
-            return;
-        }
-
         GameWorldComponent game = GameWorldComponent.KEY.get(player.getWorld());
-        if (!game.isRunning() || game.isPlayerDead(player.getUuid())) {
+        if (!WatheRoundParticipantLifecycle.shouldTrackRuntimeState(player, game)) {
             CYCLE_MANAGER.clearHolder(player.getUuid());
             return;
         }

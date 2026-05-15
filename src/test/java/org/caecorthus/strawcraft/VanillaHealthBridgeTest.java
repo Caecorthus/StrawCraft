@@ -39,11 +39,4 @@ class VanillaHealthBridgeTest {
         assertEquals(0.0f, plan.damage());
     }
 
-    @Test
-    void vanillaDeathBookkeepingOnlyMarksLiveWatheRoundPlayers() {
-        assertTrue(VanillaHealthBridge.shouldMarkPlayerDeadAfterVanillaDeath(true, true, false));
-        assertFalse(VanillaHealthBridge.shouldMarkPlayerDeadAfterVanillaDeath(false, true, false));
-        assertFalse(VanillaHealthBridge.shouldMarkPlayerDeadAfterVanillaDeath(true, false, false));
-        assertFalse(VanillaHealthBridge.shouldMarkPlayerDeadAfterVanillaDeath(true, true, true));
-    }
 }
