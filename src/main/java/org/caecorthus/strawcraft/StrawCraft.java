@@ -11,8 +11,10 @@ public final class StrawCraft implements ModInitializer {
     @Override
     public void onInitialize() {
         WeaponBalance.registerItemAttributes();
+        VigilanteLoadout.registerRoleAssignedHandler();
         registerVanillaHealthBridge();
         KillerShopLoadout.registerShopEntriesHandler();
+        TaczAmmoRefillTimers.register();
     }
 
     private static void registerVanillaHealthBridge() {

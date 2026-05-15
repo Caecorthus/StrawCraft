@@ -8,7 +8,6 @@ import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
@@ -16,11 +15,10 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public final class KillerShopLoadout {
-    public static final Identifier MODERN_KINETIC_GUN_ITEM_ID = Identifier.of("tacz", "modern_kinetic_gun");
+    public static final Identifier MODERN_KINETIC_GUN_ITEM_ID = TaczGunStacks.MODERN_KINETIC_GUN_ITEM_ID;
     public static final Identifier KILLER_GUN_ID = Identifier.of("tacz", "p320");
 
     private static final String KILLER_GUN_SHOP_ID = "p320";
-    private static final String GUN_ID_TAG = "GunId";
 
     private KillerShopLoadout() {
     }
@@ -75,9 +73,7 @@ public final class KillerShopLoadout {
     }
 
     static NbtComponent createP320CustomData() {
-        NbtCompound customData = new NbtCompound();
-        customData.putString(GUN_ID_TAG, KILLER_GUN_ID.toString());
-        return NbtComponent.of(customData);
+        return TaczGunStacks.createGunCustomData(KILLER_GUN_ID);
     }
 
     private static ShopEntry replacementEntry(ShopEntry original, ItemStack replacementStack) {
