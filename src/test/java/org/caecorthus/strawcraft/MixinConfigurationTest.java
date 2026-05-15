@@ -18,6 +18,14 @@ class MixinConfigurationTest {
         assertTrue(config.contains("\"client.VanillaInventoryScreenMixin\""));
     }
 
+    @Test
+    void inventoryShopTabIsAClientOnlyMixin() throws IOException {
+        String config = readMixinConfig();
+
+        assertTrue(config.contains("\"client\""));
+        assertTrue(config.contains("\"client.InventoryShopTabMixin\""));
+    }
+
     private static String readMixinConfig() throws IOException {
         return Files.readString(Path.of("src/main/resources/strawcraft.mixins.json"), StandardCharsets.UTF_8);
     }

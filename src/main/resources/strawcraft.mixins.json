@@ -12,6 +12,7 @@
     "ServerPlayerEntityMixin"
   ],
   "client": [
+    "client.InventoryShopTabMixin",
     "client.VanillaInventoryScreenMixin"
   ],
   "injectors": {
