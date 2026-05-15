@@ -11,6 +11,9 @@
     "RevolverItemMixin",
     "ServerPlayerEntityMixin"
   ],
+  "client": [
+    "client.VanillaInventoryScreenMixin"
+  ],
   "injectors": {
     "defaultRequire": 0
   }
