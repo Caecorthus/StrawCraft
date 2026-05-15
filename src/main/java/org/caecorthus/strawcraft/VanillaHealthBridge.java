@@ -2,6 +2,7 @@ package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.event.KillPlayer;
 import dev.doctor4t.wathe.cca.GameWorldComponent;
+import dev.doctor4t.wathe.game.GameConstants;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -14,6 +15,9 @@ public final class VanillaHealthBridge {
         KillPlayer.BEFORE.register((victim, killer, deathReason) -> {
             boolean knifeBackstab = killer != null && WeaponBalance.isBackstab(victim, killer);
             KillRequestPlan plan = planKillRequest(deathReason, knifeBackstab, killer != null);
+            if (!plan.cancelsWatheKill()) {
+                return null;
+            }
             if (plan.appliesVanillaDamage()) {
                 // Wathe weapons normally bypass hearts and move players straight to spectator.
                 // StrawCraft turns those kill requests back into vanilla damage instead.
@@ -24,10 +28,14 @@ public final class VanillaHealthBridge {
     }
 
     static KillRequestPlan planKillRequest(Identifier deathReason, boolean knifeBackstab, boolean hasKiller) {
+        if (GameConstants.DeathReasons.VANILLA_DEATH.equals(deathReason)) {
+            return new KillRequestPlan(0.0f, DamageSourceKind.GENERIC, false);
+        }
         float damage = VanillaDamagePolicy.damageFor(deathReason, knifeBackstab);
         return new KillRequestPlan(
                 damage,
-                hasKiller ? DamageSourceKind.PLAYER_ATTACK : DamageSourceKind.GENERIC
+                hasKiller ? DamageSourceKind.PLAYER_ATTACK : DamageSourceKind.GENERIC,
+                true
         );
     }
 
@@ -60,11 +68,7 @@ public final class VanillaHealthBridge {
         GENERIC
     }
 
-    record KillRequestPlan(float damage, DamageSourceKind damageSourceKind) {
-        boolean cancelsWatheKill() {
-            return true;
-        }
-
+    record KillRequestPlan(float damage, DamageSourceKind damageSourceKind, boolean cancelsWatheKill) {
         boolean appliesVanillaDamage() {
             return damage > 0.0f;
         }

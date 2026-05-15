@@ -30,6 +30,16 @@ class VanillaHealthBridgeTest {
     }
 
     @Test
+    void vanillaDeathKillRequestsFallThroughToWatheDeathPipeline() {
+        VanillaHealthBridge.KillRequestPlan plan =
+                VanillaHealthBridge.planKillRequest(GameConstants.DeathReasons.VANILLA_DEATH, false, false);
+
+        assertFalse(plan.cancelsWatheKill());
+        assertFalse(plan.appliesVanillaDamage());
+        assertEquals(0.0f, plan.damage());
+    }
+
+    @Test
     void vanillaDeathBookkeepingOnlyMarksLiveWatheRoundPlayers() {
         assertTrue(VanillaHealthBridge.shouldMarkPlayerDeadAfterVanillaDeath(true, true, false));
         assertFalse(VanillaHealthBridge.shouldMarkPlayerDeadAfterVanillaDeath(false, true, false));
