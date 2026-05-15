@@ -171,9 +171,8 @@ public final class StrawCraftShopScreen extends Screen {
         @Override
         protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
             PlayerShopComponent shop = shopComponent();
-            boolean onCooldown = shop != null && shop.isOnCooldown(this.entry.id());
-            boolean inStock = shop == null || shop.isInStock(this.entry.id());
-            this.active = !onCooldown && inStock;
+            ShopEntryViewState state = viewState(shop);
+            this.active = state.active();
 
             int x = getX();
             int y = getY();
@@ -186,8 +185,8 @@ public final class StrawCraftShopScreen extends Screen {
                 context.fill(x + 1, y + 1, x + this.width - 1, y + this.height - 1, UNAVAILABLE_OVERLAY);
             }
 
-            drawStatus(context, shop);
-            drawPrice(context);
+            drawStatus(context, state);
+            drawPrice(context, state);
         }
 
         @Override
@@ -195,37 +194,36 @@ public final class StrawCraftShopScreen extends Screen {
             this.appendDefaultNarrations(builder);
         }
 
-        private void drawStatus(DrawContext context, PlayerShopComponent shop) {
-            if (shop == null) {
-                return;
-            }
-
-            String status = null;
-            int color = 0xFFFFFF;
-            if (shop.isOnCooldown(this.entry.id())) {
-                status = Math.max(1, shop.getRemainingCooldown(this.entry.id()) / 20) + "s";
-                color = 0xFFFF7777;
-            } else if (shop.getMaxStock(this.entry.id()) > 0) {
-                status = String.valueOf(shop.getRemainingStock(this.entry.id()));
-                color = shop.isInStock(this.entry.id()) ? 0xFFFFFF : 0xFFFF7777;
-            }
-
-            if (status != null) {
-                int textX = getX() + this.width - MinecraftClient.getInstance().textRenderer.getWidth(status) - 3;
-                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, status, textX, getY() + 2, color);
-            }
+        private void drawStatus(DrawContext context, ShopEntryViewState state) {
+            state.status().ifPresent(status -> {
+                int textX = getX() + this.width - MinecraftClient.getInstance().textRenderer.getWidth(status.text()) - 3;
+                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, status.text(), textX, getY() + 2, status.color());
+            });
         }
 
-        private void drawPrice(DrawContext context) {
-            String price = String.valueOf(this.entry.price());
-            int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(price);
+        private void drawPrice(DrawContext context, ShopEntryViewState state) {
+            int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(state.priceText());
             int textX = getX() + (this.width - textWidth) / 2;
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, price, textX, getY() + this.height - 9, BALANCE_COLOR);
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, state.priceText(), textX, getY() + this.height - 9, BALANCE_COLOR);
         }
 
         private PlayerShopComponent shopComponent() {
             ClientPlayerEntity player = MinecraftClient.getInstance().player;
             return player == null ? null : PlayerShopComponent.KEY.get(player);
+        }
+
+        private ShopEntryViewState viewState(PlayerShopComponent shop) {
+            if (shop == null) {
+                return ShopEntryViewState.withoutShop(this.entry.price());
+            }
+            return ShopEntryViewState.fromSnapshot(new ShopEntryViewState.Snapshot(
+                    this.entry.price(),
+                    shop.isOnCooldown(this.entry.id()),
+                    shop.getRemainingCooldown(this.entry.id()),
+                    shop.getMaxStock(this.entry.id()),
+                    shop.getRemainingStock(this.entry.id()),
+                    shop.isInStock(this.entry.id())
+            ));
         }
     }
 }

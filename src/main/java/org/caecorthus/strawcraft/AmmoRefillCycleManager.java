@@ -1,6 +1,7 @@
 package org.caecorthus.strawcraft;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -8,8 +9,35 @@ import java.util.UUID;
 
 public final class AmmoRefillCycleManager {
     private final Map<UUID, CycleState> cyclesByGun = new HashMap<>();
+    private final Set<UUID> observedGunCycleIds = new HashSet<>();
 
-    public Optional<AmmoGrant> observeGun(
+    public void beginScan() {
+        observedGunCycleIds.clear();
+    }
+
+    public void finishScan() {
+        retainObservedGuns(observedGunCycleIds);
+        observedGunCycleIds.clear();
+    }
+
+    public StackObservation observeStack(
+            UUID holderUuid,
+            ObservedGunStack stack,
+            GunAmmoFaction faction,
+            long nowTick
+    ) {
+        // Do not stamp every TACZ gun forever; only low-ammo guns enter StrawCraft's cycle tracking.
+        if (stack.ammoCycleId().isEmpty() && !stack.profile().isLowAmmo(stack.currentAmmo())) {
+            return StackObservation.empty();
+        }
+
+        UUID gunCycleId = stack.ammoCycleId().orElseGet(UUID::randomUUID);
+        observedGunCycleIds.add(gunCycleId);
+        Optional<AmmoGrant> grant = observeGun(holderUuid, gunCycleId, faction, stack.profile(), stack.currentAmmo(), nowTick);
+        return new StackObservation(stack.ammoCycleId().isEmpty() ? Optional.of(gunCycleId) : Optional.empty(), grant);
+    }
+
+    Optional<AmmoGrant> observeGun(
             UUID holderUuid,
             UUID gunCycleId,
             GunAmmoFaction faction,
@@ -29,7 +57,7 @@ public final class AmmoRefillCycleManager {
         return Optional.empty();
     }
 
-    public void retainObservedGuns(Set<UUID> observedGunCycleIds) {
+    void retainObservedGuns(Set<UUID> observedGunCycleIds) {
         cyclesByGun.keySet().removeIf(gunCycleId -> !observedGunCycleIds.contains(gunCycleId));
     }
 
@@ -128,6 +156,15 @@ public final class AmmoRefillCycleManager {
     private record WaitingForReload(UUID holderUuid, GunAmmoFaction faction, int ammoAtGrant) implements CycleState {
     }
 
-    public record AmmoGrant(UUID holderUuid, UUID gunCycleId, TaczGunProfile profile, int ammoCount) {
+    record AmmoGrant(UUID holderUuid, UUID gunCycleId, TaczGunProfile profile, int ammoCount) {
+    }
+
+    record ObservedGunStack(TaczGunProfile profile, int currentAmmo, Optional<UUID> ammoCycleId) {
+    }
+
+    record StackObservation(Optional<UUID> createdAmmoCycleId, Optional<AmmoGrant> ammoGrant) {
+        private static StackObservation empty() {
+            return new StackObservation(Optional.empty(), Optional.empty());
+        }
     }
 }

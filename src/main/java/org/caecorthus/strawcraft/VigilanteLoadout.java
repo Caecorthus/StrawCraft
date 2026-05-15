@@ -4,18 +4,13 @@ import dev.doctor4t.wathe.api.Role;
 import dev.doctor4t.wathe.api.WatheRoles;
 import dev.doctor4t.wathe.api.event.RoleAssigned;
 import dev.doctor4t.wathe.index.WatheItems;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
 
 public final class VigilanteLoadout {
-    public static final Identifier VIGILANTE_GUN_ID = Identifier.of("tacz", "rhino357");
+    public static final TaczGunProfile VIGILANTE_GUN = TaczGunProfiles.RHINO357;
 
     private VigilanteLoadout() {
     }
@@ -45,17 +40,11 @@ public final class VigilanteLoadout {
     }
 
     private static ItemStack createRhino357Stack() {
-        Item item = Registries.ITEM.get(TaczGunStacks.MODERN_KINETIC_GUN_ITEM_ID);
-        if (item == Items.AIR) {
-            return ItemStack.EMPTY;
-        }
-        ItemStack stack = new ItemStack(item);
-        stack.set(DataComponentTypes.CUSTOM_DATA, createRhino357CustomData());
-        return stack;
+        return TaczGunStacks.createGunStack(VIGILANTE_GUN);
     }
 
     static NbtComponent createRhino357CustomData() {
-        return TaczGunStacks.createGunCustomData(VIGILANTE_GUN_ID);
+        return TaczGunStacks.createGunCustomData(VIGILANTE_GUN);
     }
 
     private static boolean removeFirstWatheRevolver(PlayerEntity player) {

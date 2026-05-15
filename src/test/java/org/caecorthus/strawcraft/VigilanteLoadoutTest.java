@@ -2,7 +2,6 @@ package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.WatheRoles;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Identifier;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +12,7 @@ class VigilanteLoadoutTest {
     @Test
     void vigilanteLoadoutUsesTaczRhino357() {
         assertTrue(VigilanteLoadout.shouldReplaceAssignedRole(WatheRoles.VIGILANTE));
-        assertEquals(Identifier.of("tacz", "rhino357"), VigilanteLoadout.VIGILANTE_GUN_ID);
+        assertEquals(TaczGunProfiles.RHINO357, VigilanteLoadout.VIGILANTE_GUN);
 
         NbtCompound customData = VigilanteLoadout.createRhino357CustomData().copyNbt();
         assertEquals("tacz:rhino357", customData.getString("GunId"));

@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 public final class TaczAmmoRefillTimers {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaczAmmoRefillTimers.class);
@@ -46,14 +45,14 @@ public final class TaczAmmoRefillTimers {
             return;
         }
 
-        Set<UUID> observedGunCycleIds = new HashSet<>();
+        CYCLE_MANAGER.beginScan();
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            scanPlayer(player, observedGunCycleIds);
+            scanPlayer(player);
         }
-        CYCLE_MANAGER.retainObservedGuns(observedGunCycleIds);
+        CYCLE_MANAGER.finishScan();
     }
 
-    private static void scanPlayer(ServerPlayerEntity player, Set<UUID> observedGunCycleIds) {
+    private static void scanPlayer(ServerPlayerEntity player) {
         if (!player.isAlive()) {
             CYCLE_MANAGER.clearHolder(player.getUuid());
             return;
@@ -74,7 +73,7 @@ public final class TaczAmmoRefillTimers {
         PlayerInventory inventory = player.getInventory();
         for (int slot = 0; slot < inventory.size(); slot++) {
             ItemStack stack = inventory.getStack(slot);
-            observeStack(player, stack, faction.get(), observedGunCycleIds);
+            observeStack(player, stack, faction.get());
         }
     }
 
@@ -86,28 +85,21 @@ public final class TaczAmmoRefillTimers {
         return GunAmmoFactionTags.resolve(role);
     }
 
-    private static void observeStack(
-            ServerPlayerEntity holder,
-            ItemStack stack,
-            GunAmmoFaction faction,
-            Set<UUID> observedGunCycleIds
-    ) {
+    private static void observeStack(ServerPlayerEntity player, ItemStack stack, GunAmmoFaction faction) {
         Optional<TaczGunProfile> profile = TaczGunStacks.getGunId(stack).flatMap(TaczGunProfiles::profileFor);
         if (profile.isEmpty()) {
             return;
         }
 
-        int currentAmmo = TaczGunStacks.getCurrentAmmo(stack);
-        Optional<UUID> existingCycleId = TaczGunStacks.getAmmoCycleId(stack);
-        // Do not stamp every TACZ gun forever; only low-ammo guns enter StrawCraft's cycle tracking.
-        if (existingCycleId.isEmpty() && !profile.get().isLowAmmo(currentAmmo)) {
-            return;
-        }
-
-        UUID gunCycleId = existingCycleId.orElseGet(() -> TaczGunStacks.getOrCreateAmmoCycleId(stack));
-        observedGunCycleIds.add(gunCycleId);
-        CYCLE_MANAGER.observeGun(holder.getUuid(), gunCycleId, faction, profile.get(), currentAmmo, serverTicks)
-                .ifPresent(grant -> giveAmmo(holder, grant));
+        AmmoRefillCycleManager.ObservedGunStack observedStack = new AmmoRefillCycleManager.ObservedGunStack(
+                profile.get(),
+                TaczGunStacks.getCurrentAmmo(stack),
+                TaczGunStacks.getAmmoCycleId(stack)
+        );
+        AmmoRefillCycleManager.StackObservation observation =
+                CYCLE_MANAGER.observeStack(player.getUuid(), observedStack, faction, serverTicks);
+        observation.createdAmmoCycleId().ifPresent(cycleId -> TaczGunStacks.setAmmoCycleId(stack, cycleId));
+        observation.ammoGrant().ifPresent(grant -> giveAmmo(player, grant));
     }
 
     private static void giveAmmo(ServerPlayerEntity player, AmmoRefillCycleManager.AmmoGrant grant) {

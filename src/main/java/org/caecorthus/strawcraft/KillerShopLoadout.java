@@ -3,20 +3,14 @@ package org.caecorthus.strawcraft;
 import dev.doctor4t.wathe.api.event.BuildShopEntries;
 import dev.doctor4t.wathe.index.WatheItems;
 import dev.doctor4t.wathe.util.ShopEntry;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
 
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public final class KillerShopLoadout {
-    public static final Identifier MODERN_KINETIC_GUN_ITEM_ID = TaczGunStacks.MODERN_KINETIC_GUN_ITEM_ID;
-    public static final Identifier KILLER_GUN_ID = Identifier.of("tacz", "p320");
+    public static final TaczGunProfile KILLER_GUN = TaczGunProfiles.P320;
 
     private static final String KILLER_GUN_SHOP_ID = "p320";
 
@@ -58,22 +52,11 @@ public final class KillerShopLoadout {
     }
 
     static ItemStack createP320Stack() {
-        Item item = Registries.ITEM.get(MODERN_KINETIC_GUN_ITEM_ID);
-        if (item == Items.AIR) {
-            return ItemStack.EMPTY;
-        }
-        return createP320Stack(item);
-    }
-
-    static ItemStack createP320Stack(Item item) {
-        ItemStack stack = new ItemStack(item);
-        // TACZ identifies individual guns through custom data on tacz:modern_kinetic_gun.
-        stack.set(DataComponentTypes.CUSTOM_DATA, createP320CustomData());
-        return stack;
+        return TaczGunStacks.createGunStack(KILLER_GUN);
     }
 
     static NbtComponent createP320CustomData() {
-        return TaczGunStacks.createGunCustomData(KILLER_GUN_ID);
+        return TaczGunStacks.createGunCustomData(KILLER_GUN);
     }
 
     private static ShopEntry replacementEntry(ShopEntry original, ItemStack replacementStack) {

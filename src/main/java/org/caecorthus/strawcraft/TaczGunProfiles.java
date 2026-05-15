@@ -6,11 +6,12 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class TaczGunProfiles {
+    public static final TaczGunProfile RHINO357 = new TaczGunProfile(Identifier.of("tacz", "rhino357"), Identifier.of("tacz", "357mag"), 6, 48);
+    public static final TaczGunProfile P320 = new TaczGunProfile(Identifier.of("tacz", "p320"), Identifier.of("tacz", "45acp"), 12, 60);
+
     private static final Map<Identifier, TaczGunProfile> PROFILES = Map.of(
-            Identifier.of("tacz", "rhino357"),
-            new TaczGunProfile(Identifier.of("tacz", "rhino357"), Identifier.of("tacz", "357mag"), 6, 48),
-            Identifier.of("tacz", "p320"),
-            new TaczGunProfile(Identifier.of("tacz", "p320"), Identifier.of("tacz", "45acp"), 12, 60)
+            RHINO357.gunId(), RHINO357,
+            P320.gunId(), P320
     );
 
     private TaczGunProfiles() {

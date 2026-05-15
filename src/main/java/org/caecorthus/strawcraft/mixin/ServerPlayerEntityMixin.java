@@ -1,9 +1,9 @@
 package org.caecorthus.strawcraft.mixin;
 
-import dev.doctor4t.wathe.cca.GameWorldComponent;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.caecorthus.strawcraft.TaczAmmoRefillTimers;
+import org.caecorthus.strawcraft.VanillaHealthBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,11 +21,6 @@ public abstract class ServerPlayerEntityMixin {
     private void strawcraft$markWathePlayerDeadAfterVanillaDeath(DamageSource damageSource, CallbackInfo callback) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         TaczAmmoRefillTimers.clearPlayer(player);
-        GameWorldComponent game = GameWorldComponent.KEY.get(player.getWorld());
-        if (game.isRunning() && game.hasAnyRole(player.getUuid()) && !game.isPlayerDead(player.getUuid())) {
-            // Keep Wathe's win-condition bookkeeping aware of vanilla deaths.
-            game.markPlayerDead(player.getUuid());
-            game.sync();
-        }
+        VanillaHealthBridge.markPlayerDeadAfterVanillaDeath(player);
     }
 }

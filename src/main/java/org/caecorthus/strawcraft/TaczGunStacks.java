@@ -24,13 +24,33 @@ public final class TaczGunStacks {
     private TaczGunStacks() {
     }
 
-    public static NbtComponent createGunCustomData(Identifier gunId) {
+    private static NbtComponent createGunCustomData(Identifier gunId) {
         NbtCompound customData = new NbtCompound();
         customData.putString(GUN_ID_TAG, gunId.toString());
         return NbtComponent.of(customData);
     }
 
-    public static NbtComponent createAmmoCustomData(Identifier ammoId) {
+    public static NbtComponent createGunCustomData(TaczGunProfile profile) {
+        return createGunCustomData(profile.gunId());
+    }
+
+    public static ItemStack createGunStack(TaczGunProfile profile) {
+        Item item = Registries.ITEM.get(MODERN_KINETIC_GUN_ITEM_ID);
+        if (item == Items.AIR) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack stack = new ItemStack(item);
+        // TACZ identifies individual guns through custom data on tacz:modern_kinetic_gun.
+        stack.set(DataComponentTypes.CUSTOM_DATA, createGunCustomData(profile));
+        return stack;
+    }
+
+    public static NbtComponent createAmmoCustomData(TaczGunProfile profile) {
+        return createAmmoCustomData(profile.ammoId());
+    }
+
+    private static NbtComponent createAmmoCustomData(Identifier ammoId) {
         NbtCompound customData = new NbtCompound();
         customData.putString(AMMO_ID_TAG, ammoId.toString());
         return NbtComponent.of(customData);
@@ -42,7 +62,7 @@ public final class TaczGunStacks {
             return ItemStack.EMPTY;
         }
         ItemStack stack = new ItemStack(item, count);
-        stack.set(DataComponentTypes.CUSTOM_DATA, createAmmoCustomData(profile.ammoId()));
+        stack.set(DataComponentTypes.CUSTOM_DATA, createAmmoCustomData(profile));
         stack.set(DataComponentTypes.MAX_STACK_SIZE, profile.ammoMaxStackSize());
         return stack;
     }
@@ -64,16 +84,10 @@ public final class TaczGunStacks {
         return Math.max(0, nbt.getInt(GUN_CURRENT_AMMO_COUNT_TAG));
     }
 
-    public static UUID getOrCreateAmmoCycleId(ItemStack stack) {
+    public static void setAmmoCycleId(ItemStack stack, UUID cycleId) {
         NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
-        if (nbt.containsUuid(STRAWCRAFT_AMMO_CYCLE_ID_TAG)) {
-            return nbt.getUuid(STRAWCRAFT_AMMO_CYCLE_ID_TAG);
-        }
-
-        UUID cycleId = UUID.randomUUID();
         nbt.putUuid(STRAWCRAFT_AMMO_CYCLE_ID_TAG, cycleId);
         stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
-        return cycleId;
     }
 
     public static Optional<UUID> getAmmoCycleId(ItemStack stack) {
