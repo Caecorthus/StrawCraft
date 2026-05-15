@@ -1,7 +1,6 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.event.KillPlayer;
-import dev.doctor4t.wathe.api.event.BuildShopEntries;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,7 +12,7 @@ public final class StrawCraft implements ModInitializer {
     public void onInitialize() {
         WeaponBalance.registerItemAttributes();
         registerVanillaHealthBridge();
-        removeDisabledWatheGunsFromShop();
+        KillerShopLoadout.registerShopEntriesHandler();
     }
 
     private static void registerVanillaHealthBridge() {
@@ -29,15 +28,6 @@ public final class StrawCraft implements ModInitializer {
             victim.damage(getDamageSource(victim, killer), damage);
             return KillPlayer.KillResult.cancel();
         });
-    }
-
-    private static void removeDisabledWatheGunsFromShop() {
-        BuildShopEntries.EVENT.register((player, context) ->
-                context.getEntries().removeIf(entry ->
-                        WeaponBalance.isDisabledWatheGun(entry.displayStack())
-                                || WeaponBalance.isDisabledWatheGun(entry.getActualStack())
-                )
-        );
     }
 
     private static DamageSource getDamageSource(ServerPlayerEntity victim, ServerPlayerEntity killer) {
