@@ -38,6 +38,19 @@ class MixinConfigurationTest {
     }
 
     @Test
+    void grenadeDamageOverrideIsRegisteredServerSide() throws IOException {
+        String config = readMixinConfig();
+        String grenadeMixin = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/mixin/GrenadeEntityMixin.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(config.contains("\"GrenadeEntityMixin\""));
+        assertTrue(grenadeMixin.contains("GameFunctions;killPlayer"));
+        assertTrue(grenadeMixin.contains("Explosion.getExposure"));
+    }
+
+    @Test
     void customShopScreenDoesNotInstantiateWatheLimitedInventoryUi() throws IOException {
         String shopScreen = Files.readString(
                 Path.of("src/main/java/org/caecorthus/strawcraft/client/StrawCraftShopScreen.java"),
