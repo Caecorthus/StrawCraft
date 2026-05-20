@@ -28,13 +28,15 @@ class MixinConfigurationTest {
     }
 
     @Test
-    void vanillaDeathStillEntersWatheDeathPipeline() throws IOException {
+    void vanillaDeathStillEntersWatheDeathPipelineWithTrackedReason() throws IOException {
         String serverPlayerMixin = Files.readString(
                 Path.of("src/main/java/org/caecorthus/strawcraft/mixin/ServerPlayerEntityMixin.java"),
                 StandardCharsets.UTF_8
         );
 
-        assertFalse(serverPlayerMixin.contains("wathe$interceptVanillaDeath"));
+        assertTrue(serverPlayerMixin.contains("ModifyArg"));
+        assertTrue(serverPlayerMixin.contains("wathe$interceptVanillaDeath"));
+        assertTrue(serverPlayerMixin.contains("WatheDeathReasonTracker.consumeDeathReason"));
     }
 
     @Test

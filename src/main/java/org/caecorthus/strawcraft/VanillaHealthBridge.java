@@ -20,7 +20,7 @@ public final class VanillaHealthBridge {
             if (plan.appliesVanillaDamage()) {
                 // Wathe weapons normally bypass hearts and move players straight to spectator.
                 // StrawCraft turns those kill requests back into vanilla damage instead.
-                victim.damage(getDamageSource(victim, killer, plan), plan.damage());
+                WatheDeathReasonTracker.damageWithReason(victim, deathReason, getDamageSource(victim, killer, plan), plan.damage());
             }
             return KillPlayer.KillResult.cancel();
         });

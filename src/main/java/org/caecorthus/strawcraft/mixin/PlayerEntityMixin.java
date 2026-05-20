@@ -2,6 +2,8 @@ package org.caecorthus.strawcraft.mixin;
 
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.RegistryKey;
+import org.caecorthus.strawcraft.WatheDeathReasonTracker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,5 +28,22 @@ public abstract class PlayerEntityMixin {
     private void strawcraft$allowVanillaDamage(DamageSource source, float amount, CallbackInfo originalDamageCallback, CallbackInfo handlerCallback) {
         // Let PlayerEntity.applyDamage subtract hearts normally during a Wathe round.
         handlerCallback.cancel();
+    }
+
+    @Inject(method = "applyDamage", at = @At("HEAD"))
+    private void strawcraft$rememberTaczBulletDeathReason(DamageSource source, float amount, CallbackInfo callback) {
+        PlayerEntity player = (PlayerEntity) (Object) this;
+        source.getTypeRegistryEntry().getKey()
+                .map(RegistryKey::getValue)
+                .flatMap(WatheDeathReasonTracker::watheReasonForDamageType)
+                .ifPresent(deathReason -> WatheDeathReasonTracker.rememberDeathReason(player.getUuid(), deathReason));
+    }
+
+    @Inject(method = "applyDamage", at = @At("TAIL"))
+    private void strawcraft$clearNonLethalTaczBulletDeathReason(DamageSource source, float amount, CallbackInfo callback) {
+        PlayerEntity player = (PlayerEntity) (Object) this;
+        if (player.isAlive()) {
+            WatheDeathReasonTracker.clearDeathReason(player.getUuid());
+        }
     }
 }

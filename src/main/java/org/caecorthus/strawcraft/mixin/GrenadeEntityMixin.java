@@ -10,6 +10,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.explosion.Explosion;
 import org.caecorthus.strawcraft.GrenadeExplosionDamage;
+import org.caecorthus.strawcraft.WatheDeathReasonTracker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -42,7 +43,7 @@ public abstract class GrenadeEntityMixin {
         }
 
         DamageSource source = victim.getDamageSources().explosion(grenade, killer);
-        victim.damage(source, damage);
+        WatheDeathReasonTracker.damageWithReason(victim, deathReason, source, damage);
     }
 
     private boolean strawcraft$isPlayerInsideSphericalBlast(ServerPlayerEntity player) {
