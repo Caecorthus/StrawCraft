@@ -1,6 +1,7 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.game.GameConstants;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class WatheDeathReasonTracker {
     // These reasons are short-lived breadcrumbs for Wathe's vanilla-death safety net.
-    private static final Map<UUID, Identifier> RECENT_DEATH_REASONS = new ConcurrentHashMap<>();
+    private static final Map<UUID, DeathAttribution> RECENT_DEATH_ATTRIBUTIONS = new ConcurrentHashMap<>();
     private static final Set<Identifier> TACZ_BULLET_DAMAGE_TYPES = Set.of(
             Identifier.of("tacz", "bullet"),
             Identifier.of("tacz", "bullet_ignore_armor"),
@@ -24,17 +25,34 @@ public final class WatheDeathReasonTracker {
     private WatheDeathReasonTracker() {
     }
 
+    public static void rememberDeathAttribution(UUID victimUuid, Identifier deathReason, UUID killerUuid) {
+        RECENT_DEATH_ATTRIBUTIONS.put(victimUuid, new DeathAttribution(deathReason, Optional.ofNullable(killerUuid)));
+    }
+
+    public static void rememberDeathAttribution(UUID victimUuid, Identifier deathReason, DamageSource source) {
+        rememberDeathAttribution(victimUuid, deathReason, serverPlayerAttackerUuid(source).orElse(null));
+    }
+
     public static void rememberDeathReason(UUID victimUuid, Identifier deathReason) {
-        RECENT_DEATH_REASONS.put(victimUuid, deathReason);
+        rememberDeathAttribution(victimUuid, deathReason, (UUID) null);
     }
 
     public static void clearDeathReason(UUID victimUuid) {
-        RECENT_DEATH_REASONS.remove(victimUuid);
+        RECENT_DEATH_ATTRIBUTIONS.remove(victimUuid);
     }
 
     public static Identifier consumeDeathReason(UUID victimUuid, Identifier fallbackDeathReason) {
-        Identifier trackedReason = RECENT_DEATH_REASONS.remove(victimUuid);
-        return trackedReason == null ? fallbackDeathReason : trackedReason;
+        return consumeDeathAttribution(victimUuid, fallbackDeathReason)
+                .map(DeathAttribution::deathReason)
+                .orElse(fallbackDeathReason);
+    }
+
+    public static Optional<DeathAttribution> consumeDeathAttribution(UUID victimUuid, Identifier fallbackDeathReason) {
+        DeathAttribution attribution = RECENT_DEATH_ATTRIBUTIONS.remove(victimUuid);
+        if (attribution != null) {
+            return Optional.of(attribution);
+        }
+        return Optional.of(new DeathAttribution(fallbackDeathReason, Optional.empty()));
     }
 
     public static Optional<Identifier> watheReasonForDamageType(Identifier damageTypeId) {
@@ -45,12 +63,23 @@ public final class WatheDeathReasonTracker {
     }
 
     public static boolean damageWithReason(ServerPlayerEntity victim, Identifier deathReason, DamageSource source, float amount) {
-        rememberDeathReason(victim.getUuid(), deathReason);
+        rememberDeathAttribution(victim.getUuid(), deathReason, source);
         boolean damaged = victim.damage(source, amount);
         if (victim.isAlive()) {
             // Non-lethal hits must not leak their reason into a later unrelated death.
             clearDeathReason(victim.getUuid());
         }
         return damaged;
+    }
+
+    private static Optional<UUID> serverPlayerAttackerUuid(DamageSource source) {
+        Entity attacker = source.getAttacker();
+        if (attacker instanceof ServerPlayerEntity serverPlayer) {
+            return Optional.of(serverPlayer.getUuid());
+        }
+        return Optional.empty();
+    }
+
+    public record DeathAttribution(Identifier deathReason, Optional<UUID> killerUuid) {
     }
 }

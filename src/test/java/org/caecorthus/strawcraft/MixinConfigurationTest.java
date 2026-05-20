@@ -34,9 +34,11 @@ class MixinConfigurationTest {
                 StandardCharsets.UTF_8
         );
 
-        assertTrue(serverPlayerMixin.contains("ModifyArg"));
+        assertTrue(serverPlayerMixin.contains("ModifyArgs"));
         assertTrue(serverPlayerMixin.contains("wathe$interceptVanillaDeath"));
-        assertTrue(serverPlayerMixin.contains("WatheDeathReasonTracker.consumeDeathReason"));
+        assertTrue(serverPlayerMixin.contains("consumeDeathAttribution"));
+        assertTrue(serverPlayerMixin.contains("args.set(2"));
+        assertTrue(serverPlayerMixin.contains("args.set(3"));
     }
 
     @Test

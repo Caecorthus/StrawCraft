@@ -36,7 +36,7 @@ public abstract class PlayerEntityMixin {
         source.getTypeRegistryEntry().getKey()
                 .map(RegistryKey::getValue)
                 .flatMap(WatheDeathReasonTracker::watheReasonForDamageType)
-                .ifPresent(deathReason -> WatheDeathReasonTracker.rememberDeathReason(player.getUuid(), deathReason));
+                .ifPresent(deathReason -> WatheDeathReasonTracker.rememberDeathAttribution(player.getUuid(), deathReason, source));
     }
 
     @Inject(method = "applyDamage", at = @At("TAIL"))
