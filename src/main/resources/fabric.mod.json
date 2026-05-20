@@ -16,11 +16,22 @@
   "entrypoints": {
     "main": [
       "org.caecorthus.strawcraft.StrawCraft"
+    ],
+    "client": [
+      "org.caecorthus.strawcraft.client.StrawCraftClient"
+    ],
+    "cardinal-components": [
+      "org.caecorthus.strawcraft.map.StrawCraftComponents"
     ]
   },
   "mixins": [
     "strawcraft.mixins.json"
   ],
+  "custom": {
+    "cardinal-components": [
+      "strawcraft:map_voting"
+    ]
+  },
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",

@@ -1,0 +1,13 @@
+{
+  "dimension": "minecraft:overworld",
+  "display_name": "Harpy Express",
+  "description": "Classic Wathe train route",
+  "min_players": 2,
+  "max_players": 100,
+  "map_effect": "wathe:harpy_express_night",
+  "game_modes": [
+    "wathe:murder",
+    "wathe:discovery",
+    "wathe:loose_ends"
+  ]
+}

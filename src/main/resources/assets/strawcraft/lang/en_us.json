@@ -1,0 +1,10 @@
+{
+  "category.strawcraft.keybinds": "StrawCraft",
+  "key.strawcraft.map_vote": "Map Vote",
+  "game.strawcraft.start_error.voting_active": "Game cannot start: map voting is active.",
+  "gui.strawcraft.map_voting.title": "Select Next Map",
+  "gui.strawcraft.map_voting.selecting": "Selecting map...",
+  "gui.strawcraft.map_voting.votes": "%s votes",
+  "gui.strawcraft.map_voting.my_vote": "VOTED",
+  "gui.strawcraft.map_voting.player_range": "%1$s-%2$s players"
+}

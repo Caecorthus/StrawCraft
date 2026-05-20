@@ -1,0 +1,10 @@
+{
+  "category.strawcraft.keybinds": "StrawCraft",
+  "key.strawcraft.map_vote": "地图投票",
+  "game.strawcraft.start_error.voting_active": "地图投票进行中，暂时不能开始游戏。",
+  "gui.strawcraft.map_voting.title": "选择下一张地图",
+  "gui.strawcraft.map_voting.selecting": "正在选择地图...",
+  "gui.strawcraft.map_voting.votes": "%s 票",
+  "gui.strawcraft.map_voting.my_vote": "已投票",
+  "gui.strawcraft.map_voting.player_range": "%1$s-%2$s 人"
+}

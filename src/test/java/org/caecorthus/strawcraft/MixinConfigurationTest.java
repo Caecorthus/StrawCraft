@@ -94,6 +94,25 @@ class MixinConfigurationTest {
         assertTrue(roleAssignedLoadouts.contains("VigilanteLoadout.giveAssignedLoadout"));
     }
 
+    @Test
+    void strawCraftOwnsMapVotingInsteadOfReferencingParoxVotingClasses() throws IOException {
+        String modJson = Files.readString(Path.of("src/main/resources/fabric.mod.json"), StandardCharsets.UTF_8);
+        String mixinConfig = readMixinConfig();
+        String source = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/map/StrawMapVoting.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(modJson.contains("org.caecorthus.strawcraft.client.StrawCraftClient"));
+        assertTrue(modJson.contains("org.caecorthus.strawcraft.map.StrawCraftComponents"));
+        assertTrue(modJson.contains("strawcraft:map_voting"));
+        assertTrue(mixinConfig.contains("\"GameFunctionsMixin\""));
+        assertFalse(source.contains("dev.doctor4t.wathe.cca.MapVotingComponent"));
+        assertFalse(source.contains("dev.doctor4t.wathe.config.datapack.MapRegistry"));
+        assertFalse(source.contains("dev.doctor4t.wathe.util.MapVotePayload"));
+        assertFalse(source.contains("finalizeVoting"));
+    }
+
     private static String readMixinConfig() throws IOException {
         return Files.readString(Path.of("src/main/resources/strawcraft.mixins.json"), StandardCharsets.UTF_8);
     }
