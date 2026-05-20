@@ -40,6 +40,14 @@ _Avoid_: TACZ item, gun item
 The state machine that waits on low loaded ammo, grants missing ammo, and then waits for a reload before starting again.
 _Avoid_: ammo timer, refill cooldown
 
+**Map Voting State Machine**:
+The StrawCraft rule set that decides map voting phases, countdowns, vote counts, and final map selection.
+_Avoid_: map vote component, voting UI logic
+
+**Map Voting Adapter**:
+The Fabric, CCA, Wathe, network, and server-world wiring that applies a **Map Voting State Machine** transition.
+_Avoid_: voting logic, map vote handler
+
 ## Relationships
 
 - A **Role Loadout** may grant a **TACZ Gun Stack** from a **TACZ Gun Profile**.
@@ -51,6 +59,8 @@ _Avoid_: ammo timer, refill cooldown
 - The **Vanilla Health Bridge** cancels Wathe kill requests after applying any matching vanilla damage.
 - The **Wathe Round Participant Lifecycle** clears StrawCraft runtime state when a player is no longer an alive **Wathe Round** participant.
 - The **Wathe Round Participant Lifecycle** mirrors vanilla deaths into Wathe bookkeeping without changing death reason policy.
+- The **Map Voting Adapter** owns CCA sync, NBT persistence, network payloads, and teleport side effects.
+- The **Map Voting State Machine** owns voting phases and emits the selected map for the **Map Voting Adapter** to apply.
 
 ## Example Dialogue
 

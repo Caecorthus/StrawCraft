@@ -51,6 +51,24 @@ class WatheShopClientAdapterTest {
         assertEquals("300", snapshot.entryStates().get(0).priceText());
     }
 
+    @Test
+    void entryKeysIgnoreShopStateAndRepresentCustomData() {
+        ShopEntry p320 = new ShopEntry.Builder("p320", null, 300, ShopEntry.Type.WEAPON).build();
+        ShopEntry p320OnCooldown = new ShopEntry.Builder("p320", null, 300, ShopEntry.Type.WEAPON).build();
+
+        WatheShopClientAdapter.ShopSnapshot available = WatheShopClientAdapter.snapshotFrom(
+                List.of(p320),
+                new FakeShopState()
+        );
+        WatheShopClientAdapter.ShopSnapshot cooldown = WatheShopClientAdapter.snapshotFrom(
+                List.of(p320OnCooldown),
+                new FakeShopState()
+        );
+
+        assertEquals(available.entryKeys(), cooldown.entryKeys());
+        assertFalse(stackKey("GunId=tacz:p320").equals(stackKey("GunId=tacz:rhino357")));
+    }
+
     private static final class FakeShopState implements WatheShopClientAdapter.ShopState {
         @Override
         public OptionalInt balance() {
@@ -81,5 +99,9 @@ class WatheShopClientAdapterTest {
         public boolean isInStock(String entryId) {
             return true;
         }
+    }
+
+    private static WatheShopClientAdapter.StackKey stackKey(String customData) {
+        return new WatheShopClientAdapter.StackKey("tacz:modern_kinetic_gun", 1, "Modern Kinetic Gun", customData);
     }
 }

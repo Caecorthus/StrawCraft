@@ -7,8 +7,12 @@ import dev.doctor4t.wathe.util.StoreBuyPayload;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,11 +43,13 @@ public final class WatheShopClientAdapter {
 
     public static ShopSnapshot snapshotFrom(List<ShopEntry> entries, ShopState shopState) {
         List<ShopEntryViewState> entryStates = new ArrayList<>(entries.size());
+        List<EntryKey> entryKeys = new ArrayList<>(entries.size());
         for (ShopEntry entry : entries) {
             entryStates.add(viewStateFor(entry, shopState));
+            entryKeys.add(EntryKey.from(entry));
         }
         OptionalInt balance = shopState == null ? OptionalInt.empty() : shopState.balance();
-        return new ShopSnapshot(List.copyOf(entries), balance, List.copyOf(entryStates));
+        return new ShopSnapshot(List.copyOf(entries), balance, List.copyOf(entryStates), List.copyOf(entryKeys));
     }
 
     private static ShopEntryViewState viewStateFor(ShopEntry entry, ShopState shopState) {
@@ -121,10 +127,44 @@ public final class WatheShopClientAdapter {
     public record ShopSnapshot(
             List<ShopEntry> entries,
             OptionalInt balance,
-            List<ShopEntryViewState> entryStates
+            List<ShopEntryViewState> entryStates,
+            List<EntryKey> entryKeys
     ) {
         public static ShopSnapshot empty() {
-            return new ShopSnapshot(List.of(), OptionalInt.empty(), List.of());
+            return new ShopSnapshot(List.of(), OptionalInt.empty(), List.of(), List.of());
+        }
+    }
+
+    public record EntryKey(
+            String id,
+            int price,
+            ShopEntry.Type type,
+            StackKey displayStack,
+            StackKey actualStack
+    ) {
+        private static EntryKey from(ShopEntry entry) {
+            return new EntryKey(
+                    entry.id(),
+                    entry.price(),
+                    entry.type(),
+                    StackKey.from(entry.displayStack()),
+                    StackKey.from(entry.getActualStack())
+            );
+        }
+    }
+
+    public record StackKey(String itemId, int count, String name, String customData) {
+        private static StackKey from(ItemStack stack) {
+            if (stack == null || stack.isEmpty()) {
+                return new StackKey("", 0, "", "");
+            }
+            NbtComponent customData = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+            return new StackKey(
+                    Registries.ITEM.getId(stack.getItem()).toString(),
+                    stack.getCount(),
+                    stack.getName().getString(),
+                    customData.copyNbt().toString()
+            );
         }
     }
 }

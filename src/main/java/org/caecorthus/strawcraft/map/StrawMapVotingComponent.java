@@ -1,7 +1,6 @@
 package org.caecorthus.strawcraft.map;
 
 import dev.doctor4t.wathe.api.GameMode;
-import dev.doctor4t.wathe.api.WatheGameModes;
 import dev.doctor4t.wathe.cca.GameWorldComponent;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -30,26 +29,11 @@ public class StrawMapVotingComponent implements AutoSyncedComponent, ServerTicki
     public static final ComponentKey<StrawMapVotingComponent> KEY =
             ComponentRegistry.getOrCreate(StrawCraft.id("map_voting"), StrawMapVotingComponent.class);
 
-    private static final int VOTING_DURATION_TICKS = 30 * 20;
-    private static final int ROULETTE_DURATION_TICKS = 8 * 20;
-    private static final int ALL_VOTED_REMAINING_TICKS = 5 * 20;
-
     private final Scoreboard scoreboard;
     @Nullable
     private final MinecraftServer server;
-
-    private boolean votingActive;
-    private int votingTicksRemaining;
-    private boolean roulettePhase;
-    private int rouletteTicksRemaining;
-    private int selectedMapIndex = -1;
-    private final List<StrawMapVoteOption> availableMaps = new ArrayList<>();
-    private int[] voteCounts = new int[0];
-    private final Map<UUID, Integer> playerVotes = new HashMap<>();
-    @Nullable
-    private Identifier lastSelectedDimension;
-    @Nullable
-    private Identifier lastSelectedGameMode;
+    private final MapVotingStateMachine stateMachine = new MapVotingStateMachine();
+    private final Random random = new Random();
 
     public StrawMapVotingComponent(Scoreboard scoreboard, @Nullable MinecraftServer server) {
         this.scoreboard = scoreboard;
@@ -61,225 +45,169 @@ public class StrawMapVotingComponent implements AutoSyncedComponent, ServerTicki
     }
 
     public boolean isVotingActive() {
-        return votingActive;
+        return stateMachine.isVotingActive();
     }
 
     public int getVotingTicksRemaining() {
-        return votingTicksRemaining;
+        return stateMachine.getVotingTicksRemaining();
     }
 
     public boolean isRoulettePhase() {
-        return roulettePhase;
+        return stateMachine.isRoulettePhase();
     }
 
     public int getRouletteTicksRemaining() {
-        return rouletteTicksRemaining;
+        return stateMachine.getRouletteTicksRemaining();
     }
 
     public int getSelectedMapIndex() {
-        return selectedMapIndex;
+        return stateMachine.getSelectedMapIndex();
     }
 
     public List<StrawMapVoteOption> getAvailableMaps() {
-        return availableMaps;
+        return stateMachine.getAvailableMaps();
     }
 
     public int[] getVoteCounts() {
-        return voteCounts;
+        return stateMachine.getVoteCounts();
     }
 
     public int getVotedMapIndex(UUID playerId) {
-        return playerVotes.getOrDefault(playerId, -1);
+        return stateMachine.getVotedMapIndex(playerId);
     }
 
     @Nullable
     public Identifier getLastSelectedDimension() {
-        return lastSelectedDimension;
+        return stateMachine.getLastSelectedDimension();
     }
 
     @Nullable
     public Identifier getLastSelectedGameMode() {
-        return lastSelectedGameMode;
+        return stateMachine.getLastSelectedGameMode();
     }
 
     public void startVoting(ServerWorld sourceWorld) {
-        if (server == null || votingActive || StrawMapRegistry.getInstance().maps().isEmpty()) {
+        if (server == null || stateMachine.isVotingActive() || StrawMapRegistry.getInstance().maps().isEmpty()) {
             return;
         }
 
         GameMode currentMode = GameWorldComponent.KEY.get(sourceWorld).getGameMode();
-        Identifier gameModeId = currentMode == null ? WatheGameModes.MURDER_ID : currentMode.identifier;
+        Identifier gameModeId = currentMode == null ? StrawMapEntry.DEFAULT_GAME_MODE : currentMode.identifier;
         int playerCount = server.getPlayerManager().getCurrentPlayerCount();
         List<StrawMapEntry> eligible = StrawMapRegistry.getInstance().eligibleMapsForGameMode(gameModeId, playerCount);
         if (eligible.isEmpty()) {
             return;
         }
 
-        resetForNewVote();
-        this.lastSelectedGameMode = gameModeId;
-        for (StrawMapEntry entry : eligible) {
-            this.availableMaps.add(StrawMapVoteOption.fromEntry(entry));
-        }
-        this.voteCounts = new int[availableMaps.size()];
-
-        if (availableMaps.size() == 1) {
-            this.selectedMapIndex = 0;
-            finishSelection();
-            return;
-        }
-
-        this.votingActive = true;
-        this.votingTicksRemaining = VOTING_DURATION_TICKS;
-        this.sync();
+        applyTransition(stateMachine.startVoting(voteOptionsFor(eligible), gameModeId));
     }
 
     public void castVote(UUID playerId, int mapIndex) {
-        if (!votingActive || roulettePhase || mapIndex < 0 || mapIndex >= availableMaps.size()) {
-            return;
-        }
-
-        Integer oldVote = playerVotes.put(playerId, mapIndex);
-        if (oldVote != null && oldVote >= 0 && oldVote < voteCounts.length) {
-            voteCounts[oldVote] = Math.max(0, voteCounts[oldVote] - 1);
-        }
-        voteCounts[mapIndex]++;
-
-        if (server != null && playerVotes.size() >= server.getPlayerManager().getCurrentPlayerCount()
-                && votingTicksRemaining > ALL_VOTED_REMAINING_TICKS) {
-            votingTicksRemaining = ALL_VOTED_REMAINING_TICKS;
-        }
-        this.sync();
+        int totalPlayerCount = server == null ? Integer.MAX_VALUE : server.getPlayerManager().getCurrentPlayerCount();
+        applyTransition(stateMachine.castVote(playerId, mapIndex, totalPlayerCount));
     }
 
     public boolean skipWaitingPhase() {
-        if (!votingActive) {
-            return false;
-        }
-        if (roulettePhase) {
-            finishSelection();
-        } else {
-            endVoting();
-        }
-        return true;
+        MapVotingStateMachine.Transition transition = stateMachine.skipWaitingPhase(random);
+        applyTransition(transition);
+        return transition.accepted();
     }
 
     @Override
     public void serverTick() {
-        if (!votingActive || server == null) {
+        if (server == null) {
             return;
         }
 
-        if (roulettePhase) {
-            if (--rouletteTicksRemaining <= 0) {
-                finishSelection();
-            }
-            return;
-        }
-
-        if (--votingTicksRemaining <= 0) {
-            endVoting();
-        } else if (votingTicksRemaining % 20 == 0) {
-            this.sync();
-        }
-    }
-
-    private void endVoting() {
-        selectedMapIndex = WeightedVotePicker.pick(availableMaps.size(), voteCounts, new Random());
-        if (selectedMapIndex < 0) {
-            reset();
-            return;
-        }
-        roulettePhase = true;
-        rouletteTicksRemaining = ROULETTE_DURATION_TICKS;
-        this.sync();
-    }
-
-    private void finishSelection() {
-        if (server == null || selectedMapIndex < 0 || selectedMapIndex >= availableMaps.size()) {
-            reset();
-            return;
-        }
-
-        StrawMapVoteOption selected = availableMaps.get(selectedMapIndex);
-        this.lastSelectedDimension = selected.dimensionId();
-        this.lastSelectedGameMode = selected.gameModeId();
-        this.votingActive = false;
-        this.sync();
-        StrawMapVoting.teleportAllPlayersToSelectedMap(server, selected);
-    }
-
-    private void resetForNewVote() {
-        votingActive = false;
-        votingTicksRemaining = 0;
-        roulettePhase = false;
-        rouletteTicksRemaining = 0;
-        selectedMapIndex = -1;
-        availableMaps.clear();
-        voteCounts = new int[0];
-        playerVotes.clear();
+        applyTransition(stateMachine.tick(random));
     }
 
     public void reset() {
-        resetForNewVote();
-        this.sync();
+        applyTransition(stateMachine.reset());
     }
 
     @Override
     public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-        votingActive = tag.getBoolean("VotingActive");
-        votingTicksRemaining = tag.getInt("VotingTicksRemaining");
-        roulettePhase = tag.getBoolean("RoulettePhase");
-        rouletteTicksRemaining = tag.getInt("RouletteTicksRemaining");
-        selectedMapIndex = tag.getInt("SelectedMapIndex");
-        lastSelectedDimension = tag.contains("LastSelectedDimension")
+        Identifier lastSelectedDimension = tag.contains("LastSelectedDimension")
                 ? Identifier.tryParse(tag.getString("LastSelectedDimension"))
                 : null;
-        lastSelectedGameMode = tag.contains("LastSelectedGameMode")
+        Identifier lastSelectedGameMode = tag.contains("LastSelectedGameMode")
                 ? Identifier.tryParse(tag.getString("LastSelectedGameMode"))
                 : null;
 
-        availableMaps.clear();
+        List<StrawMapVoteOption> availableMaps = new ArrayList<>();
         NbtList mapList = tag.getList("AvailableMaps", NbtElement.COMPOUND_TYPE);
         for (NbtElement element : mapList) {
             availableMaps.add(StrawMapVoteOption.fromNbt((NbtCompound) element));
         }
-        voteCounts = tag.contains("VoteCounts") ? tag.getIntArray("VoteCounts") : new int[availableMaps.size()];
-        playerVotes.clear();
+        int[] voteCounts = tag.contains("VoteCounts") ? tag.getIntArray("VoteCounts") : new int[availableMaps.size()];
+        Map<UUID, Integer> playerVotes = new HashMap<>();
         NbtList votes = tag.getList("PlayerVotes", NbtElement.COMPOUND_TYPE);
         for (NbtElement element : votes) {
             NbtCompound vote = (NbtCompound) element;
             playerVotes.put(vote.getUuid("PlayerId"), vote.getInt("MapIndex"));
         }
+
+        stateMachine.load(new MapVotingStateMachine.Snapshot(
+                tag.getBoolean("VotingActive"),
+                tag.getInt("VotingTicksRemaining"),
+                tag.getBoolean("RoulettePhase"),
+                tag.getInt("RouletteTicksRemaining"),
+                tag.getInt("SelectedMapIndex"),
+                availableMaps,
+                voteCounts,
+                playerVotes,
+                lastSelectedDimension,
+                lastSelectedGameMode
+        ));
     }
 
     @Override
     public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-        tag.putBoolean("VotingActive", votingActive);
-        tag.putInt("VotingTicksRemaining", votingTicksRemaining);
-        tag.putBoolean("RoulettePhase", roulettePhase);
-        tag.putInt("RouletteTicksRemaining", rouletteTicksRemaining);
-        tag.putInt("SelectedMapIndex", selectedMapIndex);
-        if (lastSelectedDimension != null) {
-            tag.putString("LastSelectedDimension", lastSelectedDimension.toString());
+        MapVotingStateMachine.Snapshot snapshot = stateMachine.snapshot();
+        tag.putBoolean("VotingActive", snapshot.votingActive());
+        tag.putInt("VotingTicksRemaining", snapshot.votingTicksRemaining());
+        tag.putBoolean("RoulettePhase", snapshot.roulettePhase());
+        tag.putInt("RouletteTicksRemaining", snapshot.rouletteTicksRemaining());
+        tag.putInt("SelectedMapIndex", snapshot.selectedMapIndex());
+        if (snapshot.lastSelectedDimension() != null) {
+            tag.putString("LastSelectedDimension", snapshot.lastSelectedDimension().toString());
         }
-        if (lastSelectedGameMode != null) {
-            tag.putString("LastSelectedGameMode", lastSelectedGameMode.toString());
+        if (snapshot.lastSelectedGameMode() != null) {
+            tag.putString("LastSelectedGameMode", snapshot.lastSelectedGameMode().toString());
         }
 
         NbtList mapList = new NbtList();
-        for (StrawMapVoteOption option : availableMaps) {
+        for (StrawMapVoteOption option : snapshot.availableMaps()) {
             mapList.add(option.toNbt());
         }
         tag.put("AvailableMaps", mapList);
-        tag.putIntArray("VoteCounts", voteCounts);
+        tag.putIntArray("VoteCounts", snapshot.voteCounts());
 
         NbtList votes = new NbtList();
-        for (Map.Entry<UUID, Integer> entry : playerVotes.entrySet()) {
+        for (Map.Entry<UUID, Integer> entry : snapshot.playerVotes().entrySet()) {
             NbtCompound vote = new NbtCompound();
             vote.putUuid("PlayerId", entry.getKey());
             vote.putInt("MapIndex", entry.getValue());
             votes.add(vote);
         }
         tag.put("PlayerVotes", votes);
+    }
+
+    private static List<StrawMapVoteOption> voteOptionsFor(List<StrawMapEntry> entries) {
+        List<StrawMapVoteOption> options = new ArrayList<>(entries.size());
+        for (StrawMapEntry entry : entries) {
+            options.add(StrawMapVoteOption.fromEntry(entry));
+        }
+        return options;
+    }
+
+    private void applyTransition(MapVotingStateMachine.Transition transition) {
+        if (transition.sync()) {
+            this.sync();
+        }
+        if (server != null) {
+            transition.selectedMap().ifPresent(selected -> StrawMapVoting.teleportAllPlayersToSelectedMap(server, selected));
+        }
     }
 }

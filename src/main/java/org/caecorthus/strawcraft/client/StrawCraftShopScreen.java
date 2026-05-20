@@ -25,10 +25,12 @@ public final class StrawCraftShopScreen extends Screen {
     private static final int PANEL_BORDER = 0xFFB8B8B8;
     private static final int PANEL_INNER_BORDER = 0xFF3B3B46;
     private static final int BALANCE_COLOR = 0xFFFFE07A;
+    private static final int SNAPSHOT_REFRESH_INTERVAL_TICKS = 10;
 
     private final WatheShopClientAdapter shopAdapter;
     private final List<ShopEntryButton> itemButtons = new ArrayList<>();
     private WatheShopClientAdapter.ShopSnapshot snapshot = WatheShopClientAdapter.ShopSnapshot.empty();
+    private int ticksUntilSnapshotRefresh;
     private int panelX;
     private int panelY;
     private int panelWidth;
@@ -51,6 +53,28 @@ public final class StrawCraftShopScreen extends Screen {
     protected void init() {
         this.itemButtons.clear();
         this.snapshot = this.shopAdapter.snapshot(this.client);
+        this.rebuildWidgetsFromSnapshot();
+    }
+
+    @Override
+    public void tick() {
+        if (this.client == null || --this.ticksUntilSnapshotRefresh > 0) {
+            return;
+        }
+        this.ticksUntilSnapshotRefresh = SNAPSHOT_REFRESH_INTERVAL_TICKS;
+
+        WatheShopClientAdapter.ShopSnapshot nextSnapshot = this.shopAdapter.snapshot(this.client);
+        if (this.snapshot.entryKeys().equals(nextSnapshot.entryKeys())) {
+            updateSnapshotState(nextSnapshot);
+        } else {
+            this.snapshot = nextSnapshot;
+            rebuildWidgetsFromSnapshot();
+        }
+    }
+
+    private void rebuildWidgetsFromSnapshot() {
+        this.clearChildren();
+        this.itemButtons.clear();
 
         int columns = ShopGridLayout.columnsFor(this.snapshot.entries().size(), this.width - 40);
         int rows = ShopGridLayout.rowsFor(this.snapshot.entries().size(), columns);
@@ -76,6 +100,13 @@ public final class StrawCraftShopScreen extends Screen {
             );
             this.itemButtons.add(button);
             this.addDrawableChild(button);
+        }
+    }
+
+    private void updateSnapshotState(WatheShopClientAdapter.ShopSnapshot nextSnapshot) {
+        this.snapshot = nextSnapshot;
+        for (int index = 0; index < this.itemButtons.size() && index < nextSnapshot.entryStates().size(); index++) {
+            this.itemButtons.get(index).setState(nextSnapshot.entryStates().get(index));
         }
     }
 
@@ -141,7 +172,7 @@ public final class StrawCraftShopScreen extends Screen {
     private static final class ShopEntryButton extends PressableWidget {
         private final int index;
         private final ShopEntry entry;
-        private final ShopEntryViewState state;
+        private ShopEntryViewState state;
         private final WatheShopClientAdapter shopAdapter;
 
         private ShopEntryButton(int x, int y, int index, ShopEntry entry, ShopEntryViewState state, WatheShopClientAdapter shopAdapter) {
@@ -150,6 +181,10 @@ public final class StrawCraftShopScreen extends Screen {
             this.entry = entry;
             this.state = state;
             this.shopAdapter = shopAdapter;
+        }
+
+        private void setState(ShopEntryViewState state) {
+            this.state = state;
         }
 
         @Override

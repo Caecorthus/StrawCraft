@@ -15,19 +15,20 @@ class WatheRoundParticipantLifecycleTest {
         WatheRoundParticipantLifecycle.DeathActions actions = WatheRoundParticipantLifecycle.afterVanillaDeath(state);
 
         assertTrue(actions.clearRuntimeState());
+        assertTrue(actions.clearDeathAttribution());
         assertTrue(actions.markDeadInWathe());
         assertTrue(actions.syncWatheRound());
     }
 
     @Test
     void vanillaDeathOnlyMarksPlayersWhoAreActiveWatheParticipants() {
-        assertEquals(new WatheRoundParticipantLifecycle.DeathActions(true, false, false),
+        assertEquals(new WatheRoundParticipantLifecycle.DeathActions(true, true, false, false),
                 WatheRoundParticipantLifecycle.afterVanillaDeath(
                         new WatheRoundParticipantLifecycle.ParticipantState(false, true, false, false)));
-        assertEquals(new WatheRoundParticipantLifecycle.DeathActions(true, false, false),
+        assertEquals(new WatheRoundParticipantLifecycle.DeathActions(true, true, false, false),
                 WatheRoundParticipantLifecycle.afterVanillaDeath(
                         new WatheRoundParticipantLifecycle.ParticipantState(true, false, false, false)));
-        assertEquals(new WatheRoundParticipantLifecycle.DeathActions(true, false, false),
+        assertEquals(new WatheRoundParticipantLifecycle.DeathActions(true, true, false, false),
                 WatheRoundParticipantLifecycle.afterVanillaDeath(
                         new WatheRoundParticipantLifecycle.ParticipantState(true, true, true, false)));
     }

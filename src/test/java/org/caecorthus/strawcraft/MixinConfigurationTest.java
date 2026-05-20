@@ -36,6 +36,7 @@ class MixinConfigurationTest {
 
         assertTrue(serverPlayerMixin.contains("ModifyArgs"));
         assertTrue(serverPlayerMixin.contains("wathe$interceptVanillaDeath"));
+        assertTrue(serverPlayerMixin.contains("WatheRoundParticipantLifecycle.afterVanillaDeath"));
         assertTrue(serverPlayerMixin.contains("consumeDeathAttribution"));
         assertTrue(serverPlayerMixin.contains("args.set(2"));
         assertTrue(serverPlayerMixin.contains("args.set(3"));

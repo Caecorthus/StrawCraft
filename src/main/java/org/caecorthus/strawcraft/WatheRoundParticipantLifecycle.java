@@ -8,10 +8,11 @@ public final class WatheRoundParticipantLifecycle {
     }
 
     public static void afterVanillaDeath(ServerPlayerEntity player) {
-        TaczAmmoRefillTimers.clearPlayer(player);
-
         GameWorldComponent game = GameWorldComponent.KEY.get(player.getWorld());
         DeathActions actions = afterVanillaDeath(participantState(player, game));
+        if (actions.clearRuntimeState()) {
+            clearRuntimeState(player);
+        }
         if (actions.markDeadInWathe()) {
             // Keep Wathe's win-condition bookkeeping aware of vanilla deaths.
             game.markPlayerDead(player.getUuid());
@@ -22,12 +23,16 @@ public final class WatheRoundParticipantLifecycle {
     }
 
     public static boolean shouldTrackRuntimeState(ServerPlayerEntity player, GameWorldComponent game) {
-        return shouldTrackRuntimeState(participantState(player, game));
+        boolean shouldTrack = shouldTrackRuntimeState(participantState(player, game));
+        if (!shouldTrack) {
+            clearRuntimeState(player);
+        }
+        return shouldTrack;
     }
 
     static DeathActions afterVanillaDeath(ParticipantState state) {
         boolean markDeadInWathe = state.roundRunning() && state.hasRole() && !state.alreadyDead();
-        return new DeathActions(true, markDeadInWathe, markDeadInWathe);
+        return new DeathActions(true, true, markDeadInWathe, markDeadInWathe);
     }
 
     static boolean shouldTrackRuntimeState(ParticipantState state) {
@@ -43,9 +48,14 @@ public final class WatheRoundParticipantLifecycle {
         );
     }
 
+    private static void clearRuntimeState(ServerPlayerEntity player) {
+        TaczAmmoRefillTimers.clearPlayer(player);
+        WatheDeathReasonTracker.clearDeathReason(player.getUuid());
+    }
+
     record ParticipantState(boolean roundRunning, boolean hasRole, boolean alreadyDead, boolean playerAlive) {
     }
 
-    record DeathActions(boolean clearRuntimeState, boolean markDeadInWathe, boolean syncWatheRound) {
+    record DeathActions(boolean clearRuntimeState, boolean clearDeathAttribution, boolean markDeadInWathe, boolean syncWatheRound) {
     }
 }
