@@ -1,0 +1,111 @@
+package org.caecorthus.strawcraft;
+
+import dev.doctor4t.wathe.api.Role;
+import net.minecraft.util.Identifier;
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class StrawRoleMeaningTest {
+    @Test
+    void killerCapableRoleCanUseKillerShopAndReceivesKillerAmmo() {
+        Role role = role(Identifier.of("wathe", "killer"), false, true);
+
+        assertTrue(canUseKillerShop(role));
+        assertEquals(Optional.of(GunAmmoFaction.KILLER), ammoFactionFor(role));
+    }
+
+    @Test
+    void innocentRoleReceivesCivilianAmmoWithoutKillerShopAccess() {
+        Role role = role(Identifier.of("wathe", "civilian"), true, false);
+
+        assertFalse(canUseKillerShop(role));
+        assertEquals(Optional.of(GunAmmoFaction.CIVILIAN), ammoFactionFor(role));
+    }
+
+    @Test
+    void vigilanteIdReceivesVigilanteLoadout() {
+        Role role = role(WatheRoleIds.VIGILANTE, true, false);
+
+        assertTrue(receivesVigilanteLoadout(role));
+        assertFalse(canUseKillerShop(role));
+    }
+
+    @Test
+    void discoveryCivilianDoesNotReceivePrivilegedBehaviorOrAmmoFaction() {
+        Role role = role(WatheRoleIds.DISCOVERY_CIVILIAN, true, false);
+
+        assertFalse(canUseKillerShop(role));
+        assertTrue(ammoFactionFor(role).isEmpty());
+        assertFalse(receivesVigilanteLoadout(role));
+    }
+
+    @Test
+    void nullAndUnknownRoleDoNotReceivePrivilegedBehavior() {
+        Role unknownRole = role(Identifier.of("strawcraft", "unknown_fixture"), false, false);
+
+        assertFalse(canUseKillerShop(null));
+        assertFalse(receivesVigilanteLoadout(null));
+        assertTrue(ammoFactionFor(null).isEmpty());
+        assertFalse(canUseKillerShop(unknownRole));
+        assertFalse(receivesVigilanteLoadout(unknownRole));
+        assertTrue(ammoFactionFor(unknownRole).isEmpty());
+    }
+
+    private static boolean canUseKillerShop(Role role) {
+        return invokeBoolean("canUseKillerShop", role);
+    }
+
+    private static boolean receivesVigilanteLoadout(Role role) {
+        return invokeBoolean("receivesVigilanteLoadout", role);
+    }
+
+    private static Optional<GunAmmoFaction> ammoFactionFor(Role role) {
+        Object result = invoke("ammoFactionFor", role);
+        assertInstanceOf(Optional.class, result, "ammoFactionFor should return Optional<GunAmmoFaction>");
+        @SuppressWarnings("unchecked")
+        Optional<GunAmmoFaction> faction = (Optional<GunAmmoFaction>) result;
+        return faction;
+    }
+
+    private static boolean invokeBoolean(String methodName, Role role) {
+        Object result = invoke(methodName, role);
+        assertInstanceOf(Boolean.class, result, methodName + " should return boolean");
+        return (Boolean) result;
+    }
+
+    private static Object invoke(String methodName, Role role) {
+        try {
+            Method method = meaningClass().getDeclaredMethod(methodName, Role.class);
+            method.setAccessible(true);
+            return method.invoke(null, role);
+        } catch (NoSuchMethodException e) {
+            return fail("StrawRoleMeaning should expose " + methodName + "(Role)");
+        } catch (IllegalAccessException e) {
+            return fail("StrawRoleMeaning." + methodName + "(Role) should be callable from StrawCraft tests");
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            return fail("StrawRoleMeaning." + methodName + "(Role) should not throw, but threw " + cause);
+        }
+    }
+
+    private static Class<?> meaningClass() {
+        try {
+            return Class.forName("org.caecorthus.strawcraft.StrawRoleMeaning");
+        } catch (ClassNotFoundException e) {
+            return fail("StrawRoleMeaning should centralize StrawCraft behavior meaning for Wathe roles");
+        }
+    }
+
+    private static Role role(Identifier id, boolean innocent, boolean killerTools) {
+        return new Role(id, 0xFFFFFF, innocent, killerTools, Role.MoodType.REAL, 200, false);
+    }
+}

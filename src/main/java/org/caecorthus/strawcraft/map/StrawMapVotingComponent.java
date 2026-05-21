@@ -1,7 +1,5 @@
 package org.caecorthus.strawcraft.map;
 
-import dev.doctor4t.wathe.api.GameMode;
-import dev.doctor4t.wathe.cca.GameWorldComponent;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -94,8 +92,7 @@ public class StrawMapVotingComponent implements AutoSyncedComponent, ServerTicki
             return;
         }
 
-        GameMode currentMode = GameWorldComponent.KEY.get(sourceWorld).getGameMode();
-        Identifier gameModeId = currentMode == null ? StrawMapEntry.DEFAULT_GAME_MODE : currentMode.identifier;
+        Identifier gameModeId = StrawMapVoting.currentGameModeId(sourceWorld);
         int playerCount = server.getPlayerManager().getCurrentPlayerCount();
         List<StrawMapEntry> eligible = StrawMapRegistry.getInstance().eligibleMapsForGameMode(gameModeId, playerCount);
         if (eligible.isEmpty()) {
@@ -213,7 +210,7 @@ public class StrawMapVotingComponent implements AutoSyncedComponent, ServerTicki
             this.sync();
         }
         if (server != null) {
-            transition.selectedMap().ifPresent(selected -> StrawMapVoting.teleportAllPlayersToSelectedMap(server, selected));
+            transition.selectedMap().ifPresent(selected -> StrawMapVoting.applySelectedMap(server, selected));
         }
     }
 }

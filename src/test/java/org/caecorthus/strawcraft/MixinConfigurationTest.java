@@ -54,6 +54,37 @@ class MixinConfigurationTest {
     }
 
     @Test
+    void officialWatheMixinTargetsDoNotUseParoxOnlySoftTargets() throws IOException {
+        assertProductionSurfaceDoesNotContain("wathe$cancelApplyDamage");
+        assertProductionSurfaceDoesNotContain("wathe$restrictJump");
+    }
+
+    @Test
+    void killPlayerRedirectDoesNotUseParoxServerPlayerDescriptor() throws IOException {
+        assertProductionSurfaceDoesNotContain(
+                "Ldev/doctor4t/wathe/game/GameFunctions;killPlayer("
+                        + "Lnet/minecraft/server/network/ServerPlayerEntity;Z"
+                        + "Lnet/minecraft/server/network/ServerPlayerEntity;"
+                        + "Lnet/minecraft/util/Identifier;)V"
+        );
+    }
+
+    @Test
+    void killPlayerRedirectUsesOfficialWathePlayerDescriptor() throws IOException {
+        String grenadeMixin = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/mixin/GrenadeEntityMixin.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(grenadeMixin.contains(
+                "Ldev/doctor4t/wathe/game/GameFunctions;killPlayer("
+                        + "Lnet/minecraft/entity/player/PlayerEntity;Z"
+                        + "Lnet/minecraft/entity/player/PlayerEntity;"
+                        + "Lnet/minecraft/util/Identifier;)V"
+        ), "GrenadeEntityMixin should target official Wathe killPlayer(PlayerEntity, boolean, PlayerEntity, Identifier)");
+    }
+
+    @Test
     void customShopScreenDoesNotInstantiateWatheLimitedInventoryUi() throws IOException {
         String shopScreen = Files.readString(
                 Path.of("src/main/java/org/caecorthus/strawcraft/client/StrawCraftShopScreen.java"),
@@ -71,13 +102,45 @@ class MixinConfigurationTest {
         assertFalse(shopScreen.contains("StoreBuyPayload"));
         assertFalse(slotRenderer.contains("LimitedInventoryScreen"));
         assertFalse(slotRenderer.contains("StoreItemWidget"));
+        assertFalse(slotRenderer.contains("dev.doctor4t.wathe.util.ShopEntry"));
+        assertFalse(slotRenderer.contains("StrawShopEntry"));
+        assertFalse(slotRenderer.contains("entry.type()"));
+        assertFalse(slotRenderer.contains("displayStackFor"));
         assertTrue(slotRenderer.contains("state.type().getTexture()"));
+        assertTrue(slotRenderer.contains("state.displayStack()"));
 
         String adapter = Files.readString(
                 Path.of("src/main/java/org/caecorthus/strawcraft/client/WatheShopClientAdapter.java"),
                 StandardCharsets.UTF_8
         );
         assertTrue(adapter.contains("canUseKillerFeatures"));
+    }
+
+    @Test
+    void customShopScreenBuysFromEntryViewStateIndex() throws IOException {
+        String shopScreen = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/client/StrawCraftShopScreen.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(shopScreen.contains("state.purchaseIndex()"));
+        assertFalse(shopScreen.contains("this.shopAdapter.buy(this.index)"));
+    }
+
+    @Test
+    void clientShopAdapterUsesAlreadyMaterializedOfficialEntries() throws IOException {
+        String adapter = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/client/WatheShopClientAdapter.java"),
+                StandardCharsets.UTF_8
+        );
+        String officialBridge = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/WatheOfficialBridge.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertFalse(adapter.contains("StrawShopEvents.modifyEntries"));
+        assertTrue(adapter.contains("GameConstants.SHOP_ENTRIES"));
+        assertTrue(officialBridge.contains("StrawShopEvents.modifyEntries(null, originalEntries)"));
     }
 
     @Test
@@ -143,5 +206,10 @@ class MixinConfigurationTest {
                 assertFalse(source.contains(forbidden), path + " should not contain " + forbidden);
             }
         }
+    }
+
+    private static void assertProductionSurfaceDoesNotContain(String forbidden) throws IOException {
+        assertSourceTreeDoesNotContain(forbidden);
+        assertFalse(readMixinConfig().contains(forbidden), "mixin config should not contain " + forbidden);
     }
 }

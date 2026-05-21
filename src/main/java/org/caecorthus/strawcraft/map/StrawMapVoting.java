@@ -55,7 +55,12 @@ public final class StrawMapVoting {
         return component(server.getScoreboard()).isVotingActive();
     }
 
-    public static void teleportAllPlayersToSelectedMap(MinecraftServer server, StrawMapVoteOption selected) {
+    static Identifier currentGameModeId(ServerWorld sourceWorld) {
+        GameMode currentMode = GameWorldComponent.KEY.get(sourceWorld).getGameMode();
+        return currentMode == null ? StrawMapEntry.DEFAULT_GAME_MODE : currentMode.identifier;
+    }
+
+    static void applySelectedMap(MinecraftServer server, StrawMapVoteOption selected) {
         ServerWorld targetWorld = worldFor(server, selected.dimensionId());
         if (targetWorld == null) {
             StrawCraft.LOGGER.warn("Cannot teleport map voters: target dimension {} is not loaded", selected.dimensionId());

@@ -26,13 +26,6 @@ public abstract class PlayerEntityMixin {
         handlerCallback.cancel();
     }
 
-    @Inject(method = "wathe$cancelApplyDamage", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
-    private void strawcraft$allowVanillaDamage(DamageSource source, float amount, CallbackInfo originalDamageCallback, CallbackInfo handlerCallback) {
-        // Let PlayerEntity.applyDamage subtract hearts normally during a Wathe round.
-        // 让 Wathe 局内的 PlayerEntity.applyDamage 仍然按原版方式扣红心。
-        handlerCallback.cancel();
-    }
-
     @Inject(method = "applyDamage", at = @At("HEAD"))
     private void strawcraft$rememberTaczBulletDeathReason(DamageSource source, float amount, CallbackInfo callback) {
         PlayerEntity player = (PlayerEntity) (Object) this;

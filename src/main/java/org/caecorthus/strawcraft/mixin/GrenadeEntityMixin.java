@@ -4,6 +4,7 @@ import dev.doctor4t.wathe.entity.GrenadeEntity;
 import dev.doctor4t.wathe.game.GameFunctions;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -30,20 +31,24 @@ public abstract class GrenadeEntityMixin {
 
     @Redirect(
             method = "onCollision",
-            at = @At(value = "INVOKE", target = "Ldev/doctor4t/wathe/game/GameFunctions;killPlayer(Lnet/minecraft/server/network/ServerPlayerEntity;ZLnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/util/Identifier;)V")
+            at = @At(value = "INVOKE", target = "Ldev/doctor4t/wathe/game/GameFunctions;killPlayer(Lnet/minecraft/entity/player/PlayerEntity;ZLnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Identifier;)V")
     )
-    private void strawcraft$applyVanillaBlastDamage(ServerPlayerEntity victim, boolean spawnBody, ServerPlayerEntity killer, Identifier deathReason) {
+    private void strawcraft$applyVanillaBlastDamage(PlayerEntity victim, boolean spawnBody, PlayerEntity killer, Identifier deathReason) {
+        if (!(victim instanceof ServerPlayerEntity serverVictim)) {
+            return;
+        }
+
         Entity grenade = (Entity) (Object) this;
         Vec3d center = grenade.getPos();
-        float exposure = Explosion.getExposure(center, victim);
-        double distance = victim.getBoundingBox().getCenter().distanceTo(center);
+        float exposure = Explosion.getExposure(center, serverVictim);
+        double distance = serverVictim.getBoundingBox().getCenter().distanceTo(center);
         float damage = GrenadeExplosionDamage.damageAt(distance, exposure);
         if (damage <= 0.0f) {
             return;
         }
 
-        DamageSource source = victim.getDamageSources().explosion(grenade, killer);
-        WatheDeathReasonTracker.damageWithReason(victim, deathReason, source, damage);
+        DamageSource source = serverVictim.getDamageSources().explosion(grenade, killer);
+        WatheDeathReasonTracker.damageWithReason(serverVictim, deathReason, source, damage);
     }
 
     private boolean strawcraft$isPlayerInsideSphericalBlast(ServerPlayerEntity player) {

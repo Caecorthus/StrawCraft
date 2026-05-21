@@ -8,7 +8,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +19,7 @@ public final class TaczAmmoRefillTimers {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaczAmmoRefillTimers.class);
     private static final int SCAN_INTERVAL_TICKS = 10;
     private static final AmmoRefillCycleManager CYCLE_MANAGER = new AmmoRefillCycleManager();
-    private static final Set<Identifier> WARNED_AMBIGUOUS_ROLE_IDS = new HashSet<>();
+    private static final Set<String> WARNED_AMBIGUOUS_ROLES = new HashSet<>();
     private static long serverTicks;
 
     private TaczAmmoRefillTimers() {
@@ -30,7 +29,7 @@ public final class TaczAmmoRefillTimers {
         ServerTickEvents.END_SERVER_TICK.register(TaczAmmoRefillTimers::tickServer);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             CYCLE_MANAGER.clearAll();
-            WARNED_AMBIGUOUS_ROLE_IDS.clear();
+            WARNED_AMBIGUOUS_ROLES.clear();
             serverTicks = 0;
         });
     }
@@ -74,8 +73,9 @@ public final class TaczAmmoRefillTimers {
 
     private static Optional<GunAmmoFaction> resolveFaction(GameWorldComponent game, ServerPlayerEntity player) {
         Role role = game.getRole(player);
-        if (GunAmmoFactionTags.isAmbiguous(role) && WARNED_AMBIGUOUS_ROLE_IDS.add(role.identifier())) {
-            LOGGER.warn("Wathe role {} matches multiple StrawCraft gun ammo faction tags; automatic ammo refill is disabled for it.", role.identifier());
+        String roleDescription = StrawRoleMeaning.describeForLog(role);
+        if (GunAmmoFactionTags.isAmbiguous(role) && WARNED_AMBIGUOUS_ROLES.add(roleDescription)) {
+            LOGGER.warn("Wathe role {} matches multiple StrawCraft gun ammo faction tags; automatic ammo refill is disabled for it.", roleDescription);
         }
         return GunAmmoFactionTags.resolve(role);
     }

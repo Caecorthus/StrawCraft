@@ -9,8 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public final class GunAmmoFactionTags {
-    private static final GunAmmoFactionTags DEFAULT = GunAmmoFactionTags.empty()
-            .withPoliceRole(WatheRoleIds.VIGILANTE);
+    private static final GunAmmoFactionTags DEFAULT = StrawRoleMeaning.defaultAmmoFactionTags();
 
     private final Set<Identifier> policeRoles;
     private final Set<Identifier> civilianRoles;
@@ -59,27 +58,7 @@ public final class GunAmmoFactionTags {
     }
 
     private EnumSet<GunAmmoFaction> matchingFactions(Role role) {
-        if (role == null || WatheRoleIds.DISCOVERY_CIVILIAN.equals(role.identifier())) {
-            return EnumSet.noneOf(GunAmmoFaction.class);
-        }
-
-        EnumSet<GunAmmoFaction> matches = EnumSet.noneOf(GunAmmoFaction.class);
-        Identifier roleId = role.identifier();
-        if (policeRoles.contains(roleId)) {
-            matches.add(GunAmmoFaction.POLICE);
-        }
-        if (killerRoles.contains(roleId) || role.canUseKiller()) {
-            matches.add(GunAmmoFaction.KILLER);
-        }
-        if (civilianRoles.contains(roleId)) {
-            matches.add(GunAmmoFaction.CIVILIAN);
-        } else if (role.isInnocent() && !matches.contains(GunAmmoFaction.POLICE) && !matches.contains(GunAmmoFaction.KILLER)) {
-            // Civilian is the broad good-player fallback; special police/killer tags stay explicit.
-            // Civilian 是好人阵营的宽泛兜底；警察、杀手这类特殊标签仍然显式匹配。
-            matches.add(GunAmmoFaction.CIVILIAN);
-        }
-
-        return matches;
+        return StrawRoleMeaning.matchingAmmoFactions(role, policeRoles, civilianRoles, killerRoles);
     }
 
     private GunAmmoFactionTags copyWith(Identifier roleId, GunAmmoFaction faction) {

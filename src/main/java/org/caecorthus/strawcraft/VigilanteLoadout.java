@@ -12,7 +12,7 @@ public final class VigilanteLoadout {
     }
 
     static boolean shouldReplaceAssignedRole(Role role) {
-        return role != null && WatheRoleIds.VIGILANTE.equals(role.identifier());
+        return StrawRoleMeaning.receivesVigilanteLoadout(role);
     }
 
     static void giveAssignedLoadout(PlayerEntity player) {
