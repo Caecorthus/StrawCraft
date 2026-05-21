@@ -47,6 +47,12 @@ public final class WatheOfficialBridge {
             if (player == null) {
                 return;
             }
+            StrawPlayerShopComponent shopState = StrawPlayerShopComponent.KEY.get(player);
+            shopState.reset();
+            StrawShopEvents.modifyEntries(player, GameConstants.SHOP_ENTRIES)
+                    .forEach(entry -> StrawShopEntry.metadata(entry)
+                            .ifPresent(strawEntry -> shopState.ensureEntry(strawEntry, world.getTime())));
+            shopState.sync();
             StrawRoleEvents.ROLE_ASSIGNED.invoker().onRoleAssigned(player, role);
         });
     }

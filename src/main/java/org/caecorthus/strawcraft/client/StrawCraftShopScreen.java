@@ -1,6 +1,5 @@
 package org.caecorthus.strawcraft.client;
 
-import dev.doctor4t.wathe.util.ShopEntry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -12,6 +11,7 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
@@ -97,13 +97,11 @@ public final class StrawCraftShopScreen extends Screen {
             // The click payload is only a slot number; Wathe re-checks it server-side.
             // 按钮顺序必须和 Wathe 适配层快照保持一致。
             // 点击时只发送槽位编号，Wathe 会在服务端重新校验。
-            ShopEntry entry = this.snapshot.entries().get(index);
+            ShopEntryViewState state = this.snapshot.entryStates().get(index);
             ShopEntryButton button = new ShopEntryButton(
                     ShopGridLayout.slotX(this.panelX, index, columns),
                     ShopGridLayout.slotY(this.panelY, index, columns),
-                    index,
-                    entry,
-                    this.snapshot.entryStates().get(index),
+                    state,
                     this.shopAdapter
             );
             this.itemButtons.add(button);
@@ -160,7 +158,10 @@ public final class StrawCraftShopScreen extends Screen {
     private void drawHoveredTooltip(DrawContext context, int mouseX, int mouseY) {
         for (ShopEntryButton button : this.itemButtons) {
             if (button.isHovered()) {
-                context.drawItemTooltip(this.textRenderer, button.entry.stack(), mouseX, mouseY);
+                ItemStack displayStack = button.state.displayStack();
+                if (displayStack != null) {
+                    context.drawItemTooltip(this.textRenderer, displayStack, mouseX, mouseY);
+                }
                 return;
             }
         }
@@ -178,15 +179,11 @@ public final class StrawCraftShopScreen extends Screen {
     }
 
     private static final class ShopEntryButton extends PressableWidget {
-        private final int index;
-        private final ShopEntry entry;
         private ShopEntryViewState state;
         private final WatheShopClientAdapter shopAdapter;
 
-        private ShopEntryButton(int x, int y, int index, ShopEntry entry, ShopEntryViewState state, WatheShopClientAdapter shopAdapter) {
-            super(x, y, ShopGridLayout.SLOT_SIZE, ShopGridLayout.SLOT_SIZE, entry.stack().getName());
-            this.index = index;
-            this.entry = entry;
+        private ShopEntryButton(int x, int y, ShopEntryViewState state, WatheShopClientAdapter shopAdapter) {
+            super(x, y, ShopGridLayout.SLOT_SIZE, ShopGridLayout.SLOT_SIZE, displayNameFor(state));
             this.state = state;
             this.shopAdapter = shopAdapter;
         }
@@ -197,7 +194,7 @@ public final class StrawCraftShopScreen extends Screen {
 
         @Override
         public void onPress() {
-            this.shopAdapter.buy(this.index);
+            this.shopAdapter.buy(this.state.purchaseIndex());
         }
 
         @Override
@@ -206,12 +203,17 @@ public final class StrawCraftShopScreen extends Screen {
 
             int x = getX();
             int y = getY();
-            WatheShopSlotRenderer.render(context, MinecraftClient.getInstance().textRenderer, this.entry, this.state, x, y);
+            WatheShopSlotRenderer.render(context, MinecraftClient.getInstance().textRenderer, this.state, x, y);
         }
 
         @Override
         protected void appendClickableNarrations(NarrationMessageBuilder builder) {
             this.appendDefaultNarrations(builder);
+        }
+
+        private static Text displayNameFor(ShopEntryViewState state) {
+            ItemStack displayStack = state.displayStack();
+            return displayStack == null ? Text.empty() : displayStack.getName();
         }
     }
 }

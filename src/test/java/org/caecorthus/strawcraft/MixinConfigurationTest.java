@@ -71,7 +71,7 @@ class MixinConfigurationTest {
         assertFalse(shopScreen.contains("StoreBuyPayload"));
         assertFalse(slotRenderer.contains("LimitedInventoryScreen"));
         assertFalse(slotRenderer.contains("StoreItemWidget"));
-        assertTrue(slotRenderer.contains("entry.type().getTexture()"));
+        assertTrue(slotRenderer.contains("state.type().getTexture()"));
 
         String adapter = Files.readString(
                 Path.of("src/main/java/org/caecorthus/strawcraft/client/WatheShopClientAdapter.java"),

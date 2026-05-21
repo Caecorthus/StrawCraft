@@ -14,7 +14,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import org.caecorthus.strawcraft.api.StrawShopEvents;
+import org.caecorthus.strawcraft.StrawPlayerShopComponent;
+import org.caecorthus.strawcraft.StrawShopEntry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,11 @@ public final class WatheShopClientAdapter {
         if (player == null) {
             return ShopSnapshot.empty();
         }
-        return snapshotFrom(entriesFor(player), new PlayerShopState(PlayerShopComponent.KEY.get(player)));
+        return snapshotFrom(entriesFor(player), new PlayerShopState(
+                PlayerShopComponent.KEY.get(player),
+                StrawPlayerShopComponent.KEY.get(player),
+                player.getWorld().getTime()
+        ));
     }
 
     public void buy(int index) {
@@ -47,8 +52,9 @@ public final class WatheShopClientAdapter {
     public static ShopSnapshot snapshotFrom(List<ShopEntry> entries, ShopState shopState) {
         List<ShopEntryViewState> entryStates = new ArrayList<>(entries.size());
         List<EntryKey> entryKeys = new ArrayList<>(entries.size());
-        for (ShopEntry entry : entries) {
-            entryStates.add(viewStateFor(entry, shopState));
+        for (int index = 0; index < entries.size(); index++) {
+            ShopEntry entry = entries.get(index);
+            entryStates.add(viewStateFor(index, entry, shopState));
             // Entry keys capture identity only; price/cooldown/stock can update without
             // rebuilding buttons and disturbing Wathe's server-side StoreBuyPayload(index).
             // 条目键只记录身份；价格、冷却和库存可以更新，
@@ -59,18 +65,19 @@ public final class WatheShopClientAdapter {
         return new ShopSnapshot(List.copyOf(entries), balance, List.copyOf(entryStates), List.copyOf(entryKeys));
     }
 
-    private static ShopEntryViewState viewStateFor(ShopEntry entry, ShopState shopState) {
+    private static ShopEntryViewState viewStateFor(int purchaseIndex, ShopEntry entry, ShopState shopState) {
+        ItemStack displayStack = StrawShopEntry.displayStackFor(entry);
+        ItemStack actualStack = StrawShopEntry.actualStackFor(entry);
         if (shopState == null) {
-            return ShopEntryViewState.withoutShop(entry.price());
+            return ShopEntryViewState.withoutShop(purchaseIndex, entry.type(), displayStack, actualStack, entry.price());
         }
-        return ShopEntryViewState.fromSnapshot(new ShopEntryViewState.Snapshot(
-                entry.price(),
-                false,
-                0,
-                -1,
-                -1,
-                true
-        ));
+        return ShopEntryViewState.fromSnapshot(
+                purchaseIndex,
+                entry.type(),
+                displayStack,
+                actualStack,
+                shopState.snapshotFor(entry)
+        );
     }
 
     private static ClientPlayerEntity player(MinecraftClient client) {
@@ -82,7 +89,12 @@ public final class WatheShopClientAdapter {
             return List.of();
         }
         try {
-            return StrawShopEvents.modifyEntries(player, GameConstants.SHOP_ENTRIES);
+            // The official/global list is rewritten once during Wathe initialization.
+            // Client snapshots only render that materialized order so purchase indices
+            // stay aligned with Wathe's server-side buy path.
+            // 官方/全局列表会在 Wathe 初始化时统一改写一次。
+            // 客户端快照只渲染这个已物化顺序，确保购买编号和 Wathe 服务端路径一致。
+            return List.copyOf(GameConstants.SHOP_ENTRIES);
         } catch (RuntimeException ignored) {
             // Wathe can throw while client-side role/shop components are still catching up.
             // 客户端角色或商店组件还在同步时，Wathe 可能会暂时抛错。
@@ -102,12 +114,38 @@ public final class WatheShopClientAdapter {
 
     public interface ShopState {
         OptionalInt balance();
+
+        ShopEntryViewState.Snapshot snapshotFor(ShopEntry entry);
     }
 
-    private record PlayerShopState(PlayerShopComponent shop) implements ShopState {
+    private record PlayerShopState(PlayerShopComponent shop, StrawPlayerShopComponent strawShop, long worldTime) implements ShopState {
         @Override
         public OptionalInt balance() {
             return OptionalInt.of(shop.balance);
+        }
+
+        @Override
+        public ShopEntryViewState.Snapshot snapshotFor(ShopEntry entry) {
+            return StrawShopEntry.metadata(entry)
+                    .map(strawEntry -> {
+                        strawShop.ensureEntry(strawEntry, worldTime);
+                        return new ShopEntryViewState.Snapshot(
+                                entry.price(),
+                                strawShop.isOnCooldown(strawEntry.id(), worldTime),
+                                strawShop.getRemainingCooldown(strawEntry.id(), worldTime),
+                                strawEntry.maxStock(),
+                                strawShop.getRemainingStock(strawEntry.id()),
+                                strawShop.isInStock(strawEntry.id())
+                        );
+                    })
+                    .orElseGet(() -> new ShopEntryViewState.Snapshot(
+                            entry.price(),
+                            false,
+                            0,
+                            -1,
+                            -1,
+                            true
+                    ));
         }
     }
 
@@ -123,15 +161,19 @@ public final class WatheShopClientAdapter {
     }
 
     public record EntryKey(
+            String id,
             int price,
             ShopEntry.Type type,
-            StackKey stack
+            StackKey displayStack,
+            StackKey actualStack
     ) {
         private static EntryKey from(ShopEntry entry) {
             return new EntryKey(
+                    StrawShopEntry.idFor(entry),
                     entry.price(),
                     entry.type(),
-                    StackKey.from(entry.stack())
+                    StackKey.from(StrawShopEntry.displayStackFor(entry)),
+                    StackKey.from(StrawShopEntry.actualStackFor(entry))
             );
         }
     }

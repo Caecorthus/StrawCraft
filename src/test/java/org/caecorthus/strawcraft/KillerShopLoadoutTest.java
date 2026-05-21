@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 class KillerShopLoadoutTest {
@@ -41,7 +42,7 @@ class KillerShopLoadoutTest {
     @Test
     void rewritesWatheKillerShopEntriesWithoutReorderingSurvivors() {
         ShopEntry knife = new ShopEntry(null, 100, ShopEntry.Type.WEAPON);
-        ShopEntry revolver = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
+        ShopEntry revolver = new StrawShopEntry("revolver", null, null, 300, ShopEntry.Type.WEAPON, 40, 20, 2);
         ShopEntry grenade = new ShopEntry(null, 350, ShopEntry.Type.WEAPON);
         ShopEntry derringer = new ShopEntry(null, 200, ShopEntry.Type.WEAPON);
 
@@ -53,16 +54,34 @@ class KillerShopLoadoutTest {
         );
 
         assertEquals(3, rewritten.size());
-        assertSame(knife, rewritten.get(0));
-        assertSame(grenade, rewritten.get(2));
+        assertEquals(100, rewritten.get(0).price());
+        assertEquals(350, rewritten.get(2).price());
+        assertInstanceOf(StrawShopEntry.class, rewritten.get(0));
+        assertInstanceOf(StrawShopEntry.class, rewritten.get(2));
 
         ShopEntry replacement = rewritten.get(1);
+        assertInstanceOf(StrawShopEntry.class, replacement);
+        StrawShopEntry p320 = (StrawShopEntry) replacement;
+        assertEquals("p320", p320.id());
         assertSame(ShopEntry.Type.WEAPON, replacement.type());
         assertEquals(300, replacement.price());
+        assertEquals(40, p320.cooldownTicks());
+        assertEquals(20, p320.initialCooldownTicks());
+        assertEquals(2, p320.maxStock());
+        assertSame(p320.displayStack(), p320.actualStack());
     }
 
     private static Optional<ShopEntry> p320ReplacementFor(ShopEntry original) {
         KillerShopLoadout.ReplacementSettings settings = KillerShopLoadout.replacementSettingsFor(original);
-        return Optional.of(new ShopEntry(null, settings.price(), settings.type()));
+        return Optional.of(new StrawShopEntry(
+                settings.id(),
+                null,
+                null,
+                settings.price(),
+                settings.type(),
+                settings.cooldownTicks(),
+                settings.initialCooldownTicks(),
+                settings.maxStock()
+        ));
     }
 }

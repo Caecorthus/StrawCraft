@@ -1,8 +1,15 @@
 package org.caecorthus.strawcraft.client;
 
+import dev.doctor4t.wathe.util.ShopEntry;
+import net.minecraft.item.ItemStack;
+
 import java.util.Optional;
 
 public record ShopEntryViewState(
+        int purchaseIndex,
+        ShopEntry.Type type,
+        ItemStack displayStack,
+        ItemStack actualStack,
         boolean active,
         String priceText,
         Optional<Status> cooldownStatus,
@@ -14,12 +21,45 @@ public record ShopEntryViewState(
     private static final int TICKS_PER_SECOND = 20;
 
     public static ShopEntryViewState withoutShop(int price) {
-        return new ShopEntryViewState(true, String.valueOf(price), Optional.empty(), Optional.empty());
+        return withoutShop(-1, null, null, null, price);
+    }
+
+    public static ShopEntryViewState withoutShop(
+            int purchaseIndex,
+            ShopEntry.Type type,
+            ItemStack displayStack,
+            ItemStack actualStack,
+            int price
+    ) {
+        return new ShopEntryViewState(
+                purchaseIndex,
+                type,
+                displayStack,
+                actualStack,
+                true,
+                String.valueOf(price),
+                Optional.empty(),
+                Optional.empty()
+        );
     }
 
     public static ShopEntryViewState fromSnapshot(Snapshot snapshot) {
+        return fromSnapshot(-1, null, null, null, snapshot);
+    }
+
+    public static ShopEntryViewState fromSnapshot(
+            int purchaseIndex,
+            ShopEntry.Type type,
+            ItemStack displayStack,
+            ItemStack actualStack,
+            Snapshot snapshot
+    ) {
         boolean active = !snapshot.onCooldown() && snapshot.inStock();
         return new ShopEntryViewState(
+                purchaseIndex,
+                type,
+                displayStack,
+                actualStack,
                 active,
                 String.valueOf(snapshot.price()),
                 cooldownStatusFor(snapshot),

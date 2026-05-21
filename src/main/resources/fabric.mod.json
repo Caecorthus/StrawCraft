@@ -29,7 +29,8 @@
   ],
   "custom": {
     "cardinal-components": [
-      "strawcraft:map_voting"
+      "strawcraft:map_voting",
+      "strawcraft:shop"
     ]
   },
   "depends": {

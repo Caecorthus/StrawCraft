@@ -64,7 +64,7 @@ public final class KillerShopLoadout {
                 continue;
             }
             if (!disabledGunPredicate.test(entry)) {
-                rewrittenEntries.add(entry);
+                rewrittenEntries.add(StrawShopEntry.decorate(entry));
             }
         }
         return List.copyOf(rewrittenEntries);
@@ -88,18 +88,27 @@ public final class KillerShopLoadout {
 
     private static ShopEntry replacementEntry(ShopEntry original, ItemStack replacementStack) {
         ReplacementSettings settings = replacementSettingsFor(original);
-        return new ShopEntry(
+        return new StrawShopEntry(
+                settings.id(),
+                replacementStack.copy(),
                 replacementStack.copy(),
                 settings.price(),
-                settings.type()
+                settings.type(),
+                settings.cooldownTicks(),
+                settings.initialCooldownTicks(),
+                settings.maxStock()
         );
     }
 
     static ReplacementSettings replacementSettingsFor(ShopEntry original) {
+        Optional<StrawShopEntry> strawEntry = StrawShopEntry.metadata(original);
         return new ReplacementSettings(
                 KILLER_GUN_SHOP_ID,
                 original.price(),
-                original.type()
+                original.type(),
+                strawEntry.map(StrawShopEntry::cooldownTicks).orElse(0),
+                strawEntry.map(StrawShopEntry::initialCooldownTicks).orElse(0),
+                strawEntry.map(StrawShopEntry::maxStock).orElse(-1)
         );
     }
 
@@ -122,18 +131,21 @@ public final class KillerShopLoadout {
     record ReplacementSettings(
             String id,
             int price,
-            ShopEntry.Type type
+            ShopEntry.Type type,
+            int cooldownTicks,
+            int initialCooldownTicks,
+            int maxStock
     ) {
         boolean hasStockLimit() {
-            return false;
+            return maxStock >= 0;
         }
 
         boolean hasCooldown() {
-            return false;
+            return cooldownTicks > 0;
         }
 
         boolean hasInitialCooldown() {
-            return false;
+            return initialCooldownTicks > 0;
         }
     }
 }
