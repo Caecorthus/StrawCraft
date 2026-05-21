@@ -34,12 +34,10 @@ class MixinConfigurationTest {
                 StandardCharsets.UTF_8
         );
 
-        assertTrue(serverPlayerMixin.contains("ModifyArgs"));
-        assertTrue(serverPlayerMixin.contains("wathe$interceptVanillaDeath"));
+        assertFalse(serverPlayerMixin.contains("ModifyArgs"));
+        assertFalse(serverPlayerMixin.contains("wathe$interceptVanillaDeath"));
         assertTrue(serverPlayerMixin.contains("WatheRoundParticipantLifecycle.afterVanillaDeath"));
-        assertTrue(serverPlayerMixin.contains("consumeDeathAttribution"));
-        assertTrue(serverPlayerMixin.contains("args.set(2"));
-        assertTrue(serverPlayerMixin.contains("args.set(3"));
+        assertTrue(serverPlayerMixin.contains("onDeath"));
     }
 
     @Test
@@ -74,6 +72,12 @@ class MixinConfigurationTest {
         assertFalse(slotRenderer.contains("LimitedInventoryScreen"));
         assertFalse(slotRenderer.contains("StoreItemWidget"));
         assertTrue(slotRenderer.contains("entry.type().getTexture()"));
+
+        String adapter = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/client/WatheShopClientAdapter.java"),
+                StandardCharsets.UTF_8
+        );
+        assertTrue(adapter.contains("canUseKillerFeatures"));
     }
 
     @Test
@@ -90,9 +94,23 @@ class MixinConfigurationTest {
 
         assertTrue(strawCraft.contains("RoleAssignedLoadouts.register()"));
         assertFalse(vigilanteLoadout.contains("RoleAssigned.EVENT"));
-        assertTrue(roleAssignedLoadouts.contains("RoleAssigned.EVENT.register"));
+        assertTrue(roleAssignedLoadouts.contains("StrawRoleEvents.ROLE_ASSIGNED.register"));
         assertTrue(roleAssignedLoadouts.contains("RoundInventoryCleanup.removeDisabledWatheGuns"));
         assertTrue(roleAssignedLoadouts.contains("VigilanteLoadout.giveAssignedLoadout"));
+    }
+
+    @Test
+    void strawCraftDoesNotDependOnSparkOnlyWatheEventApis() throws IOException {
+        assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.BuildShopEntries");
+        assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.KillPlayer");
+        assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.RoleAssigned");
+        assertSourceTreeDoesNotContain("dev.doctor4t.wathe.util.ShopUtils");
+        assertSourceTreeDoesNotContain("new ShopEntry.Builder");
+        assertSourceTreeDoesNotContain("WatheRoles.NO_ROLE");
+        assertSourceTreeDoesNotContain("WatheRoles.VETERAN");
+        assertSourceTreeDoesNotContain("game.markPlayerDead");
+        assertSourceTreeDoesNotContain("game.hasAnyRole");
+        assertSourceTreeDoesNotContain("game.isPlayerDead");
     }
 
     @Test
@@ -116,5 +134,14 @@ class MixinConfigurationTest {
 
     private static String readMixinConfig() throws IOException {
         return Files.readString(Path.of("src/main/resources/strawcraft.mixins.json"), StandardCharsets.UTF_8);
+    }
+
+    private static void assertSourceTreeDoesNotContain(String forbidden) throws IOException {
+        try (var paths = Files.walk(Path.of("src/main/java"))) {
+            for (Path path : paths.filter(path -> path.toString().endsWith(".java")).toList()) {
+                String source = Files.readString(path, StandardCharsets.UTF_8);
+                assertFalse(source.contains(forbidden), path + " should not contain " + forbidden);
+            }
+        }
     }
 }

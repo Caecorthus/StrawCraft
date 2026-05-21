@@ -1,9 +1,10 @@
 package org.caecorthus.strawcraft;
 
-import dev.doctor4t.wathe.api.event.BuildShopEntries;
+import dev.doctor4t.wathe.index.WatheItems;
 import dev.doctor4t.wathe.util.ShopEntry;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
+import org.caecorthus.strawcraft.api.StrawShopEvents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +22,13 @@ public final class KillerShopLoadout {
     }
 
     public static void registerShopEntriesHandler() {
-        BuildShopEntries.EVENT.register((player, context) -> replaceDisabledWatheGuns(context));
+        StrawShopEvents.MODIFY_ENTRIES.register((player, context) -> replaceDisabledWatheGuns(context));
+        WatheOfficialBridge.rewriteGlobalShopEntries();
     }
 
-    static void replaceDisabledWatheGuns(BuildShopEntries.ShopContext context) {
+    static void replaceDisabledWatheGuns(StrawShopEvents.ShopContext context) {
         List<ShopEntry> rewrittenEntries = rewriteEntries(context.getEntries());
-        context.clearEntries();
-        rewrittenEntries.forEach(context::addEntry);
+        context.replaceEntries(rewrittenEntries);
     }
 
     static List<ShopEntry> rewriteEntries(List<ShopEntry> originalEntries) {
@@ -43,9 +44,18 @@ public final class KillerShopLoadout {
             Function<ShopEntry, Optional<ShopEntry>> revolverReplacementFactory,
             Predicate<ShopEntry> disabledGunPredicate
     ) {
+        return rewriteEntries(originalEntries, KillerShopLoadout::isWatheRevolverShopEntry, revolverReplacementFactory, disabledGunPredicate);
+    }
+
+    static List<ShopEntry> rewriteEntries(
+            List<ShopEntry> originalEntries,
+            Predicate<ShopEntry> revolverPredicate,
+            Function<ShopEntry, Optional<ShopEntry>> revolverReplacementFactory,
+            Predicate<ShopEntry> disabledGunPredicate
+    ) {
         List<ShopEntry> rewrittenEntries = new ArrayList<>(originalEntries.size());
         for (ShopEntry entry : originalEntries) {
-            if (isWatheRevolverShopEntry(entry)) {
+            if (revolverPredicate.test(entry)) {
                 // Replace in place so Wathe's visual order and StoreBuyPayload(index)
                 // contract remain stable while the actual gun becomes TACZ-backed.
                 // 原位替换可以保持 Wathe 的显示顺序和购买编号契约稳定，
@@ -78,39 +88,23 @@ public final class KillerShopLoadout {
 
     private static ShopEntry replacementEntry(ShopEntry original, ItemStack replacementStack) {
         ReplacementSettings settings = replacementSettingsFor(original);
-        ShopEntry.Builder builder = new ShopEntry.Builder(
-                settings.id(),
+        return new ShopEntry(
                 replacementStack.copy(),
                 settings.price(),
                 settings.type()
-        ).actualStack(replacementStack.copy());
-
-        if (settings.hasStockLimit()) {
-            builder.stock(settings.maxStock());
-        }
-        if (settings.hasCooldown()) {
-            builder.cooldown(settings.cooldownTicks());
-        }
-        if (settings.hasInitialCooldown()) {
-            builder.initialCooldown(settings.initialCooldownTicks());
-        }
-
-        return builder.build();
+        );
     }
 
     static ReplacementSettings replacementSettingsFor(ShopEntry original) {
         return new ReplacementSettings(
                 KILLER_GUN_SHOP_ID,
                 original.price(),
-                original.type(),
-                original.cooldownTicks(),
-                original.initialCooldownTicks(),
-                original.maxStock()
+                original.type()
         );
     }
 
     private static boolean isWatheRevolverShopEntry(ShopEntry entry) {
-        return WATHE_REVOLVER_SHOP_ID.equals(entry.id());
+        return matchesStack(entry.stack(), stack -> stack.isOf(WatheItems.REVOLVER));
     }
 
     private static boolean containsDisabledWatheGun(ShopEntry entry) {
@@ -118,7 +112,7 @@ public final class KillerShopLoadout {
     }
 
     private static boolean containsStack(ShopEntry entry, Predicate<ItemStack> predicate) {
-        return matchesStack(entry.displayStack(), predicate) || matchesStack(entry.getActualStack(), predicate);
+        return matchesStack(entry.stack(), predicate);
     }
 
     private static boolean matchesStack(ItemStack stack, Predicate<ItemStack> predicate) {
@@ -128,21 +122,18 @@ public final class KillerShopLoadout {
     record ReplacementSettings(
             String id,
             int price,
-            ShopEntry.Type type,
-            int cooldownTicks,
-            int initialCooldownTicks,
-            int maxStock
+            ShopEntry.Type type
     ) {
         boolean hasStockLimit() {
-            return maxStock >= 0;
+            return false;
         }
 
         boolean hasCooldown() {
-            return cooldownTicks > 0;
+            return false;
         }
 
         boolean hasInitialCooldown() {
-            return initialCooldownTicks > 0;
+            return false;
         }
     }
 }

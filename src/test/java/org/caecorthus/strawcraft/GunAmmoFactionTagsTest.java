@@ -1,6 +1,7 @@
 package org.caecorthus.strawcraft;
 
-import dev.doctor4t.wathe.api.WatheRoles;
+import dev.doctor4t.wathe.api.Role;
+import net.minecraft.util.Identifier;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,18 +10,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GunAmmoFactionTagsTest {
     @Test
     void resolvesExactlyOneDefaultFactionForWatheRoles() {
-        assertEquals(GunAmmoFaction.POLICE, GunAmmoFactionTags.resolve(WatheRoles.VIGILANTE).orElseThrow());
-        assertEquals(GunAmmoFaction.KILLER, GunAmmoFactionTags.resolve(WatheRoles.KILLER).orElseThrow());
-        assertEquals(GunAmmoFaction.CIVILIAN, GunAmmoFactionTags.resolve(WatheRoles.CIVILIAN).orElseThrow());
-        assertEquals(GunAmmoFaction.CIVILIAN, GunAmmoFactionTags.resolve(WatheRoles.VETERAN).orElseThrow());
+        assertEquals(GunAmmoFaction.POLICE, GunAmmoFactionTags.resolve(role(WatheRoleIds.VIGILANTE, true, false)).orElseThrow());
+        assertEquals(GunAmmoFaction.KILLER, GunAmmoFactionTags.resolve(role(Identifier.of("wathe", "killer"), false, true)).orElseThrow());
+        assertEquals(GunAmmoFaction.CIVILIAN, GunAmmoFactionTags.resolve(role(Identifier.of("wathe", "civilian"), true, false)).orElseThrow());
+        Role customInnocent = new Role(Identifier.of("strawcraft", "veteran_fixture"), 0xFFFFFF, true, false, Role.MoodType.REAL, 200, false);
+        assertEquals(GunAmmoFaction.CIVILIAN, GunAmmoFactionTags.resolve(customInnocent).orElseThrow());
     }
 
     @Test
     void refusesRolesThatMatchMultipleExplicitFactionTags() {
         GunAmmoFactionTags tags = GunAmmoFactionTags.empty()
-                .withPoliceRole(WatheRoles.CIVILIAN.identifier())
-                .withCivilianRole(WatheRoles.CIVILIAN.identifier());
+                .withPoliceRole(Identifier.of("wathe", "civilian"))
+                .withCivilianRole(Identifier.of("wathe", "civilian"));
 
-        assertTrue(tags.resolveRole(WatheRoles.CIVILIAN).isEmpty());
+        assertTrue(tags.resolveRole(role(Identifier.of("wathe", "civilian"), true, false)).isEmpty());
+    }
+
+    private static Role role(Identifier id, boolean innocent, boolean killerTools) {
+        return new Role(id, 0xFFFFFF, innocent, killerTools, Role.MoodType.REAL, 200, false);
     }
 }

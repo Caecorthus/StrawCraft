@@ -26,7 +26,7 @@ class KillerShopLoadoutTest {
 
     @Test
     void p320ReplacementKeepsOriginalKillerShopPricingAndType() {
-        ShopEntry original = new ShopEntry.Builder("revolver", null, 300, ShopEntry.Type.WEAPON).build();
+        ShopEntry original = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
 
         KillerShopLoadout.ReplacementSettings settings = KillerShopLoadout.replacementSettingsFor(original);
 
@@ -40,23 +40,16 @@ class KillerShopLoadoutTest {
 
     @Test
     void rewritesWatheKillerShopEntriesWithoutReorderingSurvivors() {
-        ShopEntry knife = new ShopEntry.Builder("knife", null, 100, ShopEntry.Type.WEAPON)
-                .stock(1)
-                .build();
-        ShopEntry revolver = new ShopEntry.Builder("revolver", null, 300, ShopEntry.Type.WEAPON)
-                .cooldown(40)
-                .initialCooldown(20)
-                .stock(2)
-                .build();
-        ShopEntry grenade = new ShopEntry.Builder("grenade", null, 350, ShopEntry.Type.WEAPON)
-                .build();
-        ShopEntry derringer = new ShopEntry.Builder("derringer", null, 200, ShopEntry.Type.WEAPON)
-                .build();
+        ShopEntry knife = new ShopEntry(null, 100, ShopEntry.Type.WEAPON);
+        ShopEntry revolver = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
+        ShopEntry grenade = new ShopEntry(null, 350, ShopEntry.Type.WEAPON);
+        ShopEntry derringer = new ShopEntry(null, 200, ShopEntry.Type.WEAPON);
 
         List<ShopEntry> rewritten = KillerShopLoadout.rewriteEntries(
                 List.of(knife, revolver, grenade, derringer),
+                entry -> entry == revolver,
                 KillerShopLoadoutTest::p320ReplacementFor,
-                entry -> "derringer".equals(entry.id())
+                entry -> entry == derringer
         );
 
         assertEquals(3, rewritten.size());
@@ -64,26 +57,12 @@ class KillerShopLoadoutTest {
         assertSame(grenade, rewritten.get(2));
 
         ShopEntry replacement = rewritten.get(1);
-        assertEquals("p320", replacement.id());
         assertSame(ShopEntry.Type.WEAPON, replacement.type());
         assertEquals(300, replacement.price());
-        assertEquals(40, replacement.cooldownTicks());
-        assertEquals(20, replacement.initialCooldownTicks());
-        assertEquals(2, replacement.maxStock());
     }
 
     private static Optional<ShopEntry> p320ReplacementFor(ShopEntry original) {
         KillerShopLoadout.ReplacementSettings settings = KillerShopLoadout.replacementSettingsFor(original);
-        ShopEntry.Builder builder = new ShopEntry.Builder(settings.id(), null, settings.price(), settings.type());
-        if (settings.hasCooldown()) {
-            builder.cooldown(settings.cooldownTicks());
-        }
-        if (settings.hasInitialCooldown()) {
-            builder.initialCooldown(settings.initialCooldownTicks());
-        }
-        if (settings.hasStockLimit()) {
-            builder.stock(settings.maxStock());
-        }
-        return Optional.of(builder.build());
+        return Optional.of(new ShopEntry(null, settings.price(), settings.type()));
     }
 }

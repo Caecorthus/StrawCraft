@@ -1,0 +1,13 @@
+package org.caecorthus.strawcraft;
+
+import net.minecraft.util.Identifier;
+
+public final class StrawDeathReasons {
+    public static final Identifier VANILLA_DEATH = StrawCraft.id("vanilla_death");
+    public static final Identifier GUN_BACKFIRE = StrawCraft.id("gun_backfire");
+    public static final Identifier SHOT_INNOCENT = StrawCraft.id("shot_innocent");
+    public static final Identifier MENTAL_BREAKDOWN = StrawCraft.id("mental_breakdown");
+
+    private StrawDeathReasons() {
+    }
+}

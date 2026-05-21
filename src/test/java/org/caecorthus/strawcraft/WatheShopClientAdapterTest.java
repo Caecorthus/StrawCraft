@@ -16,8 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class WatheShopClientAdapterTest {
     @Test
     void createsPureSnapshotFromWatheEntriesAndShopState() {
-        ShopEntry revolver = new ShopEntry.Builder("revolver", null, 300, ShopEntry.Type.WEAPON).build();
-        ShopEntry knife = new ShopEntry.Builder("knife", null, 100, ShopEntry.Type.WEAPON).build();
+        ShopEntry revolver = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
+        ShopEntry knife = new ShopEntry(null, 100, ShopEntry.Type.WEAPON);
 
         WatheShopClientAdapter.ShopSnapshot snapshot = WatheShopClientAdapter.snapshotFrom(
                 List.of(revolver, knife),
@@ -30,9 +30,9 @@ class WatheShopClientAdapterTest {
         assertSame(knife, snapshot.entries().get(1));
 
         ShopEntryViewState revolverState = snapshot.entryStates().get(0);
-        assertFalse(revolverState.active());
-        assertEquals("15s", revolverState.cooldownStatus().orElseThrow().text());
-        assertEquals("1", revolverState.stockStatus().orElseThrow().text());
+        assertTrue(revolverState.active());
+        assertTrue(revolverState.cooldownStatus().isEmpty());
+        assertTrue(revolverState.stockStatus().isEmpty());
 
         ShopEntryViewState knifeState = snapshot.entryStates().get(1);
         assertTrue(knifeState.active());
@@ -41,7 +41,7 @@ class WatheShopClientAdapterTest {
 
     @Test
     void missingShopStateStillKeepsEntriesVisibleWithPrices() {
-        ShopEntry revolver = new ShopEntry.Builder("revolver", null, 300, ShopEntry.Type.WEAPON).build();
+        ShopEntry revolver = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
 
         WatheShopClientAdapter.ShopSnapshot snapshot = WatheShopClientAdapter.snapshotFrom(List.of(revolver), null);
 
@@ -53,8 +53,8 @@ class WatheShopClientAdapterTest {
 
     @Test
     void entryKeysIgnoreShopStateAndRepresentCustomData() {
-        ShopEntry p320 = new ShopEntry.Builder("p320", null, 300, ShopEntry.Type.WEAPON).build();
-        ShopEntry p320OnCooldown = new ShopEntry.Builder("p320", null, 300, ShopEntry.Type.WEAPON).build();
+        ShopEntry p320 = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
+        ShopEntry p320OnCooldown = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
 
         WatheShopClientAdapter.ShopSnapshot available = WatheShopClientAdapter.snapshotFrom(
                 List.of(p320),
@@ -73,31 +73,6 @@ class WatheShopClientAdapterTest {
         @Override
         public OptionalInt balance() {
             return OptionalInt.of(450);
-        }
-
-        @Override
-        public boolean isOnCooldown(String entryId) {
-            return "revolver".equals(entryId);
-        }
-
-        @Override
-        public int remainingCooldownTicks(String entryId) {
-            return "revolver".equals(entryId) ? 300 : 0;
-        }
-
-        @Override
-        public int maxStock(String entryId) {
-            return "revolver".equals(entryId) ? 2 : -1;
-        }
-
-        @Override
-        public int remainingStock(String entryId) {
-            return "revolver".equals(entryId) ? 1 : -1;
-        }
-
-        @Override
-        public boolean isInStock(String entryId) {
-            return true;
         }
     }
 

@@ -18,10 +18,10 @@ public final class VanillaDamagePolicy {
         if (GameConstants.DeathReasons.GUN.equals(deathReason)) {
             return 0.0f;
         }
-        if (GameConstants.DeathReasons.GUN_BACKFIRE.equals(deathReason)) {
+        if (StrawDeathReasons.GUN_BACKFIRE.equals(deathReason)) {
             return 0.0f;
         }
-        if (GameConstants.DeathReasons.SHOT_INNOCENT.equals(deathReason)) {
+        if (StrawDeathReasons.SHOT_INNOCENT.equals(deathReason)) {
             return 0.0f;
         }
         if (GameConstants.DeathReasons.BAT.equals(deathReason)) {
@@ -36,7 +36,7 @@ public final class VanillaDamagePolicy {
         if (GameConstants.DeathReasons.FELL_OUT_OF_TRAIN.equals(deathReason)) {
             return 20.0f;
         }
-        if (GameConstants.DeathReasons.MENTAL_BREAKDOWN.equals(deathReason)) {
+        if (StrawDeathReasons.MENTAL_BREAKDOWN.equals(deathReason)) {
             return 4.0f;
         }
         return 0.0f;

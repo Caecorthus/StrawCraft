@@ -18,13 +18,13 @@ class WatheDeathReasonTrackerTest {
         WatheDeathReasonTracker.rememberDeathAttribution(victim, GameConstants.DeathReasons.GUN, killer);
 
         Optional<WatheDeathReasonTracker.DeathAttribution> attribution =
-                WatheDeathReasonTracker.consumeDeathAttribution(victim, GameConstants.DeathReasons.VANILLA_DEATH);
+                WatheDeathReasonTracker.consumeDeathAttribution(victim, StrawDeathReasons.VANILLA_DEATH);
         Optional<WatheDeathReasonTracker.DeathAttribution> consumed =
-                WatheDeathReasonTracker.consumeDeathAttribution(victim, GameConstants.DeathReasons.VANILLA_DEATH);
+                WatheDeathReasonTracker.consumeDeathAttribution(victim, StrawDeathReasons.VANILLA_DEATH);
 
         assertEquals(GameConstants.DeathReasons.GUN, attribution.orElseThrow().deathReason());
         assertEquals(Optional.of(killer), attribution.orElseThrow().killerUuid());
-        assertEquals(GameConstants.DeathReasons.VANILLA_DEATH, consumed.orElseThrow().deathReason());
+        assertEquals(StrawDeathReasons.VANILLA_DEATH, consumed.orElseThrow().deathReason());
         assertEquals(Optional.empty(), consumed.orElseThrow().killerUuid());
     }
 
@@ -35,9 +35,9 @@ class WatheDeathReasonTrackerTest {
         WatheDeathReasonTracker.rememberDeathReason(victim, GameConstants.DeathReasons.GRENADE);
 
         assertEquals(GameConstants.DeathReasons.GRENADE,
-                WatheDeathReasonTracker.consumeDeathReason(victim, GameConstants.DeathReasons.VANILLA_DEATH));
-        assertEquals(GameConstants.DeathReasons.VANILLA_DEATH,
-                WatheDeathReasonTracker.consumeDeathReason(victim, GameConstants.DeathReasons.VANILLA_DEATH));
+                WatheDeathReasonTracker.consumeDeathReason(victim, StrawDeathReasons.VANILLA_DEATH));
+        assertEquals(StrawDeathReasons.VANILLA_DEATH,
+                WatheDeathReasonTracker.consumeDeathReason(victim, StrawDeathReasons.VANILLA_DEATH));
     }
 
     @Test
@@ -49,9 +49,9 @@ class WatheDeathReasonTrackerTest {
         WatheDeathReasonTracker.clearDeathReason(victim);
 
         WatheDeathReasonTracker.DeathAttribution attribution =
-                WatheDeathReasonTracker.consumeDeathAttribution(victim, GameConstants.DeathReasons.VANILLA_DEATH).orElseThrow();
+                WatheDeathReasonTracker.consumeDeathAttribution(victim, StrawDeathReasons.VANILLA_DEATH).orElseThrow();
 
-        assertEquals(GameConstants.DeathReasons.VANILLA_DEATH, attribution.deathReason());
+        assertEquals(StrawDeathReasons.VANILLA_DEATH, attribution.deathReason());
         assertEquals(Optional.empty(), attribution.killerUuid());
     }
 
@@ -65,8 +65,8 @@ class WatheDeathReasonTrackerTest {
                 WatheDeathReasonTracker.watheReasonForDamageType(Identifier.of("tacz", "bullet_void")).orElseThrow());
         assertEquals(GameConstants.DeathReasons.GUN,
                 WatheDeathReasonTracker.watheReasonForDamageType(Identifier.of("tacz", "bullet_void_ignore_armor")).orElseThrow());
-        assertEquals(GameConstants.DeathReasons.VANILLA_DEATH,
+        assertEquals(StrawDeathReasons.VANILLA_DEATH,
                 WatheDeathReasonTracker.watheReasonForDamageType(Identifier.of("minecraft", "lava"))
-                        .orElse(GameConstants.DeathReasons.VANILLA_DEATH));
+                        .orElse(StrawDeathReasons.VANILLA_DEATH));
     }
 }

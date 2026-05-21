@@ -32,7 +32,7 @@ class VanillaHealthBridgeTest {
     @Test
     void vanillaDeathKillRequestsFallThroughToWatheDeathPipeline() {
         VanillaHealthBridge.KillRequestPlan plan =
-                VanillaHealthBridge.planKillRequest(GameConstants.DeathReasons.VANILLA_DEATH, false, false);
+                VanillaHealthBridge.planKillRequest(StrawDeathReasons.VANILLA_DEATH, false, false);
 
         assertFalse(plan.cancelsWatheKill());
         assertFalse(plan.appliesVanillaDamage());

@@ -160,7 +160,7 @@ public final class StrawCraftShopScreen extends Screen {
     private void drawHoveredTooltip(DrawContext context, int mouseX, int mouseY) {
         for (ShopEntryButton button : this.itemButtons) {
             if (button.isHovered()) {
-                context.drawItemTooltip(this.textRenderer, button.entry.displayStack(), mouseX, mouseY);
+                context.drawItemTooltip(this.textRenderer, button.entry.stack(), mouseX, mouseY);
                 return;
             }
         }
@@ -184,7 +184,7 @@ public final class StrawCraftShopScreen extends Screen {
         private final WatheShopClientAdapter shopAdapter;
 
         private ShopEntryButton(int x, int y, int index, ShopEntry entry, ShopEntryViewState state, WatheShopClientAdapter shopAdapter) {
-            super(x, y, ShopGridLayout.SLOT_SIZE, ShopGridLayout.SLOT_SIZE, entry.displayStack().getName());
+            super(x, y, ShopGridLayout.SLOT_SIZE, ShopGridLayout.SLOT_SIZE, entry.stack().getName());
             this.index = index;
             this.entry = entry;
             this.state = state;

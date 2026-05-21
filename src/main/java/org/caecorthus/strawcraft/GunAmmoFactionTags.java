@@ -1,7 +1,6 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.Role;
-import dev.doctor4t.wathe.api.WatheRoles;
 import net.minecraft.util.Identifier;
 
 import java.util.EnumSet;
@@ -11,7 +10,7 @@ import java.util.Set;
 
 public final class GunAmmoFactionTags {
     private static final GunAmmoFactionTags DEFAULT = GunAmmoFactionTags.empty()
-            .withPoliceRole(WatheRoles.VIGILANTE.identifier());
+            .withPoliceRole(WatheRoleIds.VIGILANTE);
 
     private final Set<Identifier> policeRoles;
     private final Set<Identifier> civilianRoles;
@@ -60,7 +59,7 @@ public final class GunAmmoFactionTags {
     }
 
     private EnumSet<GunAmmoFaction> matchingFactions(Role role) {
-        if (role == null || role == WatheRoles.NO_ROLE || role == WatheRoles.DISCOVERY_CIVILIAN) {
+        if (role == null || WatheRoleIds.DISCOVERY_CIVILIAN.equals(role.identifier())) {
             return EnumSet.noneOf(GunAmmoFaction.class);
         }
 

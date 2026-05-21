@@ -16,7 +16,7 @@ class WatheRoundParticipantLifecycleTest {
 
         assertTrue(actions.clearRuntimeState());
         assertTrue(actions.clearDeathAttribution());
-        assertTrue(actions.markDeadInWathe());
+        assertTrue(actions.forwardDeathToWathe());
         assertTrue(actions.syncWatheRound());
     }
 

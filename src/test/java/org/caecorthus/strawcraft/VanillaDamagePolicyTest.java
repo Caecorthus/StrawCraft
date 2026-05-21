@@ -20,13 +20,13 @@ class VanillaDamagePolicyTest {
     @Test
     void watheKillRequestsUseExplicitVanillaDamageAmounts() {
         assertEquals(0.0f, VanillaDamagePolicy.damageFor(GameConstants.DeathReasons.GUN));
-        assertEquals(0.0f, VanillaDamagePolicy.damageFor(GameConstants.DeathReasons.GUN_BACKFIRE));
-        assertEquals(0.0f, VanillaDamagePolicy.damageFor(GameConstants.DeathReasons.SHOT_INNOCENT));
+        assertEquals(0.0f, VanillaDamagePolicy.damageFor(StrawDeathReasons.GUN_BACKFIRE));
+        assertEquals(0.0f, VanillaDamagePolicy.damageFor(StrawDeathReasons.SHOT_INNOCENT));
         assertEquals(12.0f, VanillaDamagePolicy.damageFor(GameConstants.DeathReasons.BAT));
         assertEquals(12.0f, VanillaDamagePolicy.damageFor(GameConstants.DeathReasons.GRENADE));
         assertEquals(4.0f, VanillaDamagePolicy.damageFor(GameConstants.DeathReasons.POISON));
         assertEquals(20.0f, VanillaDamagePolicy.damageFor(GameConstants.DeathReasons.FELL_OUT_OF_TRAIN));
-        assertEquals(4.0f, VanillaDamagePolicy.damageFor(GameConstants.DeathReasons.MENTAL_BREAKDOWN));
+        assertEquals(4.0f, VanillaDamagePolicy.damageFor(StrawDeathReasons.MENTAL_BREAKDOWN));
         assertEquals(0.0f, VanillaDamagePolicy.damageFor(Identifier.of("strawcraft", "unknown")));
     }
 }

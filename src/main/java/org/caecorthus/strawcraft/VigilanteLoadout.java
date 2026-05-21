@@ -1,7 +1,6 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.Role;
-import dev.doctor4t.wathe.api.WatheRoles;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -13,7 +12,7 @@ public final class VigilanteLoadout {
     }
 
     static boolean shouldReplaceAssignedRole(Role role) {
-        return role == WatheRoles.VIGILANTE;
+        return role != null && WatheRoleIds.VIGILANTE.equals(role.identifier());
     }
 
     static void giveAssignedLoadout(PlayerEntity player) {

@@ -19,6 +19,7 @@ public final class StrawCraft implements ModInitializer {
     public void onInitialize() {
         StrawMapConfigReloader.register();
         StrawMapVoting.register();
+        WatheOfficialBridge.register();
         WeaponBalance.registerItemAttributes();
         RoleAssignedLoadouts.register();
         VanillaHealthBridge.registerKillRequestHandler();

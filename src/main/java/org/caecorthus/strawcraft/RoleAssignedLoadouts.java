@@ -1,15 +1,15 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.Role;
-import dev.doctor4t.wathe.api.event.RoleAssigned;
 import net.minecraft.entity.player.PlayerEntity;
+import org.caecorthus.strawcraft.api.StrawRoleEvents;
 
 public final class RoleAssignedLoadouts {
     private RoleAssignedLoadouts() {
     }
 
     public static void register() {
-        RoleAssigned.EVENT.register(RoleAssignedLoadouts::applyAssignedLoadout);
+        StrawRoleEvents.ROLE_ASSIGNED.register(RoleAssignedLoadouts::applyAssignedLoadout);
     }
 
     static AssignmentPlan planAssignedLoadout(Role role, boolean clientWorld) {

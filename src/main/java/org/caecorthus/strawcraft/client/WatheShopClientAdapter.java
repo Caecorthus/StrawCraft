@@ -1,8 +1,9 @@
 package org.caecorthus.strawcraft.client;
 
 import dev.doctor4t.wathe.cca.PlayerShopComponent;
+import dev.doctor4t.wathe.cca.GameWorldComponent;
+import dev.doctor4t.wathe.game.GameConstants;
 import dev.doctor4t.wathe.util.ShopEntry;
-import dev.doctor4t.wathe.util.ShopUtils;
 import dev.doctor4t.wathe.util.StoreBuyPayload;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -13,6 +14,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import org.caecorthus.strawcraft.api.StrawShopEvents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,7 @@ public final class WatheShopClientAdapter {
         if (player == null) {
             return false;
         }
-        return !entriesFor(player).isEmpty();
+        return canAccessShop(player) && !entriesFor(player).isEmpty();
     }
 
     public ShopSnapshot snapshot(MinecraftClient client) {
@@ -63,11 +65,11 @@ public final class WatheShopClientAdapter {
         }
         return ShopEntryViewState.fromSnapshot(new ShopEntryViewState.Snapshot(
                 entry.price(),
-                shopState.isOnCooldown(entry.id()),
-                shopState.remainingCooldownTicks(entry.id()),
-                shopState.maxStock(entry.id()),
-                shopState.remainingStock(entry.id()),
-                shopState.isInStock(entry.id())
+                false,
+                0,
+                -1,
+                -1,
+                true
         ));
     }
 
@@ -76,8 +78,11 @@ public final class WatheShopClientAdapter {
     }
 
     private static List<ShopEntry> entriesFor(ClientPlayerEntity player) {
+        if (!canAccessShop(player)) {
+            return List.of();
+        }
         try {
-            return ShopUtils.getShopEntriesForPlayer(player);
+            return StrawShopEvents.modifyEntries(player, GameConstants.SHOP_ENTRIES);
         } catch (RuntimeException ignored) {
             // Wathe can throw while client-side role/shop components are still catching up.
             // 客户端角色或商店组件还在同步时，Wathe 可能会暂时抛错。
@@ -85,49 +90,24 @@ public final class WatheShopClientAdapter {
         }
     }
 
+    private static boolean canAccessShop(ClientPlayerEntity player) {
+        try {
+            // Match official Wathe's shop visibility: only killer-feature roles see the store.
+            // 对齐官方 Wathe 的商店显示条件：只有能使用杀手功能的职业能看到商店。
+            return GameWorldComponent.KEY.get(player.getWorld()).canUseKillerFeatures(player);
+        } catch (RuntimeException ignored) {
+            return false;
+        }
+    }
+
     public interface ShopState {
         OptionalInt balance();
-
-        boolean isOnCooldown(String entryId);
-
-        int remainingCooldownTicks(String entryId);
-
-        int maxStock(String entryId);
-
-        int remainingStock(String entryId);
-
-        boolean isInStock(String entryId);
     }
 
     private record PlayerShopState(PlayerShopComponent shop) implements ShopState {
         @Override
         public OptionalInt balance() {
-            return OptionalInt.of(shop.getBalance());
-        }
-
-        @Override
-        public boolean isOnCooldown(String entryId) {
-            return shop.isOnCooldown(entryId);
-        }
-
-        @Override
-        public int remainingCooldownTicks(String entryId) {
-            return shop.getRemainingCooldown(entryId);
-        }
-
-        @Override
-        public int maxStock(String entryId) {
-            return shop.getMaxStock(entryId);
-        }
-
-        @Override
-        public int remainingStock(String entryId) {
-            return shop.getRemainingStock(entryId);
-        }
-
-        @Override
-        public boolean isInStock(String entryId) {
-            return shop.isInStock(entryId);
+            return OptionalInt.of(shop.balance);
         }
     }
 
@@ -143,19 +123,15 @@ public final class WatheShopClientAdapter {
     }
 
     public record EntryKey(
-            String id,
             int price,
             ShopEntry.Type type,
-            StackKey displayStack,
-            StackKey actualStack
+            StackKey stack
     ) {
         private static EntryKey from(ShopEntry entry) {
             return new EntryKey(
-                    entry.id(),
                     entry.price(),
                     entry.type(),
-                    StackKey.from(entry.displayStack()),
-                    StackKey.from(entry.getActualStack())
+                    StackKey.from(entry.stack())
             );
         }
     }
