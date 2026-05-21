@@ -41,6 +41,8 @@ public final class MapVotingStateMachine {
         this.voteCounts = new int[availableMaps.size()];
 
         if (availableMaps.size() == 1) {
+            // A single eligible map does not need a visible vote or roulette delay.
+            // 只有一张可用地图时，不需要显示投票或转盘等待。
             this.selectedMapIndex = 0;
             return finishSelection();
         }
@@ -62,6 +64,8 @@ public final class MapVotingStateMachine {
         voteCounts[mapIndex]++;
 
         if (playerVotes.size() >= totalPlayerCount && votingTicksRemaining > ALL_VOTED_REMAINING_TICKS) {
+            // Keep a short buffer so the result does not snap instantly on the last vote.
+            // 保留一个短缓冲，避免最后一票投下后结果瞬间跳出。
             votingTicksRemaining = ALL_VOTED_REMAINING_TICKS;
         }
         return Transition.synced();
@@ -176,6 +180,8 @@ public final class MapVotingStateMachine {
     }
 
     private Transition endVoting(RandomGenerator random) {
+        // Selection happens before the roulette phase; the client animation only reveals it.
+        // 真正的选择在转盘阶段前已经完成；客户端动画只是揭示结果。
         selectedMapIndex = WeightedVotePicker.pick(availableMaps.size(), voteCounts, random);
         if (selectedMapIndex < 0) {
             return reset();

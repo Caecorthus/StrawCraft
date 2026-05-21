@@ -21,6 +21,7 @@ public final class WatheShopSlotRenderer {
 
     public static void render(DrawContext context, TextRenderer textRenderer, ShopEntry entry, ShopEntryViewState state, int x, int y) {
         // Reference Wathe's runtime slot sprites through its public shop entry type; do not copy assets into StrawCraft.
+        // 通过 Wathe 公开的商店条目类型引用运行时槽位贴图，不把资源复制进 StrawCraft。
         context.drawGuiTexture(entry.type().getTexture(), x, y, ShopGridLayout.SLOT_SIZE, ShopGridLayout.SLOT_SIZE);
         context.drawItem(entry.displayStack(), x + ITEM_OFFSET, y + ITEM_OFFSET);
 

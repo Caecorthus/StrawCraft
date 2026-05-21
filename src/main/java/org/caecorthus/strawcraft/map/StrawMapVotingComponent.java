@@ -29,6 +29,9 @@ public class StrawMapVotingComponent implements AutoSyncedComponent, ServerTicki
     public static final ComponentKey<StrawMapVotingComponent> KEY =
             ComponentRegistry.getOrCreate(StrawCraft.id("map_voting"), StrawMapVotingComponent.class);
 
+    // The vote belongs to the server scoreboard instead of one world, because the
+    // selected result may teleport players across dimensions before the next round starts.
+    // 投票状态挂在服务器 scoreboard 上，而不是某个世界上；因为选图结果可能会在下一局开始前把玩家跨维度传送。
     private final Scoreboard scoreboard;
     @Nullable
     private final MinecraftServer server;
@@ -103,6 +106,9 @@ public class StrawMapVotingComponent implements AutoSyncedComponent, ServerTicki
     }
 
     public void castVote(UUID playerId, int mapIndex) {
+        // In client-only deserialization contexts there is no server; keep votes valid
+        // by making "everyone voted" impossible instead of guessing a player count.
+        // 在仅客户端反序列化的上下文里没有 server；这里让“所有人都已投票”不可能触发，而不是猜一个人数。
         int totalPlayerCount = server == null ? Integer.MAX_VALUE : server.getPlayerManager().getCurrentPlayerCount();
         applyTransition(stateMachine.castVote(playerId, mapIndex, totalPlayerCount));
     }

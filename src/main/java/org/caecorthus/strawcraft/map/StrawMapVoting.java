@@ -43,6 +43,8 @@ public final class StrawMapVoting {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> registerCommands(dispatcher));
         GameEvents.ON_FINISH_FINALIZE.register((world, gameComponent) -> {
             if (world instanceof ServerWorld serverWorld) {
+                // Start voting after Wathe finalizes a round, before another game is allowed to begin.
+                // 在 Wathe 完成一局收尾后立刻开始投票，赶在下一局被允许启动之前。
                 StrawMapVotingComponent.KEY.get(serverWorld.getServer().getScoreboard()).startVoting(serverWorld);
             }
         });
@@ -61,6 +63,10 @@ public final class StrawMapVoting {
         }
 
         GameWorldComponent game = GameWorldComponent.KEY.get(targetWorld);
+        // Apply the chosen Wathe mode/effect to the destination world so the next
+        // explicit game start uses the map vote result without modifying Wathe sources.
+        // 把选中的 Wathe 模式和地图效果写到目标世界；
+        // 下一次显式开局就会使用投票结果，同时不需要修改 Wathe 源码。
         game.setGameMode(gameMode(selected.gameModeId()));
         game.setMapEffect(mapEffect(selected.mapEffectId()));
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {

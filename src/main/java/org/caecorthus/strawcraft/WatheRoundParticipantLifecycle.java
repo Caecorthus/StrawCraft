@@ -15,6 +15,7 @@ public final class WatheRoundParticipantLifecycle {
         }
         if (actions.markDeadInWathe()) {
             // Keep Wathe's win-condition bookkeeping aware of vanilla deaths.
+            // 让 Wathe 的胜负结算也知道这些由原版生命值触发的死亡。
             game.markPlayerDead(player.getUuid());
         }
         if (actions.syncWatheRound()) {
@@ -31,6 +32,10 @@ public final class WatheRoundParticipantLifecycle {
     }
 
     static DeathActions afterVanillaDeath(ParticipantState state) {
+        // StrawCraft lets hearts reach zero, then mirrors only valid round deaths
+        // back into Wathe so corpse/spectator/win-condition logic stays Wathe-owned.
+        // StrawCraft 先允许红心归零，再只把有效的正式局死亡同步回 Wathe；
+        // 这样尸体、旁观者和胜负结算逻辑仍然由 Wathe 接管。
         boolean markDeadInWathe = state.roundRunning() && state.hasRole() && !state.alreadyDead();
         return new DeathActions(true, true, markDeadInWathe, markDeadInWathe);
     }

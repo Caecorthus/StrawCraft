@@ -27,6 +27,7 @@ public final class AmmoRefillCycleManager {
             long nowTick
     ) {
         // Do not stamp every TACZ gun forever; only low-ammo guns enter StrawCraft's cycle tracking.
+        // 不给每把 TACZ 枪永久打标；只有低弹药状态的枪才进入 StrawCraft 的补弹周期跟踪。
         if (stack.ammoCycleId().isEmpty() && !stack.profile().isLowAmmo(stack.currentAmmo())) {
             return StackObservation.empty();
         }
@@ -101,6 +102,8 @@ public final class AmmoRefillCycleManager {
 
         // Grant ammo to the inventory, then wait until the gun's loaded ammo rises.
         // Otherwise a player could ignore reload and repeatedly farm the same low-ammo gun.
+        // 先把弹药发到物品栏，然后等枪内弹药数真的上涨。
+        // 否则玩家可以不换弹，反复用同一把低弹药枪刷补给。
         int ammoCount = profile.missingAmmo(currentAmmo);
         cyclesByGun.put(gunCycleId, new WaitingForReload(holderUuid, faction, currentAmmo));
         if (ammoCount <= 0) {
@@ -125,6 +128,8 @@ public final class AmmoRefillCycleManager {
 
         // A higher loaded-ammo count means TACZ has accepted a reload, so this gun may
         // start a fresh timer if it is still at the low-ammo threshold afterward.
+        // 枪内弹药数变高说明 TACZ 已经完成换弹；如果换完后仍然处于低弹药阈值，
+        // 这把枪可以重新开始下一轮计时。
         cyclesByGun.remove(gunCycleId);
         startCooldownIfLow(holderUuid, gunCycleId, faction, profile, currentAmmo, nowTick);
         return Optional.empty();

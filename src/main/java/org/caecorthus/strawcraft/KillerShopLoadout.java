@@ -46,6 +46,10 @@ public final class KillerShopLoadout {
         List<ShopEntry> rewrittenEntries = new ArrayList<>(originalEntries.size());
         for (ShopEntry entry : originalEntries) {
             if (isWatheRevolverShopEntry(entry)) {
+                // Replace in place so Wathe's visual order and StoreBuyPayload(index)
+                // contract remain stable while the actual gun becomes TACZ-backed.
+                // 原位替换可以保持 Wathe 的显示顺序和购买编号契约稳定，
+                // 同时把实际发放的枪换成 TACZ 版本。
                 revolverReplacementFactory.apply(entry).ifPresent(rewrittenEntries::add);
                 continue;
             }

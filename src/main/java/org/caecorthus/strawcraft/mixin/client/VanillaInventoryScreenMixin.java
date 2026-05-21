@@ -13,6 +13,7 @@ public abstract class VanillaInventoryScreenMixin {
     @Inject(method = "wathe$replaceInventoryScreenWithLimitedInventoryScreen", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
     private void strawcraft$keepVanillaInventoryScreen(MinecraftClient instance, Screen screen, Operation<Void> original, CallbackInfo callbackInfo) {
         // Call Minecraft's original setScreen(screen) operation before Wathe can replace it with LimitedInventoryScreen.
+        // 在 Wathe 替换成受限背包界面前，先调用 Minecraft 原本的 setScreen(screen) 操作。
         original.call(instance, screen);
         callbackInfo.cancel();
     }

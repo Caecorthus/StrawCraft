@@ -14,6 +14,7 @@ public final class GrenadeExplosionDamage {
         }
         float impact = (float) ((1.0 - distance / RADIUS) * exposure);
         // Matches vanilla's explosion curve, scaled so an unblocked center hit is 40 damage.
+        // 沿用原版爆炸伤害曲线，并缩放到无遮挡中心命中为 40 点伤害。
         float damage = MAX_DAMAGE * ((impact * impact + impact) / 2.0f);
         return damage >= MIN_EFFECTIVE_DAMAGE ? damage : 0.0f;
     }

@@ -42,6 +42,7 @@ public final class TaczGunStacks {
 
         ItemStack stack = new ItemStack(item);
         // TACZ identifies individual guns through custom data on tacz:modern_kinetic_gun.
+        // TACZ 通过 tacz:modern_kinetic_gun 上的自定义数据识别具体枪械。
         stack.set(DataComponentTypes.CUSTOM_DATA, createGunCustomData(profile));
         return stack;
     }

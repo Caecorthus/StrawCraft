@@ -59,6 +59,8 @@ public final class WeaponBalance {
 
         // The 120 degree backstab cone is centered on the victim's back,
         // so the attacker must be at least 120 degrees away from the victim's look vector.
+        // 120 度背刺判定锥以受害者背后为中心，
+        // 所以攻击者和受害者视线方向的夹角至少要达到 120 度。
         double dot = (targetLook.x * targetToAttacker.x + targetLook.z * targetToAttacker.z) / (lookLength * attackerLength);
         return dot <= BACKSTAB_ARC_COSINE;
     }

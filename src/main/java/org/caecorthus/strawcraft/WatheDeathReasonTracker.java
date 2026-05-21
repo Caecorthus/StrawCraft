@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class WatheDeathReasonTracker {
     // These reasons are short-lived breadcrumbs for Wathe's vanilla-death safety net.
+    // 这些死因只是给 Wathe 原版死亡兜底逻辑用的短生命周期线索。
     private static final Map<UUID, DeathAttribution> RECENT_DEATH_ATTRIBUTIONS = new ConcurrentHashMap<>();
     private static final Set<Identifier> TACZ_BULLET_DAMAGE_TYPES = Set.of(
             Identifier.of("tacz", "bullet"),
@@ -67,6 +68,7 @@ public final class WatheDeathReasonTracker {
         boolean damaged = victim.damage(source, amount);
         if (victim.isAlive()) {
             // Non-lethal hits must not leak their reason into a later unrelated death.
+            // 非致命伤害不能把自己的死因泄漏到之后无关的死亡里。
             clearDeathReason(victim.getUuid());
         }
         return damaged;

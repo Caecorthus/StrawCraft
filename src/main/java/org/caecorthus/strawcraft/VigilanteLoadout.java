@@ -23,6 +23,7 @@ public final class VigilanteLoadout {
         }
 
         // RoleAssignedLoadouts cleans disabled Wathe guns before granting this StrawCraft loadout.
+        // RoleAssignedLoadouts 会先清掉被禁用的 Wathe 枪，再发放这套 StrawCraft 装备。
         player.giveItemStack(rhino357);
     }
 

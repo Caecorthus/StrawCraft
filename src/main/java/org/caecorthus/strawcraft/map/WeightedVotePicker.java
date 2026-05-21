@@ -22,6 +22,8 @@ public final class WeightedVotePicker {
         int totalWeight = 0;
         int[] weights = new int[optionCount];
         for (int i = 0; i < optionCount; i++) {
+            // With no votes, every option should still be eligible instead of defaulting to index 0.
+            // 没有人投票时，每个选项仍然应当可被抽中，而不是默认落到第 0 项。
             weights[i] = hasVotes ? voteCountAt(voteCounts, i) : 1;
             totalWeight += weights[i];
         }

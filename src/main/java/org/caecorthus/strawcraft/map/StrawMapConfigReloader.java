@@ -79,6 +79,10 @@ public final class StrawMapConfigReloader implements SimpleSynchronousResourceRe
         int maxPlayers = object.has("max_players") ? object.get("max_players").getAsInt() : 100;
 
         for (Identifier gameModeId : gameModes(object)) {
+            // One physical map can be registered once per supported Wathe game mode,
+            // giving each mode its own vote option while reusing the same dimension.
+            // 同一张实体地图可以按支持的 Wathe 游戏模式分别注册，
+            // 每个模式都有独立投票选项，但复用同一个维度。
             Identifier mapId = Identifier.of(
                     baseMapId.getNamespace(),
                     baseMapId.getPath() + "/" + gameModeId.getNamespace() + "/" + gameModeId.getPath()

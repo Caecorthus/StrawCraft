@@ -38,6 +38,7 @@ public final class WatheShopClientAdapter {
 
     public void buy(int index) {
         // Wathe revalidates the index server-side before completing the purchase.
+        // Wathe 会在服务端重新校验编号，然后才完成购买。
         ClientPlayNetworking.send(new StoreBuyPayload(index));
     }
 
@@ -46,6 +47,10 @@ public final class WatheShopClientAdapter {
         List<EntryKey> entryKeys = new ArrayList<>(entries.size());
         for (ShopEntry entry : entries) {
             entryStates.add(viewStateFor(entry, shopState));
+            // Entry keys capture identity only; price/cooldown/stock can update without
+            // rebuilding buttons and disturbing Wathe's server-side StoreBuyPayload(index).
+            // 条目键只记录身份；价格、冷却和库存可以更新，
+            // 不需要重建按钮，也不会扰动 Wathe 服务端的购买编号。
             entryKeys.add(EntryKey.from(entry));
         }
         OptionalInt balance = shopState == null ? OptionalInt.empty() : shopState.balance();
@@ -74,6 +79,8 @@ public final class WatheShopClientAdapter {
         try {
             return ShopUtils.getShopEntriesForPlayer(player);
         } catch (RuntimeException ignored) {
+            // Wathe can throw while client-side role/shop components are still catching up.
+            // 客户端角色或商店组件还在同步时，Wathe 可能会暂时抛错。
             return List.of();
         }
     }
@@ -159,6 +166,8 @@ public final class WatheShopClientAdapter {
                 return new StackKey("", 0, "", "");
             }
             NbtComponent customData = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+            // TACZ uses custom data such as GunId to distinguish concrete guns on the same item.
+            // TACZ 会用 GunId 这类自定义数据区分同一个物品上的具体枪械。
             return new StackKey(
                     Registries.ITEM.getId(stack.getItem()).toString(),
                     stack.getCount(),

@@ -65,6 +65,10 @@ public final class StrawCraftShopScreen extends Screen {
 
         WatheShopClientAdapter.ShopSnapshot nextSnapshot = this.shopAdapter.snapshot(this.client);
         if (this.snapshot.entryKeys().equals(nextSnapshot.entryKeys())) {
+            // Keep the existing widgets when only Wathe shop state changes, preserving
+            // hover/focus while cooldowns, stock, and balance refresh in place.
+            // 如果只是商店状态变化，就保留现有按钮；
+            // 这样冷却、库存和余额刷新时不会打断悬停或焦点状态。
             updateSnapshotState(nextSnapshot);
         } else {
             this.snapshot = nextSnapshot;
@@ -89,6 +93,10 @@ public final class StrawCraftShopScreen extends Screen {
                 .build());
 
         for (int index = 0; index < this.snapshot.entries().size(); index++) {
+            // Button order must stay aligned with Wathe's adapter snapshot.
+            // The click payload is only a slot number; Wathe re-checks it server-side.
+            // 按钮顺序必须和 Wathe 适配层快照保持一致。
+            // 点击时只发送槽位编号，Wathe 会在服务端重新校验。
             ShopEntry entry = this.snapshot.entries().get(index);
             ShopEntryButton button = new ShopEntryButton(
                     ShopGridLayout.slotX(this.panelX, index, columns),

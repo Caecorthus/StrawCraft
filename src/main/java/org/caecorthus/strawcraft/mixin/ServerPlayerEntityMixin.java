@@ -16,6 +16,8 @@ public abstract class ServerPlayerEntityMixin {
     @Inject(method = "onDeath", at = @At("TAIL"))
     private void strawcraft$markWathePlayerDeadAfterVanillaDeath(DamageSource damageSource, CallbackInfo callback) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+        // Run after vanilla death has finished so Wathe observes the final dead/alive state.
+        // 等原版死亡流程结束后再运行，确保 Wathe 看到最终的生死状态。
         WatheRoundParticipantLifecycle.afterVanillaDeath(player);
     }
 
@@ -27,6 +29,10 @@ public abstract class ServerPlayerEntityMixin {
     )
     private void strawcraft$useTrackedWatheDeathAttribution(Args args) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+        // Wathe's vanilla-death hook supplies a fallback reason; StrawCraft swaps in
+        // the short-lived attribution recorded by TACZ/grenade vanilla damage when present.
+        // Wathe 的原版死亡钩子会给一个兜底死因；
+        // 如果 TACZ 或手雷的原版伤害刚记录过短生命周期归因，StrawCraft 就替换成那个归因。
         WatheDeathReasonTracker.DeathAttribution attribution = WatheDeathReasonTracker
                 .consumeDeathAttribution(player.getUuid(), args.get(3))
                 .orElseThrow();

@@ -26,6 +26,10 @@ public abstract class GameFunctionsMixin {
             return;
         }
 
+        // Map voting sits between Wathe rounds; block accidental starts until
+        // the selected destination has been applied to the Wathe game component.
+        // 地图投票位于两局 Wathe 之间；在选中的目标写入 Wathe 游戏组件前，
+        // 阻止误触发的新一局开始。
         for (ServerPlayerEntity player : world.getPlayers()) {
             player.sendMessage(Text.translatable("game.strawcraft.start_error.voting_active"), true);
         }

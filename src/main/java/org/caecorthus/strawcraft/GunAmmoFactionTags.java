@@ -76,6 +76,7 @@ public final class GunAmmoFactionTags {
             matches.add(GunAmmoFaction.CIVILIAN);
         } else if (role.isInnocent() && !matches.contains(GunAmmoFaction.POLICE) && !matches.contains(GunAmmoFaction.KILLER)) {
             // Civilian is the broad good-player fallback; special police/killer tags stay explicit.
+            // Civilian 是好人阵营的宽泛兜底；警察、杀手这类特殊标签仍然显式匹配。
             matches.add(GunAmmoFaction.CIVILIAN);
         }
 
