@@ -74,6 +74,16 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void noellesCatalogRolesMapToBroadStrawCraftFactions() {
+        assertEquals(StrawFaction.KILLER, factionFor(noellesRole("bomber")));
+        assertEquals(StrawFaction.KILLER, factionFor(noellesRole("assassin")));
+        assertEquals(StrawFaction.GOOD, factionFor(noellesRole("detective")));
+        assertEquals(StrawFaction.GOOD, factionFor(noellesRole("bodyguard")));
+        assertEquals(StrawFaction.NEUTRAL, factionFor(noellesRole("jester")));
+        assertEquals(StrawFaction.NEUTRAL, factionFor(noellesRole("taotie")));
+    }
+
+    @Test
     void nullAndUnknownRoleDoNotReceivePrivilegedBehavior() {
         Role unknownRole = role(Identifier.of("strawcraft", "unknown_fixture"), false, false);
 
@@ -139,5 +149,9 @@ class StrawRoleMeaningTest {
 
     private static Role role(Identifier id, boolean innocent, boolean killerTools) {
         return new Role(id, 0xFFFFFF, innocent, killerTools, Role.MoodType.REAL, 200, false);
+    }
+
+    private static Role noellesRole(String path) {
+        return NoellesRoleCatalog.find(StrawCraft.id(path)).orElseThrow().watheRole();
     }
 }

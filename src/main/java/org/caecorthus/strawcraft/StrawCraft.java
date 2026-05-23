@@ -18,6 +18,7 @@ public final class StrawCraft implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        NoellesRoleCatalog.registerWithWathe();
         StrawMapConfigReloader.register();
         StrawMapVoting.register();
         StrawInteractionBlacklistAdapter.register();

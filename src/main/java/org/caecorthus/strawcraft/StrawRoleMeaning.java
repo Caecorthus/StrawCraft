@@ -56,6 +56,11 @@ public final class StrawRoleMeaning {
         if (WatheRoleIds.LOOSE_END.equals(roleId)) {
             return new Meaning(roleId, StrawFaction.NEUTRAL, RoleKind.UNKNOWN);
         }
+        Optional<NoellesRoleCatalog.Entry> noellesRole = NoellesRoleCatalog.find(roleId);
+        if (noellesRole.isPresent()) {
+            StrawFaction faction = noellesRole.get().faction();
+            return new Meaning(roleId, faction, kindForNoellesFaction(faction));
+        }
         if (role.canUseKiller()) {
             return new Meaning(roleId, StrawFaction.KILLER, RoleKind.KILLER);
         }
@@ -63,6 +68,14 @@ public final class StrawRoleMeaning {
             return new Meaning(roleId, StrawFaction.GOOD, RoleKind.BYSTANDER);
         }
         return new Meaning(roleId, StrawFaction.NONE, RoleKind.UNKNOWN);
+    }
+
+    private static RoleKind kindForNoellesFaction(StrawFaction faction) {
+        return switch (faction) {
+            case KILLER -> RoleKind.KILLER;
+            case GOOD -> RoleKind.BYSTANDER;
+            case NONE, NEUTRAL, WITCH -> RoleKind.UNKNOWN;
+        };
     }
 
     static GunAmmoFactionTags defaultAmmoFactionTags() {

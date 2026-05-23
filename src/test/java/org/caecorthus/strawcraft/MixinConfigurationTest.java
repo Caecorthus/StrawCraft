@@ -240,6 +240,10 @@ class MixinConfigurationTest {
         assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.BuildShopEntries");
         assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.KillPlayer");
         assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.RoleAssigned");
+        assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.RoleAppearanceCondition");
+        assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.RoleSelectionContext");
+        assertSourceTreeDoesNotContain("dev.doctor4t.noellesroles");
+        assertSourceTreeDoesNotContain("noellesroles.mixin");
         assertSourceTreeDoesNotContain("dev.doctor4t.wathe.util.ShopUtils");
         assertSourceTreeDoesNotContain("new ShopEntry.Builder");
         assertSourceTreeDoesNotContain("WatheRoles.NO_ROLE");
