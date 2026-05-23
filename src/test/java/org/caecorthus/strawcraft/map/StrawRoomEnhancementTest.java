@@ -78,6 +78,93 @@ class StrawRoomEnhancementTest {
     }
 
     @Test
+    void parserNormalizesTopLevelRoomsWhenEnhancementsAlsoExist() {
+        String json = """
+                {
+                  "dimension": "minecraft:overworld",
+                  "game_modes": ["wathe:murder"],
+                  "rooms": [
+                    {
+                      "id": "cabin_a",
+                      "display_name": "Cabin A",
+                      "max_players": 2,
+                      "spawns": [
+                        { "x": 10.5, "y": 64.0, "z": -3.5 }
+                      ]
+                    },
+                    { "id": "storage" }
+                  ],
+                  "enhancements": {
+                    "gravity": { "gravity_multiplier": 0.85 }
+                  }
+                }
+                """;
+
+        StrawMapEntry entry = StrawMapConfigParser.parse(
+                Identifier.of(StrawCraft.MOD_ID, "maps/wrapped_room_train.json"),
+                JsonParser.parseString(json)
+        ).getFirst();
+
+        assertEquals(2, entry.rooms().size());
+        assertEquals(
+                new StrawRoomConfig(
+                        "cabin_a",
+                        "Cabin A",
+                        2,
+                        List.of(new StrawRoomSpawnPoint(10.5, 64.0, -3.5, 0.0F, 0.0F))
+                ),
+                entry.rooms().getFirst()
+        );
+        assertEquals(new StrawRoomConfig("storage", "storage", 0, List.of()), entry.rooms().get(1));
+        assertEquals(0.85F, entry.enhancements().gravity().gravityMultiplier());
+    }
+
+    @Test
+    void parserPrefersEnhancementRoomsWhenBothRoomSourcesExist() {
+        String json = """
+                {
+                  "dimension": "minecraft:overworld",
+                  "game_modes": ["wathe:murder"],
+                  "rooms": [
+                    {
+                      "id": "top_level_room",
+                      "display_name": "Top Level Room",
+                      "max_players": 1
+                    }
+                  ],
+                  "enhancements": {
+                    "rooms": [
+                      {
+                        "id": "enhancement_room",
+                        "name": "Enhancement Room",
+                        "max_players": 3,
+                        "spawn_points": [
+                          { "x": 2.0, "y": 65.0, "z": -7.0, "yaw": 180.0 }
+                        ]
+                      }
+                    ],
+                    "gravity": { "gravity_multiplier": 0.85 }
+                  }
+                }
+                """;
+
+        StrawMapEntry entry = StrawMapConfigParser.parse(
+                Identifier.of(StrawCraft.MOD_ID, "maps/both_room_sources.json"),
+                JsonParser.parseString(json)
+        ).getFirst();
+
+        assertEquals(
+                List.of(new StrawRoomConfig(
+                        "enhancement_room",
+                        "Enhancement Room",
+                        3,
+                        List.of(new StrawRoomSpawnPoint(2.0, 65.0, -7.0, 180.0F, 0.0F))
+                )),
+                entry.rooms()
+        );
+    }
+
+    @Test
     void playersAreAssignedByRoomCapacityInStableOrder() {
         UUID first = UUID.fromString("00000000-0000-0000-0000-000000000001");
         UUID second = UUID.fromString("00000000-0000-0000-0000-000000000002");

@@ -210,7 +210,7 @@ public class StrawMapVotingComponent implements AutoSyncedComponent, ServerTicki
             this.sync();
         }
         if (server != null) {
-            transition.selectedMap().ifPresent(selected -> StrawMapVoting.applySelectedMap(server, selected));
+            StrawMapVoting.applyFinishEffects(server, transition);
         }
     }
 }

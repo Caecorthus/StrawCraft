@@ -30,7 +30,7 @@ public final class GunAmmoFactionTags {
     }
 
     public static boolean isAmbiguous(Role role) {
-        return DEFAULT.matchingFactions(role).size() > 1;
+        return DEFAULT.isAmbiguousRole(role);
     }
 
     public GunAmmoFactionTags withPoliceRole(Identifier roleId) {
@@ -46,19 +46,36 @@ public final class GunAmmoFactionTags {
     }
 
     public Optional<GunAmmoFaction> resolveRole(Role role) {
-        EnumSet<GunAmmoFaction> matches = matchingFactions(role);
-        if (matches.size() != 1) {
-            return Optional.empty();
-        }
-        return Optional.of(matches.iterator().next());
+        return resolveMeaning(StrawRoleMeaning.meaningFor(role));
+    }
+
+    Optional<GunAmmoFaction> resolveMeaning(StrawRoleMeaning.Meaning meaning) {
+        return RoleSemantics.ammoFactionFor(meaning.kind(), explicitFactionTags(meaning.roleId()));
     }
 
     public boolean isAmbiguousRole(Role role) {
-        return matchingFactions(role).size() > 1;
+        return matchingFactions(StrawRoleMeaning.meaningFor(role)).size() > 1;
     }
 
-    private EnumSet<GunAmmoFaction> matchingFactions(Role role) {
-        return StrawRoleMeaning.matchingAmmoFactions(role, policeRoles, civilianRoles, killerRoles);
+    private EnumSet<GunAmmoFaction> matchingFactions(StrawRoleMeaning.Meaning meaning) {
+        return RoleSemantics.matchingAmmoFactions(meaning.kind(), explicitFactionTags(meaning.roleId()));
+    }
+
+    private EnumSet<GunAmmoFaction> explicitFactionTags(Identifier roleId) {
+        EnumSet<GunAmmoFaction> tags = EnumSet.noneOf(GunAmmoFaction.class);
+        if (roleId == null || StrawRoleMeaning.deniesAmmoFaction(roleId)) {
+            return tags;
+        }
+        if (policeRoles.contains(roleId)) {
+            tags.add(GunAmmoFaction.POLICE);
+        }
+        if (civilianRoles.contains(roleId)) {
+            tags.add(GunAmmoFaction.CIVILIAN);
+        }
+        if (killerRoles.contains(roleId)) {
+            tags.add(GunAmmoFaction.KILLER);
+        }
+        return tags;
     }
 
     private GunAmmoFactionTags copyWith(Identifier roleId, GunAmmoFaction faction) {

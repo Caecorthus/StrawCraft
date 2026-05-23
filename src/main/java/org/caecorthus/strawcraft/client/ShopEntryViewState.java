@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 import java.util.Optional;
 
 public record ShopEntryViewState(
-        int purchaseIndex,
+        int wathePurchaseIndex,
         ShopEntry.Type type,
         ItemStack displayStack,
         ItemStack actualStack,
@@ -25,14 +25,14 @@ public record ShopEntryViewState(
     }
 
     public static ShopEntryViewState withoutShop(
-            int purchaseIndex,
+            int wathePurchaseIndex,
             ShopEntry.Type type,
             ItemStack displayStack,
             ItemStack actualStack,
             int price
     ) {
         return new ShopEntryViewState(
-                purchaseIndex,
+                wathePurchaseIndex,
                 type,
                 displayStack,
                 actualStack,
@@ -48,7 +48,7 @@ public record ShopEntryViewState(
     }
 
     public static ShopEntryViewState fromSnapshot(
-            int purchaseIndex,
+            int wathePurchaseIndex,
             ShopEntry.Type type,
             ItemStack displayStack,
             ItemStack actualStack,
@@ -56,7 +56,7 @@ public record ShopEntryViewState(
     ) {
         boolean active = !snapshot.onCooldown() && snapshot.inStock();
         return new ShopEntryViewState(
-                purchaseIndex,
+                wathePurchaseIndex,
                 type,
                 displayStack,
                 actualStack,

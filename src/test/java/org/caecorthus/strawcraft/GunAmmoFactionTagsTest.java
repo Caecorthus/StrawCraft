@@ -26,6 +26,14 @@ class GunAmmoFactionTagsTest {
         assertTrue(tags.resolveRole(role(Identifier.of("wathe", "civilian"), true, false)).isEmpty());
     }
 
+    @Test
+    void discoveryCivilianNeverReceivesAmmoEvenWhenExplicitlyTagged() {
+        GunAmmoFactionTags tags = GunAmmoFactionTags.empty()
+                .withPoliceRole(WatheRoleIds.DISCOVERY_CIVILIAN);
+
+        assertTrue(tags.resolveRole(role(WatheRoleIds.DISCOVERY_CIVILIAN, true, false)).isEmpty());
+    }
+
     private static Role role(Identifier id, boolean innocent, boolean killerTools) {
         return new Role(id, 0xFFFFFF, innocent, killerTools, Role.MoodType.REAL, 200, false);
     }

@@ -1,15 +1,16 @@
-package org.caecorthus.strawcraft;
+package org.caecorthus.strawcraft.client;
 
 import dev.doctor4t.wathe.util.ShopEntry;
-import org.caecorthus.strawcraft.client.ShopEntryViewState;
-import org.caecorthus.strawcraft.client.WatheShopClientAdapter;
+import org.caecorthus.strawcraft.StrawShopEntry;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -66,12 +67,12 @@ class WatheShopClientAdapterTest {
                 new FakeShopState()
         );
 
-        Method purchaseIndex = viewStateAccessor("purchaseIndex");
+        Method wathePurchaseIndex = viewStateAccessor("wathePurchaseIndex");
         Method type = viewStateAccessor("type");
         Method displayStack = viewStateAccessor("displayStack");
 
         assertEquals(List.of(0, 1, 2), snapshot.entryStates().stream()
-                .map(state -> invokeInt(purchaseIndex, state))
+                .map(state -> invokeInt(wathePurchaseIndex, state))
                 .toList());
         assertEquals(List.of("100", "300", "250"), snapshot.entryStates().stream()
                 .map(ShopEntryViewState::priceText)
@@ -80,6 +81,90 @@ class WatheShopClientAdapterTest {
                 .map(state -> invoke(type, state))
                 .toList());
         snapshot.entryStates().forEach(state -> assertNull(invoke(displayStack, state)));
+    }
+
+    @Test
+    void buyUsesVisibleItemStoredWathePurchaseIndexWhenVisibleOrderDiffers() {
+        ShopEntry tool = new ShopEntry(null, 100, ShopEntry.Type.TOOL);
+        ShopEntry weapon = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
+        ShopEntry poison = new ShopEntry(null, 250, ShopEntry.Type.POISON);
+
+        WatheShopClientAdapter.ShopSnapshot watheOrder = WatheShopClientAdapter.snapshotFrom(
+                List.of(tool, weapon, poison),
+                new FakeShopState()
+        );
+        WatheShopClientAdapter.ShopSnapshot visibleOrder = new WatheShopClientAdapter.ShopSnapshot(
+                List.of(weapon, tool, poison),
+                watheOrder.balance(),
+                List.of(
+                        watheOrder.entryStates().get(1),
+                        watheOrder.entryStates().get(0),
+                        watheOrder.entryStates().get(2)
+                ),
+                List.of(
+                        watheOrder.entryKeys().get(1),
+                        watheOrder.entryKeys().get(0),
+                        watheOrder.entryKeys().get(2)
+                )
+        );
+        List<Integer> sentIndices = new ArrayList<>();
+
+        new WatheShopClientAdapter(visibleOrder, sentIndices::add).buy(0);
+
+        assertEquals(List.of(1), sentIndices);
+    }
+
+    @Test
+    void buyKeepsMatchingVisibleAndWatheOrderBehavior() {
+        ShopEntry tool = new ShopEntry(null, 100, ShopEntry.Type.TOOL);
+        ShopEntry weapon = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
+        WatheShopClientAdapter.ShopSnapshot snapshot = WatheShopClientAdapter.snapshotFrom(
+                List.of(tool, weapon),
+                new FakeShopState()
+        );
+        List<Integer> sentIndices = new ArrayList<>();
+
+        new WatheShopClientAdapter(snapshot, sentIndices::add).buy(0);
+
+        assertEquals(List.of(0), sentIndices);
+    }
+
+    @Test
+    void buyIgnoresNegativeVisibleIndexWithoutSendingPurchase() {
+        WatheShopClientAdapter.ShopSnapshot snapshot = WatheShopClientAdapter.snapshotFrom(
+                List.of(new ShopEntry(null, 100, ShopEntry.Type.TOOL)),
+                new FakeShopState()
+        );
+        List<Integer> sentIndices = new ArrayList<>();
+        WatheShopClientAdapter adapter = new WatheShopClientAdapter(snapshot, sentIndices::add);
+
+        assertDoesNotThrow(() -> adapter.buy(-1));
+
+        assertTrue(sentIndices.isEmpty());
+    }
+
+    @Test
+    void buyIgnoresTooLargeVisibleIndexWithoutSendingPurchase() {
+        WatheShopClientAdapter.ShopSnapshot snapshot = WatheShopClientAdapter.snapshotFrom(
+                List.of(new ShopEntry(null, 100, ShopEntry.Type.TOOL)),
+                new FakeShopState()
+        );
+        List<Integer> sentIndices = new ArrayList<>();
+        WatheShopClientAdapter adapter = new WatheShopClientAdapter(snapshot, sentIndices::add);
+
+        assertDoesNotThrow(() -> adapter.buy(1));
+
+        assertTrue(sentIndices.isEmpty());
+    }
+
+    @Test
+    void buyBeforeSnapshotIgnoresVisibleIndexWithoutSendingPurchase() {
+        List<Integer> sentIndices = new ArrayList<>();
+        WatheShopClientAdapter adapter = new WatheShopClientAdapter(null, sentIndices::add);
+
+        assertDoesNotThrow(() -> adapter.buy(0));
+
+        assertTrue(sentIndices.isEmpty());
     }
 
     @Test

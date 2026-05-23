@@ -25,7 +25,7 @@ public final class WatheRoundParticipantLifecycle {
                 actions,
                 new LifecycleHooks(
                         () -> WatheDeathReasonTracker
-                                .consumeDeathAttribution(player.getUuid(), StrawDeathReasons.VANILLA_DEATH)
+                                .deathAttribution(player.getUuid(), StrawDeathReasons.VANILLA_DEATH)
                                 .orElseThrow(),
                         attribution -> KillRewardPayout.payoutVanillaDeath(player, game, attribution),
                         forward -> {
@@ -42,6 +42,7 @@ public final class WatheRoundParticipantLifecycle {
                         },
                         () -> officialDeathBaselineCompleted(player),
                         context -> StrawDeathEvents.OFFICIAL_DEATH_COMPLETED.invoker().onOfficialDeathCompleted(context),
+                        () -> WatheDeathReasonTracker.clearDeathAttribution(player.getUuid()),
                         () -> clearRuntimeState(player),
                         game::sync,
                         () -> player.getWorld().getTime()
@@ -74,6 +75,9 @@ public final class WatheRoundParticipantLifecycle {
                 }
             }
         } finally {
+            if (actions.clearDeathAttribution()) {
+                hooks.clearDeathAttribution().run();
+            }
             if (actions.clearRuntimeState()) {
                 hooks.clearRuntimeState().run();
             }
@@ -166,6 +170,7 @@ public final class WatheRoundParticipantLifecycle {
             Consumer<OfficialDeathForward> forwardOfficialDeath,
             BooleanSupplier officialDeathBaselineCompleted,
             Consumer<StrawDeathEvents.OfficialDeathContext> publishOfficialDeathCompletion,
+            Runnable clearDeathAttribution,
             Runnable clearRuntimeState,
             Runnable syncWatheRound,
             LongSupplier gameTime

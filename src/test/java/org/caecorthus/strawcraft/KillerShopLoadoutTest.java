@@ -29,7 +29,7 @@ class KillerShopLoadoutTest {
     void p320ReplacementKeepsOriginalKillerShopPricingAndType() {
         ShopEntry original = new ShopEntry(null, 300, ShopEntry.Type.WEAPON);
 
-        KillerShopLoadout.ReplacementSettings settings = KillerShopLoadout.replacementSettingsFor(original);
+        KillerShopCatalog.ReplacementSettings settings = KillerShopLoadout.replacementSettingsFor(original);
 
         assertEquals("p320", settings.id());
         assertEquals(300, settings.price());
@@ -72,7 +72,7 @@ class KillerShopLoadoutTest {
     }
 
     private static Optional<ShopEntry> p320ReplacementFor(ShopEntry original) {
-        KillerShopLoadout.ReplacementSettings settings = KillerShopLoadout.replacementSettingsFor(original);
+        KillerShopCatalog.ReplacementSettings settings = KillerShopLoadout.replacementSettingsFor(original);
         return Optional.of(new StrawShopEntry(
                 settings.id(),
                 null,

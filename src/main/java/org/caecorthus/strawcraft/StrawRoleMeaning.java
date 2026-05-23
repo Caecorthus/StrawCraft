@@ -4,20 +4,28 @@ import dev.doctor4t.wathe.api.Role;
 import net.minecraft.util.Identifier;
 import org.caecorthus.strawcraft.role.StrawFaction;
 
-import java.util.EnumSet;
 import java.util.Optional;
-import java.util.Set;
 
 public final class StrawRoleMeaning {
     private StrawRoleMeaning() {
     }
 
+    public enum RoleKind {
+        UNKNOWN,
+        KILLER,
+        DETECTIVE,
+        BYSTANDER
+    }
+
+    public record Meaning(Identifier roleId, StrawFaction faction, RoleKind kind) {
+    }
+
     public static boolean canUseKillerShop(Role role) {
-        return factionFor(role) == StrawFaction.KILLER;
+        return meaningFor(role).faction() == StrawFaction.KILLER;
     }
 
     public static Optional<GunAmmoFaction> ammoFactionFor(Role role) {
-        return defaultAmmoFactionTags().resolveRole(role);
+        return defaultAmmoFactionTags().resolveMeaning(meaningFor(role));
     }
 
     public static boolean receivesVigilanteLoadout(Role role) {
@@ -25,29 +33,36 @@ public final class StrawRoleMeaning {
     }
 
     public static StrawFaction factionFor(Role role) {
+        return meaningFor(role).faction();
+    }
+
+    static Meaning meaningFor(Role role) {
         if (role == null) {
-            return StrawFaction.NONE;
+            return new Meaning(null, StrawFaction.NONE, RoleKind.UNKNOWN);
         }
         Identifier roleId = role.identifier();
         if (WatheRoleIds.DISCOVERY_CIVILIAN.equals(roleId) || WatheRoleIds.NO_ROLE.equals(roleId)) {
-            return StrawFaction.NONE;
+            return new Meaning(roleId, StrawFaction.NONE, RoleKind.UNKNOWN);
         }
-        if (WatheRoleIds.CIVILIAN.equals(roleId) || WatheRoleIds.VIGILANTE.equals(roleId)) {
-            return StrawFaction.GOOD;
+        if (WatheRoleIds.VIGILANTE.equals(roleId)) {
+            return new Meaning(roleId, StrawFaction.GOOD, RoleKind.DETECTIVE);
+        }
+        if (WatheRoleIds.CIVILIAN.equals(roleId)) {
+            return new Meaning(roleId, StrawFaction.GOOD, RoleKind.BYSTANDER);
         }
         if (WatheRoleIds.KILLER.equals(roleId)) {
-            return StrawFaction.KILLER;
+            return new Meaning(roleId, StrawFaction.KILLER, RoleKind.KILLER);
         }
         if (WatheRoleIds.LOOSE_END.equals(roleId)) {
-            return StrawFaction.NEUTRAL;
+            return new Meaning(roleId, StrawFaction.NEUTRAL, RoleKind.UNKNOWN);
         }
         if (role.canUseKiller()) {
-            return StrawFaction.KILLER;
+            return new Meaning(roleId, StrawFaction.KILLER, RoleKind.KILLER);
         }
         if (role.isInnocent()) {
-            return StrawFaction.GOOD;
+            return new Meaning(roleId, StrawFaction.GOOD, RoleKind.BYSTANDER);
         }
-        return StrawFaction.NONE;
+        return new Meaning(roleId, StrawFaction.NONE, RoleKind.UNKNOWN);
     }
 
     static GunAmmoFactionTags defaultAmmoFactionTags() {
@@ -55,34 +70,8 @@ public final class StrawRoleMeaning {
                 .withPoliceRole(WatheRoleIds.VIGILANTE);
     }
 
-    static EnumSet<GunAmmoFaction> matchingAmmoFactions(
-            Role role,
-            Set<Identifier> policeRoles,
-            Set<Identifier> civilianRoles,
-            Set<Identifier> killerRoles
-    ) {
-        if (role == null || WatheRoleIds.DISCOVERY_CIVILIAN.equals(role.identifier())) {
-            return EnumSet.noneOf(GunAmmoFaction.class);
-        }
-
-        EnumSet<GunAmmoFaction> matches = EnumSet.noneOf(GunAmmoFaction.class);
-        Identifier roleId = role.identifier();
-        if (policeRoles.contains(roleId)) {
-            matches.add(GunAmmoFaction.POLICE);
-        }
-        StrawFaction faction = factionFor(role);
-        if (killerRoles.contains(roleId) || faction == StrawFaction.KILLER) {
-            matches.add(GunAmmoFaction.KILLER);
-        }
-        if (civilianRoles.contains(roleId)) {
-            matches.add(GunAmmoFaction.CIVILIAN);
-        } else if (faction == StrawFaction.GOOD && !matches.contains(GunAmmoFaction.POLICE) && !matches.contains(GunAmmoFaction.KILLER)) {
-            // Civilian is the broad good-player fallback; special police/killer tags stay explicit.
-            // Civilian 是好人阵营的宽泛兜底；警察、杀手这类特殊标签仍然显式匹配。
-            matches.add(GunAmmoFaction.CIVILIAN);
-        }
-
-        return matches;
+    static boolean deniesAmmoFaction(Identifier roleId) {
+        return WatheRoleIds.DISCOVERY_CIVILIAN.equals(roleId);
     }
 
     static String describeForLog(Role role) {

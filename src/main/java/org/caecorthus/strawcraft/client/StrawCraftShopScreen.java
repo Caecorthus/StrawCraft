@@ -93,14 +93,13 @@ public final class StrawCraftShopScreen extends Screen {
                 .build());
 
         for (int index = 0; index < this.snapshot.entries().size(); index++) {
-            // Button order must stay aligned with Wathe's adapter snapshot.
-            // The click payload is only a slot number; Wathe re-checks it server-side.
-            // 按钮顺序必须和 Wathe 适配层快照保持一致。
-            // 点击时只发送槽位编号，Wathe 会在服务端重新校验。
+            // Button order is the visible catalog order; the adapter maps it to Wathe's purchase order.
+            // 按钮顺序是可见目录顺序；适配层会把它映射回 Wathe 的购买顺序。
             ShopEntryViewState state = this.snapshot.entryStates().get(index);
             ShopEntryButton button = new ShopEntryButton(
                     ShopGridLayout.slotX(this.panelX, index, columns),
                     ShopGridLayout.slotY(this.panelY, index, columns),
+                    index,
                     state,
                     this.shopAdapter
             );
@@ -179,11 +178,13 @@ public final class StrawCraftShopScreen extends Screen {
     }
 
     private static final class ShopEntryButton extends PressableWidget {
+        private final int visibleIndex;
         private ShopEntryViewState state;
         private final WatheShopClientAdapter shopAdapter;
 
-        private ShopEntryButton(int x, int y, ShopEntryViewState state, WatheShopClientAdapter shopAdapter) {
+        private ShopEntryButton(int x, int y, int visibleIndex, ShopEntryViewState state, WatheShopClientAdapter shopAdapter) {
             super(x, y, ShopGridLayout.SLOT_SIZE, ShopGridLayout.SLOT_SIZE, displayNameFor(state));
+            this.visibleIndex = visibleIndex;
             this.state = state;
             this.shopAdapter = shopAdapter;
         }
@@ -194,7 +195,7 @@ public final class StrawCraftShopScreen extends Screen {
 
         @Override
         public void onPress() {
-            this.shopAdapter.buy(this.state.purchaseIndex());
+            this.shopAdapter.buy(this.visibleIndex);
         }
 
         @Override

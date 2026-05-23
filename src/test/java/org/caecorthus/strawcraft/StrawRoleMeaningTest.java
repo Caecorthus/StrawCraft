@@ -41,6 +41,7 @@ class StrawRoleMeaningTest {
         assertEquals(StrawFaction.GOOD, factionFor(role));
         assertTrue(receivesVigilanteLoadout(role));
         assertFalse(canUseKillerShop(role));
+        assertEquals(Optional.of(GunAmmoFaction.POLICE), ammoFactionFor(role));
     }
 
     @Test

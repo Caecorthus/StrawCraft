@@ -52,8 +52,12 @@ public final class WatheDeathReasonTracker {
         rememberDeathAttribution(victimUuid, deathReason, (UUID) null);
     }
 
-    public static void clearDeathReason(UUID victimUuid) {
+    public static void clearDeathAttribution(UUID victimUuid) {
         RECENT_DEATH_ATTRIBUTIONS.remove(victimUuid);
+    }
+
+    public static void clearDeathReason(UUID victimUuid) {
+        clearDeathAttribution(victimUuid);
     }
 
     public static Identifier consumeDeathReason(UUID victimUuid, Identifier fallbackDeathReason) {
@@ -63,7 +67,13 @@ public final class WatheDeathReasonTracker {
     }
 
     public static Optional<DeathAttribution> consumeDeathAttribution(UUID victimUuid, Identifier fallbackDeathReason) {
-        DeathAttribution attribution = RECENT_DEATH_ATTRIBUTIONS.remove(victimUuid);
+        Optional<DeathAttribution> attribution = deathAttribution(victimUuid, fallbackDeathReason);
+        clearDeathAttribution(victimUuid);
+        return attribution;
+    }
+
+    public static Optional<DeathAttribution> deathAttribution(UUID victimUuid, Identifier fallbackDeathReason) {
+        DeathAttribution attribution = RECENT_DEATH_ATTRIBUTIONS.get(victimUuid);
         if (attribution != null) {
             return Optional.of(attribution);
         }

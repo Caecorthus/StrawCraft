@@ -28,6 +28,16 @@ class VigilanteLoadoutTest {
     }
 
     @Test
+    void explicitPoliceAmmoRoleDoesNotBecomeVigilanteLoadoutRole() {
+        Role customPoliceAmmoRole = role(Identifier.of("strawcraft", "police_ammo_fixture"), true, false);
+        GunAmmoFactionTags tags = GunAmmoFactionTags.empty()
+                .withPoliceRole(customPoliceAmmoRole.identifier());
+
+        assertEquals(GunAmmoFaction.POLICE, tags.resolveRole(customPoliceAmmoRole).orElseThrow());
+        assertFalse(VigilanteLoadout.shouldReplaceAssignedRole(customPoliceAmmoRole));
+    }
+
+    @Test
     void roleAssignedAdapterCleansInventoryForEveryRoleAndOnlyGrantsVigilanteGunToVigilantes() {
         assertEquals(new RoleAssignedLoadouts.AssignmentPlan(true, true),
                 RoleAssignedLoadouts.planAssignedLoadout(role(WatheRoleIds.VIGILANTE, true, false), false));

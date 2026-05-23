@@ -20,9 +20,22 @@ import org.caecorthus.strawcraft.StrawShopEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.function.IntConsumer;
 
 @Environment(EnvType.CLIENT)
 public final class WatheShopClientAdapter {
+    private final IntConsumer purchaseSender;
+    private ShopSnapshot latestSnapshot;
+
+    public WatheShopClientAdapter() {
+        this(ShopSnapshot.empty(), index -> ClientPlayNetworking.send(new StoreBuyPayload(index)));
+    }
+
+    WatheShopClientAdapter(ShopSnapshot latestSnapshot, IntConsumer purchaseSender) {
+        this.latestSnapshot = latestSnapshot;
+        this.purchaseSender = purchaseSender;
+    }
+
     public boolean canOpen(MinecraftClient client) {
         ClientPlayerEntity player = player(client);
         if (player == null) {
@@ -34,19 +47,34 @@ public final class WatheShopClientAdapter {
     public ShopSnapshot snapshot(MinecraftClient client) {
         ClientPlayerEntity player = player(client);
         if (player == null) {
-            return ShopSnapshot.empty();
+            return remember(ShopSnapshot.empty());
         }
-        return snapshotFrom(entriesFor(player), new PlayerShopState(
+        return remember(snapshotFrom(entriesFor(player), new PlayerShopState(
                 PlayerShopComponent.KEY.get(player),
                 StrawPlayerShopComponent.KEY.get(player),
                 player.getWorld().getTime()
-        ));
+        )));
     }
 
-    public void buy(int index) {
+    public void buy(int visibleIndex) {
+        if (this.latestSnapshot == null
+                || visibleIndex < 0
+                || visibleIndex >= this.latestSnapshot.entryStates().size()) {
+            // Stale UI clicks can point outside the latest visible snapshot; let the
+            // next refresh rebuild the buttons instead of crashing the client.
+            // 过期的界面点击可能越过最新可见快照；交给下一次刷新重建按钮，
+            // 不要因此让客户端崩溃。
+            return;
+        }
+        int wathePurchaseIndex = this.latestSnapshot.entryStates().get(visibleIndex).wathePurchaseIndex();
         // Wathe revalidates the index server-side before completing the purchase.
         // Wathe 会在服务端重新校验编号，然后才完成购买。
-        ClientPlayNetworking.send(new StoreBuyPayload(index));
+        this.purchaseSender.accept(wathePurchaseIndex);
+    }
+
+    private ShopSnapshot remember(ShopSnapshot snapshot) {
+        this.latestSnapshot = snapshot;
+        return snapshot;
     }
 
     public static ShopSnapshot snapshotFrom(List<ShopEntry> entries, ShopState shopState) {
@@ -65,14 +93,14 @@ public final class WatheShopClientAdapter {
         return new ShopSnapshot(List.copyOf(entries), balance, List.copyOf(entryStates), List.copyOf(entryKeys));
     }
 
-    private static ShopEntryViewState viewStateFor(int purchaseIndex, ShopEntry entry, ShopState shopState) {
+    private static ShopEntryViewState viewStateFor(int wathePurchaseIndex, ShopEntry entry, ShopState shopState) {
         ItemStack displayStack = StrawShopEntry.displayStackFor(entry);
         ItemStack actualStack = StrawShopEntry.actualStackFor(entry);
         if (shopState == null) {
-            return ShopEntryViewState.withoutShop(purchaseIndex, entry.type(), displayStack, actualStack, entry.price());
+            return ShopEntryViewState.withoutShop(wathePurchaseIndex, entry.type(), displayStack, actualStack, entry.price());
         }
         return ShopEntryViewState.fromSnapshot(
-                purchaseIndex,
+                wathePurchaseIndex,
                 entry.type(),
                 displayStack,
                 actualStack,

@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +15,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MapVotingArchitectureTest {
     private static final Path MAP_SOURCE_ROOT = Path.of("src/main/java/org/caecorthus/strawcraft/map");
     private static final Path COMPONENT_SOURCE = MAP_SOURCE_ROOT.resolve("StrawMapVotingComponent.java");
+    private static final Set<String> SELECTED_MAP_APPLICATION_SIDE_EFFECT_FILES = Set.of(
+            "MapVotingEffectApplier.java",
+            "StrawMapVoting.java"
+    );
+    private static final Set<String> MAP_ENHANCEMENT_SIDE_EFFECT_FILES = Set.of(
+            "StrawInteractionBlacklistAdapter.java",
+            "StrawPlayerEnhancementAdapter.java",
+            "StrawRoomEnhancementAdapter.java"
+    );
 
     @Test
     void componentDoesNotApplySelectedMapSideEffectsDirectly() throws IOException {
@@ -41,8 +51,9 @@ class MapVotingArchitectureTest {
                     .toList();
         }
 
-        assertTrue(filesWithSideEffects.stream().allMatch(MapVotingArchitectureTest::isMapVotingAdapterCode),
-                "Wathe/Fabric map application side effects should stay in StrawMapVoting or a small map voting adapter/helper: "
+        assertTrue(filesWithSideEffects.stream().allMatch(MapVotingArchitectureTest::isAllowedMapSideEffectFile),
+                "Wathe/Fabric map application side effects should stay in the map voting applier, "
+                        + "or in explicitly reviewed map enhancement adapters for unrelated runtime effects: "
                         + filesWithSideEffects);
     }
 
@@ -60,9 +71,10 @@ class MapVotingArchitectureTest {
         }
     }
 
-    private static boolean isMapVotingAdapterCode(Path path) {
+    private static boolean isAllowedMapSideEffectFile(Path path) {
         String fileName = path.getFileName().toString();
-        return fileName.equals("StrawMapVoting.java") || fileName.endsWith("Adapter.java");
+        return SELECTED_MAP_APPLICATION_SIDE_EFFECT_FILES.contains(fileName)
+                || MAP_ENHANCEMENT_SIDE_EFFECT_FILES.contains(fileName);
     }
 
     private static String read(Path path) throws IOException {

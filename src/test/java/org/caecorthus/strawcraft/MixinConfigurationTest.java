@@ -161,7 +161,8 @@ class MixinConfigurationTest {
                 StandardCharsets.UTF_8
         );
 
-        assertTrue(shopScreen.contains("state.purchaseIndex()"));
+        assertTrue(shopScreen.contains("this.shopAdapter.buy(this.visibleIndex)"));
+        assertFalse(shopScreen.contains("state.purchaseIndex()"));
         assertFalse(shopScreen.contains("this.shopAdapter.buy(this.index)"));
     }
 

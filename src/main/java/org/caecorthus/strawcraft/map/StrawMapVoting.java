@@ -2,9 +2,6 @@ package org.caecorthus.strawcraft.map;
 
 import com.mojang.brigadier.CommandDispatcher;
 import dev.doctor4t.wathe.api.GameMode;
-import dev.doctor4t.wathe.api.MapEffect;
-import dev.doctor4t.wathe.api.WatheGameModes;
-import dev.doctor4t.wathe.api.WatheMapEffects;
 import dev.doctor4t.wathe.api.event.GameEvents;
 import dev.doctor4t.wathe.cca.GameWorldComponent;
 import dev.doctor4t.wathe.cca.MapVariablesWorldComponent;
@@ -31,7 +28,11 @@ import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.caecorthus.strawcraft.StrawCraft;
 
+import java.util.Optional;
+
 public final class StrawMapVoting {
+    private static final MapVotingEffectApplier EFFECT_APPLIER = new MapVotingEffectApplier();
+
     private StrawMapVoting() {
     }
 
@@ -60,23 +61,20 @@ public final class StrawMapVoting {
         return currentMode == null ? StrawMapEntry.DEFAULT_GAME_MODE : currentMode.identifier;
     }
 
-    static void applySelectedMap(MinecraftServer server, StrawMapVoteOption selected) {
-        ServerWorld targetWorld = worldFor(server, selected.dimensionId());
-        if (targetWorld == null) {
-            StrawCraft.LOGGER.warn("Cannot teleport map voters: target dimension {} is not loaded", selected.dimensionId());
-            return;
-        }
+    static Optional<MapVoteFinishPlan> finishPlan(MapVotingStateMachine.Transition transition) {
+        return transition.selectedMap().map(MapVoteFinishPlan::from);
+    }
 
-        GameWorldComponent game = GameWorldComponent.KEY.get(targetWorld);
-        // Apply the chosen Wathe mode/effect to the destination world so the next
-        // explicit game start uses the map vote result without modifying Wathe sources.
-        // 把选中的 Wathe 模式和地图效果写到目标世界；
-        // 下一次显式开局就会使用投票结果，同时不需要修改 Wathe 源码。
-        game.setGameMode(gameMode(selected.gameModeId()));
-        game.setMapEffect(mapEffect(selected.mapEffectId()));
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            teleportToMapSpawn(player, targetWorld);
-        }
+    static void applyFinishEffects(MinecraftServer server, MapVotingStateMachine.Transition transition) {
+        applyFinishEffects(server, transition, EFFECT_APPLIER);
+    }
+
+    static void applyFinishEffects(
+            MinecraftServer server,
+            MapVotingStateMachine.Transition transition,
+            MapVotingEffectApplier effectApplier
+    ) {
+        finishPlan(transition).ifPresent(plan -> effectApplier.applyFinishEffects(server, plan));
     }
 
     private static void teleportJoiningPlayerToSelectedMap(ServerPlayerEntity player, MinecraftServer server) {
@@ -110,14 +108,6 @@ public final class StrawMapVoting {
 
     private static ServerWorld worldFor(MinecraftServer server, Identifier dimensionId) {
         return server.getWorld(RegistryKey.of(RegistryKeys.WORLD, dimensionId));
-    }
-
-    private static GameMode gameMode(Identifier id) {
-        return WatheGameModes.GAME_MODES.getOrDefault(id, WatheGameModes.MURDER);
-    }
-
-    private static MapEffect mapEffect(Identifier id) {
-        return WatheMapEffects.MAP_EFFECTS.getOrDefault(id, WatheMapEffects.GENERIC);
     }
 
     private static void teleportToMapSpawn(ServerPlayerEntity player, ServerWorld targetWorld) {
