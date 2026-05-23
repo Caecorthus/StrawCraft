@@ -27,7 +27,21 @@ public final class WatheDeathReasonTracker {
     }
 
     public static void rememberDeathAttribution(UUID victimUuid, Identifier deathReason, UUID killerUuid) {
-        RECENT_DEATH_ATTRIBUTIONS.put(victimUuid, new DeathAttribution(deathReason, Optional.ofNullable(killerUuid)));
+        rememberDeathAttribution(victimUuid, deathReason, killerUuid, false);
+    }
+
+    public static void rememberDeathAttribution(UUID victimUuid, Identifier deathReason, UUID killerUuid, boolean indirect) {
+        RECENT_DEATH_ATTRIBUTIONS.put(victimUuid, new DeathAttribution(deathReason, Optional.ofNullable(killerUuid), indirect));
+    }
+
+    public static void rememberIndirectDeathAttribution(UUID victimUuid, Identifier deathReason, UUID killerUuid) {
+        // Indirect sources such as poison can point Wathe at the rewarded killer without copying Wathe code.
+        // 毒药等间接来源可以把 Wathe 指向应获主奖励的杀手，而不需要复制 Wathe 源码。
+        rememberDeathAttribution(victimUuid, deathReason, killerUuid, true);
+    }
+
+    public static void rememberShotInnocentDeath(UUID victimUuid) {
+        rememberDeathAttribution(victimUuid, StrawDeathReasons.SHOT_INNOCENT, (UUID) null);
     }
 
     public static void rememberDeathAttribution(UUID victimUuid, Identifier deathReason, DamageSource source) {
@@ -53,7 +67,7 @@ public final class WatheDeathReasonTracker {
         if (attribution != null) {
             return Optional.of(attribution);
         }
-        return Optional.of(new DeathAttribution(fallbackDeathReason, Optional.empty()));
+        return Optional.of(new DeathAttribution(fallbackDeathReason, Optional.empty(), false));
     }
 
     public static Optional<Identifier> watheReasonForDamageType(Identifier damageTypeId) {
@@ -82,6 +96,6 @@ public final class WatheDeathReasonTracker {
         return Optional.empty();
     }
 
-    public record DeathAttribution(Identifier deathReason, Optional<UUID> killerUuid) {
+    public record DeathAttribution(Identifier deathReason, Optional<UUID> killerUuid, boolean indirect) {
     }
 }

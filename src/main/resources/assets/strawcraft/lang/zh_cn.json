@@ -6,5 +6,10 @@
   "gui.strawcraft.map_voting.selecting": "正在选择地图...",
   "gui.strawcraft.map_voting.votes": "%s 票",
   "gui.strawcraft.map_voting.my_vote": "已投票",
-  "gui.strawcraft.map_voting.player_range": "%1$s-%2$s 人"
+  "gui.strawcraft.map_voting.player_range": "%1$s-%2$s 人",
+  "role.faction.strawcraft.none": "无阵营",
+  "role.faction.strawcraft.good": "好人",
+  "role.faction.strawcraft.killer": "杀手",
+  "role.faction.strawcraft.neutral": "中立",
+  "role.faction.strawcraft.witch": "魔女"
 }

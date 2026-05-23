@@ -1,9 +1,11 @@
 package org.caecorthus.strawcraft.mixin;
 
+import dev.doctor4t.wathe.cca.GameWorldComponent;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import org.caecorthus.strawcraft.WatheDeathReasonTracker;
+import org.caecorthus.strawcraft.map.StrawPlayerEnhancementAdapter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,9 +16,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class PlayerEntityMixin {
     @Inject(method = "wathe$overrideMovementSpeed", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
     private void strawcraft$keepVanillaMovementSpeed(float original, CallbackInfoReturnable<Float> handlerCallback) {
-        // Return the speed Minecraft already calculated, preserving vanilla walk/sprint/effect math.
-        // 直接返回 Minecraft 已经算好的速度，保留原版行走、疾跑和效果计算。
-        handlerCallback.setReturnValue(original);
+        PlayerEntity player = (PlayerEntity) (Object) this;
+        // Start from Minecraft's own speed, then apply optional map multipliers.
+        // 先保留 Minecraft 自己算出的速度，再叠加可选地图倍率。
+        handlerCallback.setReturnValue(StrawPlayerEnhancementAdapter.movementSpeed(player, original));
     }
 
     @Inject(method = "wathe$limitSprint", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
@@ -32,7 +35,13 @@ public abstract class PlayerEntityMixin {
         source.getTypeRegistryEntry().getKey()
                 .map(RegistryKey::getValue)
                 .flatMap(WatheDeathReasonTracker::watheReasonForDamageType)
-                .ifPresent(deathReason -> WatheDeathReasonTracker.rememberDeathAttribution(player.getUuid(), deathReason, source));
+                .ifPresent(deathReason -> {
+                    if (strawcraft$isGoodPlayerShotByGoodPlayer(player, source)) {
+                        WatheDeathReasonTracker.rememberShotInnocentDeath(player.getUuid());
+                        return;
+                    }
+                    WatheDeathReasonTracker.rememberDeathAttribution(player.getUuid(), deathReason, source);
+                });
     }
 
     @Inject(method = "applyDamage", at = @At("TAIL"))
@@ -41,5 +50,14 @@ public abstract class PlayerEntityMixin {
         if (player.isAlive()) {
             WatheDeathReasonTracker.clearDeathReason(player.getUuid());
         }
+    }
+
+    private static boolean strawcraft$isGoodPlayerShotByGoodPlayer(PlayerEntity victim, DamageSource source) {
+        if (victim.getWorld().isClient() || !(source.getAttacker() instanceof PlayerEntity attacker)) {
+            return false;
+        }
+
+        GameWorldComponent game = GameWorldComponent.KEY.get(victim.getWorld());
+        return game.isRunning() && game.isInnocent(victim) && game.isInnocent(attacker);
     }
 }

@@ -9,6 +9,8 @@ import net.minecraft.server.world.ServerWorld;
 import org.caecorthus.strawcraft.api.StrawKillEvents;
 import org.caecorthus.strawcraft.api.StrawRoleEvents;
 import org.caecorthus.strawcraft.api.StrawShopEvents;
+import org.caecorthus.strawcraft.map.StrawPlayerEnhancementAdapter;
+import org.caecorthus.strawcraft.map.StrawRoomEnhancementAdapter;
 
 import java.util.List;
 
@@ -21,14 +23,23 @@ public final class WatheOfficialBridge {
                 !StrawKillEvents.BEFORE_KILL.invoker().beforeKill(victim, killer, deathReason).cancelWatheKill());
         GameEvents.ON_FINISH_INITIALIZE.register((world, gameComponent) -> {
             if (world instanceof ServerWorld serverWorld) {
+                StrawCorpseMetadata.clearAll();
                 publishInitializedRoles(serverWorld, gameComponent);
+                StrawRoomEnhancementAdapter.applyInitializedRooms(serverWorld, gameComponent);
+                StrawPlayerEnhancementAdapter.applyInitializedPlayers(serverWorld, gameComponent);
+            }
+        });
+        GameEvents.ON_FINISH_FINALIZE.register((world, gameComponent) -> {
+            if (world instanceof ServerWorld serverWorld) {
+                StrawCorpseMetadata.clearAll();
+                StrawPlayerEnhancementAdapter.clearPlayers(serverWorld);
             }
         });
     }
 
     public static void rewriteGlobalShopEntries() {
         List<ShopEntry> originalEntries = List.copyOf(GameConstants.SHOP_ENTRIES);
-        List<ShopEntry> rewrittenEntries = StrawShopEvents.modifyEntries(null, originalEntries);
+        List<ShopEntry> rewrittenEntries = StrawShopEvents.buildEntries(originalEntries);
         if (originalEntries.equals(rewrittenEntries)) {
             return;
         }
@@ -49,7 +60,7 @@ public final class WatheOfficialBridge {
             }
             StrawPlayerShopComponent shopState = StrawPlayerShopComponent.KEY.get(player);
             shopState.reset();
-            StrawShopEvents.modifyEntries(player, GameConstants.SHOP_ENTRIES)
+            StrawShopEvents.buildEntries(GameConstants.SHOP_ENTRIES)
                     .forEach(entry -> StrawShopEntry.metadata(entry)
                             .ifPresent(strawEntry -> shopState.ensureEntry(strawEntry, world.getTime())));
             shopState.sync();

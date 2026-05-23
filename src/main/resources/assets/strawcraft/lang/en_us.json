@@ -6,5 +6,10 @@
   "gui.strawcraft.map_voting.selecting": "Selecting map...",
   "gui.strawcraft.map_voting.votes": "%s votes",
   "gui.strawcraft.map_voting.my_vote": "VOTED",
-  "gui.strawcraft.map_voting.player_range": "%1$s-%2$s players"
+  "gui.strawcraft.map_voting.player_range": "%1$s-%2$s players",
+  "role.faction.strawcraft.none": "None",
+  "role.faction.strawcraft.good": "Good",
+  "role.faction.strawcraft.killer": "Killer",
+  "role.faction.strawcraft.neutral": "Neutral",
+  "role.faction.strawcraft.witch": "Witch"
 }

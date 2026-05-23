@@ -22,7 +22,7 @@ public final class KillerShopLoadout {
     }
 
     public static void registerShopEntriesHandler() {
-        StrawShopEvents.MODIFY_ENTRIES.register((player, context) -> replaceDisabledWatheGuns(context));
+        StrawShopEvents.BUILD_ENTRIES.register(KillerShopLoadout::replaceDisabledWatheGuns);
         WatheOfficialBridge.rewriteGlobalShopEntries();
     }
 

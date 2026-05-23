@@ -5,6 +5,32 @@
   "min_players": 2,
   "max_players": 100,
   "map_effect": "wathe:harpy_express_night",
+  "rooms": [
+    {
+      "id": "room_1",
+      "keyName": "Room 1",
+      "capacity": 2,
+      "spawn": {
+        "x": 0.5,
+        "y": 64.0,
+        "z": 0.5,
+        "yaw": 0.0,
+        "pitch": 0.0
+      }
+    },
+    {
+      "id": "room_2",
+      "keyName": "Room 2",
+      "capacity": 2,
+      "spawn": {
+        "x": 2.5,
+        "y": 64.0,
+        "z": 0.5,
+        "yaw": 180.0,
+        "pitch": 0.0
+      }
+    }
+  ],
   "game_modes": [
     "wathe:murder",
     "wathe:discovery",

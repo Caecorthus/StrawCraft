@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class StrawMapRegistry {
     private static final StrawMapRegistry INSTANCE = new StrawMapRegistry();
@@ -50,5 +51,39 @@ public final class StrawMapRegistry {
             }
         }
         return eligible;
+    }
+
+    public Optional<StrawMapEntry> mapFor(Identifier dimensionId, Identifier gameModeId) {
+        for (StrawMapEntry entry : maps.values()) {
+            if (entry.dimensionId().equals(dimensionId) && entry.gameModeId().equals(gameModeId)) {
+                return Optional.of(entry);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<StrawMapEntry> mapFor(Identifier dimensionId, Identifier gameModeId, Identifier mapEffectId) {
+        Optional<StrawMapEntry> onlyMatch = Optional.empty();
+        boolean hasMultipleMatches = false;
+        for (StrawMapEntry entry : maps.values()) {
+            if (!entry.dimensionId().equals(dimensionId) || !entry.gameModeId().equals(gameModeId)) {
+                continue;
+            }
+            if (mapEffectId != null && entry.mapEffectId().equals(mapEffectId)) {
+                return Optional.of(entry);
+            }
+            if (onlyMatch.isPresent()) {
+                hasMultipleMatches = true;
+            } else {
+                onlyMatch = Optional.of(entry);
+            }
+        }
+        // Legacy worlds may not have a current Wathe map effect yet; keep the old
+        // two-key behavior only when no effect was provided and there is one possible Straw map.
+        // 旧世界可能还没有当前 Wathe 地图效果；只有未提供效果且只有一个候选时才保留原来的二键兼容行为。
+        if (mapEffectId == null && !hasMultipleMatches) {
+            return onlyMatch;
+        }
+        return Optional.empty();
     }
 }

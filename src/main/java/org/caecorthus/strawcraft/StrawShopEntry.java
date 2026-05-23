@@ -55,24 +55,9 @@ public final class StrawShopEntry extends ShopEntry {
         if (player == null || delegate == null && (actualStack == null || actualStack.isEmpty())) {
             return false;
         }
-
-        StrawPlayerShopComponent state = StrawPlayerShopComponent.KEY.get(player);
-        long now = player.getWorld().getTime();
-        state.ensureEntry(this, now);
-        if (!state.canPurchase(this, now)) {
-            return false;
-        }
-        boolean bought = delegate == null
+        return delegate == null
                 ? ShopEntry.insertStackInFreeSlot(player, actualStack.copy())
                 : delegate.onBuy(player);
-        if (!bought) {
-            return false;
-        }
-
-        // Official Wathe charges money after onBuy returns true; StrawCraft records local state here.
-        // 官方 Wathe 会在 onBuy 成功后扣钱；StrawCraft 在这里记录自己的库存和冷却状态。
-        state.recordPurchase(this, now);
-        return true;
     }
 
     public String id() {
@@ -101,6 +86,10 @@ public final class StrawShopEntry extends ShopEntry {
 
     public boolean hasStockLimit() {
         return maxStock >= 0;
+    }
+
+    public boolean requiresShopAccess() {
+        return delegate == null;
     }
 
     public static ShopEntry decorate(ShopEntry entry) {

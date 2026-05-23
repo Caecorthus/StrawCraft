@@ -2,6 +2,7 @@ package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.Role;
 import net.minecraft.util.Identifier;
+import org.caecorthus.strawcraft.role.StrawFaction;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -17,16 +18,18 @@ import static org.junit.jupiter.api.Assertions.fail;
 class StrawRoleMeaningTest {
     @Test
     void killerCapableRoleCanUseKillerShopAndReceivesKillerAmmo() {
-        Role role = role(Identifier.of("wathe", "killer"), false, true);
+        Role role = role(WatheRoleIds.KILLER, false, true);
 
+        assertEquals(StrawFaction.KILLER, factionFor(role));
         assertTrue(canUseKillerShop(role));
         assertEquals(Optional.of(GunAmmoFaction.KILLER), ammoFactionFor(role));
     }
 
     @Test
     void innocentRoleReceivesCivilianAmmoWithoutKillerShopAccess() {
-        Role role = role(Identifier.of("wathe", "civilian"), true, false);
+        Role role = role(WatheRoleIds.CIVILIAN, true, false);
 
+        assertEquals(StrawFaction.GOOD, factionFor(role));
         assertFalse(canUseKillerShop(role));
         assertEquals(Optional.of(GunAmmoFaction.CIVILIAN), ammoFactionFor(role));
     }
@@ -35,6 +38,7 @@ class StrawRoleMeaningTest {
     void vigilanteIdReceivesVigilanteLoadout() {
         Role role = role(WatheRoleIds.VIGILANTE, true, false);
 
+        assertEquals(StrawFaction.GOOD, factionFor(role));
         assertTrue(receivesVigilanteLoadout(role));
         assertFalse(canUseKillerShop(role));
     }
@@ -43,15 +47,36 @@ class StrawRoleMeaningTest {
     void discoveryCivilianDoesNotReceivePrivilegedBehaviorOrAmmoFaction() {
         Role role = role(WatheRoleIds.DISCOVERY_CIVILIAN, true, false);
 
+        assertEquals(StrawFaction.NONE, factionFor(role));
         assertFalse(canUseKillerShop(role));
         assertTrue(ammoFactionFor(role).isEmpty());
         assertFalse(receivesVigilanteLoadout(role));
     }
 
     @Test
+    void noRoleAndLooseEndMapToNoneAndNeutralWithoutAmmoFallback() {
+        Role noRole = role(WatheRoleIds.NO_ROLE, false, false);
+        Role looseEnd = role(WatheRoleIds.LOOSE_END, false, false);
+
+        assertEquals(StrawFaction.NONE, factionFor(noRole));
+        assertEquals(StrawFaction.NEUTRAL, factionFor(looseEnd));
+        assertTrue(ammoFactionFor(noRole).isEmpty());
+        assertTrue(ammoFactionFor(looseEnd).isEmpty());
+    }
+
+    @Test
+    void witchIsNotInferredFromWatheBooleans() {
+        Role booleanNeutral = role(Identifier.of("strawcraft", "witch_like_fixture"), false, false);
+
+        assertEquals(StrawFaction.NONE, factionFor(booleanNeutral));
+        assertTrue(ammoFactionFor(booleanNeutral).isEmpty());
+    }
+
+    @Test
     void nullAndUnknownRoleDoNotReceivePrivilegedBehavior() {
         Role unknownRole = role(Identifier.of("strawcraft", "unknown_fixture"), false, false);
 
+        assertEquals(StrawFaction.NONE, factionFor(null));
         assertFalse(canUseKillerShop(null));
         assertFalse(receivesVigilanteLoadout(null));
         assertTrue(ammoFactionFor(null).isEmpty());
@@ -74,6 +99,12 @@ class StrawRoleMeaningTest {
         @SuppressWarnings("unchecked")
         Optional<GunAmmoFaction> faction = (Optional<GunAmmoFaction>) result;
         return faction;
+    }
+
+    private static StrawFaction factionFor(Role role) {
+        Object result = invoke("factionFor", role);
+        assertInstanceOf(StrawFaction.class, result, "factionFor should return StrawFaction");
+        return (StrawFaction) result;
     }
 
     private static boolean invokeBoolean(String methodName, Role role) {

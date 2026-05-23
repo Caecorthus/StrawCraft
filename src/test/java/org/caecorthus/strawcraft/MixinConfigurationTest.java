@@ -33,11 +33,31 @@ class MixinConfigurationTest {
                 Path.of("src/main/java/org/caecorthus/strawcraft/mixin/ServerPlayerEntityMixin.java"),
                 StandardCharsets.UTF_8
         );
+        String lifecycle = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/WatheRoundParticipantLifecycle.java"),
+                StandardCharsets.UTF_8
+        );
 
         assertFalse(serverPlayerMixin.contains("ModifyArgs"));
         assertFalse(serverPlayerMixin.contains("wathe$interceptVanillaDeath"));
         assertTrue(serverPlayerMixin.contains("WatheRoundParticipantLifecycle.afterVanillaDeath"));
         assertTrue(serverPlayerMixin.contains("onDeath"));
+        assertTrue(lifecycle.contains("KillRewardPayout.payoutVanillaDeath(player, game, attribution)"));
+        assertTrue(lifecycle.contains("GameFunctions.killPlayer("));
+        assertTrue(lifecycle.contains("forward.deathReason()"));
+        assertFalse(lifecycle.contains(".map(killerUuid -> player.getServer().getPlayerManager().getPlayer(killerUuid))"));
+    }
+
+    @Test
+    void taczGoodOnGoodShotFeedsUnattributedShotInnocentRewardPool() throws IOException {
+        String playerMixin = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/mixin/PlayerEntityMixin.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(playerMixin.contains("rememberShotInnocentDeath"));
+        assertTrue(playerMixin.contains("game.isInnocent(victim) && game.isInnocent(attacker)"));
+        assertFalse(playerMixin.contains("GameConstants.DeathReasons.SHOT_INNOCENT"));
     }
 
     @Test
@@ -82,6 +102,24 @@ class MixinConfigurationTest {
                         + "Lnet/minecraft/entity/player/PlayerEntity;"
                         + "Lnet/minecraft/util/Identifier;)V"
         ), "GrenadeEntityMixin should target official Wathe killPlayer(PlayerEntity, boolean, PlayerEntity, Identifier)");
+    }
+
+    @Test
+    void strawCraftDoesNotSpawnOfficialWatheBodiesDirectly() throws IOException {
+        assertProductionSurfaceDoesNotContain("PlayerBodyEntity");
+        assertProductionSurfaceDoesNotContain("WatheEntities.PLAYER_BODY");
+    }
+
+    @Test
+    void corpseMetadataClearsOnWatheRoundBoundaries() throws IOException {
+        String officialBridge = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/WatheOfficialBridge.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(officialBridge.contains("GameEvents.ON_FINISH_INITIALIZE"));
+        assertTrue(officialBridge.contains("GameEvents.ON_FINISH_FINALIZE"));
+        assertTrue(officialBridge.contains("StrawCorpseMetadata.clearAll();"));
     }
 
     @Test
@@ -140,7 +178,41 @@ class MixinConfigurationTest {
 
         assertFalse(adapter.contains("StrawShopEvents.modifyEntries"));
         assertTrue(adapter.contains("GameConstants.SHOP_ENTRIES"));
-        assertTrue(officialBridge.contains("StrawShopEvents.modifyEntries(null, originalEntries)"));
+        assertTrue(officialBridge.contains("StrawShopEvents.buildEntries(originalEntries)"));
+    }
+
+    @Test
+    void playerShopComponentPurchaseFlowIsOwnedByStrawCraftMixin() throws IOException {
+        String config = readMixinConfig();
+        String mixin = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/mixin/PlayerShopComponentMixin.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(config.contains("\"PlayerShopComponentMixin\""));
+        assertTrue(mixin.contains("StrawShopPurchaseFlow.tryBuy"));
+        assertTrue(mixin.contains("callback.cancel()"));
+        assertFalse(mixin.contains("import dev.doctor4t.wathe.util.StoreBuyPayload"));
+        assertFalse(mixin.contains("new StoreBuyPayload"));
+    }
+
+    @Test
+    void shopEntryBuilderCannotForkOrderByPlayerSpecificState() throws IOException {
+        String events = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/api/StrawShopEvents.java"),
+                StandardCharsets.UTF_8
+        );
+        String flow = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/StrawShopPurchaseFlow.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(events.contains("void buildEntries(ShopContext context)"));
+        assertTrue(events.contains("MODIFY_ENTRIES.invoker().modifyEntries(null, context)"));
+        assertTrue(events.contains("return buildEntries(baseEntries);"));
+        assertTrue(flow.contains("List.copyOf(baseEntries)"));
+        assertFalse(flow.contains("StrawShopEvents.buildEntries(baseEntries)"));
+        assertFalse(flow.contains("StrawShopEvents.buildEntries(player, baseEntries)"));
     }
 
     @Test

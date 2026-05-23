@@ -8,7 +8,9 @@
     "DerringerItemMixin",
     "GameFunctionsMixin",
     "GrenadeEntityMixin",
+    "LivingEntityMixin",
     "PlayerEntityMixin",
+    "PlayerShopComponentMixin",
     "RevolverItemMixin",
     "ServerPlayerEntityMixin"
   ],

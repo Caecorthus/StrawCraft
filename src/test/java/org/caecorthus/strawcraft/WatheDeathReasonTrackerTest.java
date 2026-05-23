@@ -41,6 +41,34 @@ class WatheDeathReasonTrackerTest {
     }
 
     @Test
+    void indirectAttributionMarksRewardRecipientWithoutChangingWatheDeathReason() {
+        UUID victim = UUID.randomUUID();
+        UUID poisoner = UUID.randomUUID();
+
+        WatheDeathReasonTracker.rememberIndirectDeathAttribution(victim, GameConstants.DeathReasons.POISON, poisoner);
+
+        WatheDeathReasonTracker.DeathAttribution attribution =
+                WatheDeathReasonTracker.consumeDeathAttribution(victim, StrawDeathReasons.VANILLA_DEATH).orElseThrow();
+
+        assertEquals(GameConstants.DeathReasons.POISON, attribution.deathReason());
+        assertEquals(Optional.of(poisoner), attribution.killerUuid());
+        assertEquals(true, attribution.indirect());
+    }
+
+    @Test
+    void shotInnocentSeamKeepsTheDeathUnattributedForKillerTeamPoolRewards() {
+        UUID victim = UUID.randomUUID();
+
+        WatheDeathReasonTracker.rememberShotInnocentDeath(victim);
+
+        WatheDeathReasonTracker.DeathAttribution attribution =
+                WatheDeathReasonTracker.consumeDeathAttribution(victim, StrawDeathReasons.VANILLA_DEATH).orElseThrow();
+
+        assertEquals(StrawDeathReasons.SHOT_INNOCENT, attribution.deathReason());
+        assertEquals(Optional.empty(), attribution.killerUuid());
+    }
+
+    @Test
     void nonLethalAttributedDamageCanBeClearedBeforeLaterVanillaDeath() {
         UUID victim = UUID.randomUUID();
         UUID killer = UUID.randomUUID();

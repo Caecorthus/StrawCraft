@@ -2,6 +2,7 @@ package org.caecorthus.strawcraft;
 
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
+import org.caecorthus.strawcraft.map.StrawInteractionBlacklistAdapter;
 import org.caecorthus.strawcraft.map.StrawMapConfigReloader;
 import org.caecorthus.strawcraft.map.StrawMapVoting;
 import org.slf4j.Logger;
@@ -19,7 +20,9 @@ public final class StrawCraft implements ModInitializer {
     public void onInitialize() {
         StrawMapConfigReloader.register();
         StrawMapVoting.register();
+        StrawInteractionBlacklistAdapter.register();
         WatheOfficialBridge.register();
+        StrawCorpseMetadata.registerEvents();
         WeaponBalance.registerItemAttributes();
         RoleAssignedLoadouts.register();
         VanillaHealthBridge.registerKillRequestHandler();

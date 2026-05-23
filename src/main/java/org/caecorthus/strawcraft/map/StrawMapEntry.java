@@ -5,6 +5,7 @@ import dev.doctor4t.wathe.api.WatheMapEffects;
 import net.minecraft.util.Identifier;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,13 +17,41 @@ public record StrawMapEntry(
         String displayName,
         Optional<String> description,
         int minPlayers,
-        int maxPlayers
+        int maxPlayers,
+        List<StrawRoomConfig> rooms,
+        StrawMapEnhancements enhancements
 ) {
     public static final Identifier DEFAULT_GAME_MODE = WatheGameModes.MURDER_ID;
     public static final Identifier DEFAULT_MAP_EFFECT = WatheMapEffects.GENERIC_ID;
 
     public StrawMapEntry {
         description = description == null ? Optional.empty() : description;
+        rooms = rooms == null ? List.of() : List.copyOf(rooms);
+        enhancements = enhancements == null ? StrawMapEnhancements.DEFAULT : enhancements;
+    }
+
+    public StrawMapEntry(
+            Identifier id,
+            Identifier dimensionId,
+            Identifier gameModeId,
+            Identifier mapEffectId,
+            String displayName,
+            Optional<String> description,
+            int minPlayers,
+            int maxPlayers
+    ) {
+        this(
+                id,
+                dimensionId,
+                gameModeId,
+                mapEffectId,
+                displayName,
+                description,
+                minPlayers,
+                maxPlayers,
+                List.of(),
+                StrawMapEnhancements.DEFAULT
+        );
     }
 
     public boolean supportsGameMode(Identifier gameMode) {
