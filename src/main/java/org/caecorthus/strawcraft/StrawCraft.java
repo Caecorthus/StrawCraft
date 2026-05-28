@@ -28,6 +28,7 @@ public final class StrawCraft implements ModInitializer {
         StrawCorpseMetadata.registerEvents();
         ScavengerHiddenBodies.registerEvents();
         DetectiveKillHistoryRuntime.registerEvents();
+        CoronerInspectionRuntime.register();
         VultureBodyFeastRuntime.register();
         ProfessorIronManProtectionRuntime.registerEvents();
         NoellesNeutralWinAdapter.registerEvents();

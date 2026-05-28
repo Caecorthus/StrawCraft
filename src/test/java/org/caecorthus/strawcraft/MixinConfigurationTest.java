@@ -108,6 +108,7 @@ class MixinConfigurationTest {
     @Test
     void strawCraftOnlyTargetsOfficialWatheBodiesForBodyOwnedRoleSlices() throws IOException {
         Path vultureRuntime = Path.of("src/main/java/org/caecorthus/strawcraft/VultureBodyFeastRuntime.java");
+        Path coronerRuntime = Path.of("src/main/java/org/caecorthus/strawcraft/CoronerInspectionRuntime.java");
         Path scavengerRuntime = Path.of("src/main/java/org/caecorthus/strawcraft/ScavengerHiddenBodies.java");
         Path scavengerClientVisibility =
                 Path.of("src/main/java/org/caecorthus/strawcraft/ScavengerHiddenBodyClientVisibility.java");
@@ -117,6 +118,7 @@ class MixinConfigurationTest {
                 Path.of("src/main/java/org/caecorthus/strawcraft/mixin/client/PlayerBodyEntityRendererMixin.java");
         assertSourceTreeDoesNotContainExcept("PlayerBodyEntity", Set.of(
                 vultureRuntime,
+                coronerRuntime,
                 scavengerRuntime,
                 scavengerClientVisibility,
                 gameFunctionsMixin,
@@ -127,6 +129,9 @@ class MixinConfigurationTest {
         String runtime = Files.readString(vultureRuntime, StandardCharsets.UTF_8);
         assertTrue(runtime.contains("dev.doctor4t.wathe.entity.PlayerBodyEntity"));
         assertTrue(runtime.contains("TypeFilter.equals(PlayerBodyEntity.class)"));
+        String coroner = Files.readString(coronerRuntime, StandardCharsets.UTF_8);
+        assertTrue(coroner.contains("dev.doctor4t.wathe.entity.PlayerBodyEntity"));
+        assertTrue(coroner.contains("TypeFilter.equals(PlayerBodyEntity.class)"));
     }
 
     @Test
