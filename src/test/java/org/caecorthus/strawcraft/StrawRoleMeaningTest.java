@@ -126,6 +126,13 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void onlyNoellesReporterReceivesReporterMarkMeaning() {
+        assertTrue(receivesReporterMark(noellesRole("reporter")));
+        assertFalse(receivesReporterMark(noellesRole("detective")));
+        assertFalse(receivesReporterMark(role(WatheRoleIds.CIVILIAN, true, false)));
+    }
+
+    @Test
     void nullAndUnknownRoleDoNotReceivePrivilegedBehavior() {
         Role unknownRole = role(Identifier.of("strawcraft", "unknown_fixture"), false, false);
 
@@ -138,6 +145,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesBodyguardProtection(null));
         assertFalse(receivesRecallerRecall(null));
         assertFalse(receivesSwapperSwap(null));
+        assertFalse(receivesReporterMark(null));
         assertTrue(ammoFactionFor(null).isEmpty());
         assertFalse(canUseKillerShop(unknownRole));
         assertFalse(receivesVigilanteLoadout(unknownRole));
@@ -147,6 +155,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesBodyguardProtection(unknownRole));
         assertFalse(receivesRecallerRecall(unknownRole));
         assertFalse(receivesSwapperSwap(unknownRole));
+        assertFalse(receivesReporterMark(unknownRole));
         assertTrue(ammoFactionFor(unknownRole).isEmpty());
     }
 
@@ -180,6 +189,10 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesSwapperSwap(Role role) {
         return invokeBoolean("receivesSwapperSwap", role);
+    }
+
+    private static boolean receivesReporterMark(Role role) {
+        return invokeBoolean("receivesReporterMark", role);
     }
 
     private static Optional<GunAmmoFaction> ammoFactionFor(Role role) {

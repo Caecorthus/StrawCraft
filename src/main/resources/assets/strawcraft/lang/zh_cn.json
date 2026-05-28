@@ -1,5 +1,13 @@
 {
   "category.strawcraft.keybinds": "StrawCraft",
+  "key.strawcraft.reporter_mark": "记者标记",
+  "message.strawcraft.reporter.select_target": "瞄准一名玩家来标记。",
+  "message.strawcraft.reporter.marked": "已标记 %s。",
+  "message.strawcraft.reporter.tracking": "正在追踪 %1$s：距离 %2$s 格。",
+  "message.strawcraft.reporter.cooldown": "标记将在 %s 秒后就绪。",
+  "message.strawcraft.reporter.wrong_dimension": "目标必须和你在同一维度。",
+  "message.strawcraft.reporter.out_of_reach": "目标太远或不可见。",
+  "message.strawcraft.reporter.invalid_target": "请选择一个仍在本局中的目标。",
   "key.strawcraft.swapper_swap": "交换师换位",
   "message.strawcraft.swapper.selected_first": "第一个换位目标：%s。",
   "message.strawcraft.swapper.selection_cleared": "已清除换位选择。",

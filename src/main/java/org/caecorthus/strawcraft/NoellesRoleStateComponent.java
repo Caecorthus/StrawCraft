@@ -100,6 +100,20 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         sync();
     }
 
+    public void setReporterMarkedTarget(UUID targetUuid) {
+        state.setReporterMarkedTarget(targetUuid);
+        sync();
+    }
+
+    public java.util.Optional<UUID> reporterMarkedTarget() {
+        return state.reporterMarkedTarget();
+    }
+
+    public void clearReporterMarkedTarget() {
+        state.clearReporterMarkedTarget();
+        sync();
+    }
+
     public void recordNeutralWinClaim(NoellesRoleState.NeutralWinClaim claim) {
         state.recordNeutralWinClaim(claim);
         sync();

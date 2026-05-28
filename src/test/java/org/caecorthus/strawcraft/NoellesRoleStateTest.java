@@ -93,6 +93,28 @@ class NoellesRoleStateTest {
     }
 
     @Test
+    void reporterMarkedTargetStoresExactlyOneUuidAndRoundTripsThroughNbt() {
+        UUID firstTarget = UUID.randomUUID();
+        UUID secondTarget = UUID.randomUUID();
+        NoellesRoleState saved = new NoellesRoleState();
+
+        saved.setReporterMarkedTarget(firstTarget);
+        saved.setReporterMarkedTarget(secondTarget);
+
+        assertEquals(Optional.of(secondTarget), saved.reporterMarkedTarget());
+        assertEquals(1, saved.uuidSet("reporter_marked_target").size());
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        assertEquals(Optional.of(secondTarget), loaded.reporterMarkedTarget());
+        loaded.clearReporterMarkedTarget();
+        assertTrue(loaded.reporterMarkedTarget().isEmpty());
+    }
+
+    @Test
     void timedBombRoundTripsThroughNbtAndResetClearsIt() {
         UUID owner = UUID.randomUUID();
         UUID carrier = UUID.randomUUID();

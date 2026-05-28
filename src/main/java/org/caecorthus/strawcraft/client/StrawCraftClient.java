@@ -14,6 +14,7 @@ import net.minecraft.util.hit.EntityHitResult;
 import org.caecorthus.strawcraft.CoronerInspectPayload;
 import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
 import org.caecorthus.strawcraft.RecallerRecallPayload;
+import org.caecorthus.strawcraft.ReporterMarkPayload;
 import org.caecorthus.strawcraft.SwapperSwapPayload;
 import org.caecorthus.strawcraft.VultureFeastPayload;
 import org.caecorthus.strawcraft.map.StrawMapVotingComponent;
@@ -28,6 +29,7 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding vultureFeastKey;
     private static KeyBinding recallerRecallKey;
     private static KeyBinding swapperSwapKey;
+    private static KeyBinding reporterMarkKey;
     private static UUID pendingSwapperTarget;
     private static boolean wasVotingActive;
     private static boolean autoOpenedVotingScreen;
@@ -70,12 +72,19 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_X,
                 "category.strawcraft.keybinds"
         ));
+        reporterMarkKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.reporter_mark",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_N,
+                "category.strawcraft.keybinds"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVotingScreen);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickDetectiveInvestigation);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickCoronerInspection);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVultureFeast);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickRecallerRecall);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickSwapperSwap);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickReporterMark);
     }
 
     private static void tickVotingScreen(MinecraftClient client) {
@@ -211,5 +220,27 @@ public final class StrawCraftClient implements ClientModInitializer {
         pendingSwapperTarget = null;
         client.player.sendMessage(Text.translatable("message.strawcraft.swapper.requested")
                 .formatted(Formatting.GREEN), true);
+    }
+
+    private static void tickReporterMark(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (!reporterMarkKey.wasPressed()) {
+            return;
+        }
+
+        if (!(client.crosshairTarget instanceof EntityHitResult hitResult)
+                || !(hitResult.getEntity() instanceof PlayerEntity target)
+                || target == client.player) {
+            client.player.sendMessage(Text.translatable("message.strawcraft.reporter.select_target")
+                    .formatted(Formatting.YELLOW), true);
+            return;
+        }
+
+        // Reporter sends only the aimed player's UUID; tracking state and every gameplay check stay server-owned.
+        // 记者只发送准星指向玩家的 UUID；追踪状态和所有玩法判定都留在服务端。
+        ClientPlayNetworking.send(new ReporterMarkPayload(target.getUuid()));
     }
 }
