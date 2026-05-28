@@ -54,6 +54,16 @@ public final class NoellesRoleState {
     private static final String MORPHLING_MORPH_TICKS_KEY = "MorphTicks";
     private static final String MORPHLING_ACTIVE_DEADLINE_KEY = "ActiveDeadlineTick";
     private static final String MORPHLING_CORPSE_MODE_KEY = "CorpseMode";
+    private static final String JESTER_MOMENT_KEY = "JesterMoment";
+    private static final String JESTER_WON_KEY = "Won";
+    private static final String JESTER_IN_STASIS_KEY = "InStasis";
+    private static final String JESTER_STASIS_TICKS_KEY = "StasisTicks";
+    private static final String JESTER_IN_PSYCHO_MODE_KEY = "InPsychoMode";
+    private static final String JESTER_PSYCHO_MODE_TICKS_KEY = "PsychoModeTicks";
+    private static final String JESTER_TARGET_KILLER_KEY = "TargetKiller";
+    private static final String JESTER_STASIS_X_KEY = "StasisX";
+    private static final String JESTER_STASIS_Y_KEY = "StasisY";
+    private static final String JESTER_STASIS_Z_KEY = "StasisZ";
     private static final String CLAIM_ROLE_ID_KEY = "RoleId";
     private static final String CLAIM_TRIGGER_KEY = "Trigger";
     private static final String CLAIM_OPPONENT_UUID_KEY = "OpponentUuid";
@@ -69,6 +79,7 @@ public final class NoellesRoleState {
     private Optional<RecallPoint> recallerRecallPoint = Optional.empty();
     private Optional<SpiritualistProjection> spiritualistProjection = Optional.empty();
     private MorphlingDisguiseState morphlingDisguiseState = MorphlingDisguiseState.empty();
+    private JesterMomentState jesterMomentState = JesterMomentState.empty();
 
     public void reset() {
         abilityCooldownDeadlines.clear();
@@ -81,6 +92,7 @@ public final class NoellesRoleState {
         recallerRecallPoint = Optional.empty();
         spiritualistProjection = Optional.empty();
         morphlingDisguiseState = MorphlingDisguiseState.empty();
+        jesterMomentState = JesterMomentState.empty();
     }
 
     public boolean tryBeginAbilityCooldown(String abilityId, long now, int cooldownTicks) {
@@ -360,6 +372,18 @@ public final class NoellesRoleState {
         morphlingDisguiseState = MorphlingDisguiseState.empty();
     }
 
+    public void setJesterMomentState(JesterMomentState state) {
+        jesterMomentState = Objects.requireNonNull(state, "state");
+    }
+
+    public JesterMomentState jesterMomentState() {
+        return jesterMomentState;
+    }
+
+    public void clearJesterMomentState() {
+        jesterMomentState = JesterMomentState.empty();
+    }
+
     public void readFromNbt(NbtCompound nbt) {
         abilityCooldownDeadlines.clear();
         flags.clear();
@@ -371,6 +395,7 @@ public final class NoellesRoleState {
         recallerRecallPoint = Optional.empty();
         spiritualistProjection = Optional.empty();
         morphlingDisguiseState = MorphlingDisguiseState.empty();
+        jesterMomentState = JesterMomentState.empty();
 
         NbtCompound cooldowns = nbt.getCompound(COOLDOWNS_KEY);
         for (String abilityId : cooldowns.getKeys()) {
@@ -427,6 +452,10 @@ public final class NoellesRoleState {
         if (nbt.contains(MORPHLING_DISGUISE_KEY, NbtElement.COMPOUND_TYPE)) {
             morphlingDisguiseState = readMorphlingDisguiseState(nbt.getCompound(MORPHLING_DISGUISE_KEY));
         }
+
+        if (nbt.contains(JESTER_MOMENT_KEY, NbtElement.COMPOUND_TYPE)) {
+            jesterMomentState = readJesterMomentState(nbt.getCompound(JESTER_MOMENT_KEY));
+        }
     }
 
     public void writeToNbt(NbtCompound nbt) {
@@ -480,6 +509,12 @@ public final class NoellesRoleState {
             nbt.put(MORPHLING_DISGUISE_KEY, writeMorphlingDisguiseState(morphlingDisguiseState));
         } else {
             nbt.remove(MORPHLING_DISGUISE_KEY);
+        }
+
+        if (jesterMomentState.hasState()) {
+            nbt.put(JESTER_MOMENT_KEY, writeJesterMomentState(jesterMomentState));
+        } else {
+            nbt.remove(JESTER_MOMENT_KEY);
         }
     }
 
@@ -581,6 +616,38 @@ public final class NoellesRoleState {
         nbt.putInt(MORPHLING_MORPH_TICKS_KEY, state.morphTicks());
         nbt.putLong(MORPHLING_ACTIVE_DEADLINE_KEY, state.activeDeadlineTick());
         nbt.putBoolean(MORPHLING_CORPSE_MODE_KEY, state.corpseMode());
+        return nbt;
+    }
+
+    private static JesterMomentState readJesterMomentState(NbtCompound nbt) {
+        Optional<UUID> targetKiller = Optional.empty();
+        if (nbt.containsUuid(JESTER_TARGET_KILLER_KEY)) {
+            targetKiller = Optional.of(nbt.getUuid(JESTER_TARGET_KILLER_KEY));
+        }
+        return new JesterMomentState(
+                nbt.getBoolean(JESTER_WON_KEY),
+                nbt.getBoolean(JESTER_IN_STASIS_KEY),
+                nbt.getInt(JESTER_STASIS_TICKS_KEY),
+                nbt.getBoolean(JESTER_IN_PSYCHO_MODE_KEY),
+                nbt.getInt(JESTER_PSYCHO_MODE_TICKS_KEY),
+                targetKiller,
+                nbt.getDouble(JESTER_STASIS_X_KEY),
+                nbt.getDouble(JESTER_STASIS_Y_KEY),
+                nbt.getDouble(JESTER_STASIS_Z_KEY)
+        );
+    }
+
+    private static NbtCompound writeJesterMomentState(JesterMomentState state) {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putBoolean(JESTER_WON_KEY, state.won());
+        nbt.putBoolean(JESTER_IN_STASIS_KEY, state.inStasis());
+        nbt.putInt(JESTER_STASIS_TICKS_KEY, state.stasisTicks());
+        nbt.putBoolean(JESTER_IN_PSYCHO_MODE_KEY, state.inPsychoMode());
+        nbt.putInt(JESTER_PSYCHO_MODE_TICKS_KEY, state.psychoModeTicks());
+        state.targetKiller().ifPresent(uuid -> nbt.putUuid(JESTER_TARGET_KILLER_KEY, uuid));
+        nbt.putDouble(JESTER_STASIS_X_KEY, state.stasisX());
+        nbt.putDouble(JESTER_STASIS_Y_KEY, state.stasisY());
+        nbt.putDouble(JESTER_STASIS_Z_KEY, state.stasisZ());
         return nbt;
     }
 
@@ -692,6 +759,32 @@ public final class NoellesRoleState {
 
         public boolean hasState() {
             return disguiseUuid.isPresent() || morphTicks != 0 || activeDeadlineTick != 0L || corpseMode;
+        }
+    }
+
+    public record JesterMomentState(
+            boolean won,
+            boolean inStasis,
+            int stasisTicks,
+            boolean inPsychoMode,
+            int psychoModeTicks,
+            Optional<UUID> targetKiller,
+            double stasisX,
+            double stasisY,
+            double stasisZ
+    ) {
+        public JesterMomentState {
+            // Jester stasis is server-owned and persisted so death cancellation survives a save boundary.
+            // 小丑静滞状态由服务端掌控并持久化，避免取消死亡后跨存档边界丢失。
+            Objects.requireNonNull(targetKiller, "targetKiller");
+        }
+
+        public static JesterMomentState empty() {
+            return new JesterMomentState(false, false, 0, false, 0, Optional.empty(), 0.0D, 0.0D, 0.0D);
+        }
+
+        public boolean hasState() {
+            return won || inStasis || stasisTicks > 0 || inPsychoMode || psychoModeTicks > 0 || targetKiller.isPresent();
         }
     }
 

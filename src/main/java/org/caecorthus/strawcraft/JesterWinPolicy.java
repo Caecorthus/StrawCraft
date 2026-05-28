@@ -13,6 +13,7 @@ public final class JesterWinPolicy {
     public static final Identifier TARGET_KILLED_TRIGGER = StrawCraft.id("jester_target_killed");
     public static final Identifier SPARK_ESCAPED_DEATH = Identifier.of("wathe", "escaped");
     public static final int STASIS_TICKS = 5 * 20;
+    public static final int PSYCHO_TICKS = 3 * 60 * 20;
 
     private JesterWinPolicy() {
     }
@@ -59,6 +60,16 @@ public final class JesterWinPolicy {
             return WinCheckDecision.BLOCK_DEFAULT_WIN;
         }
         return WinCheckDecision.PASS;
+    }
+
+    public static void resetParticipantState(NoellesRoleState state) {
+        state.clearNeutralWinClaim(JESTER_ROLE);
+        state.clearJesterMomentState();
+    }
+
+    public static void resetParticipantState(NoellesRoleStateComponent state) {
+        state.clearNeutralWinClaim(JESTER_ROLE);
+        state.clearJesterMomentState();
     }
 
     private static boolean isStasisResetDeath(Identifier deathReason) {

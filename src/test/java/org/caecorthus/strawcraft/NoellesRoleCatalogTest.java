@@ -43,6 +43,7 @@ class NoellesRoleCatalogTest {
             "waiter",
             "mermaid",
             "demon_hunter",
+            "jester",
             "vulture",
             "corrupt_cop",
             "pathogen"
@@ -55,8 +56,7 @@ class NoellesRoleCatalogTest {
     private static final Set<String> EXPECTED_UNSUPPORTED_ROLE_PATHS = Set.of();
     private static final Set<String> EXPECTED_DISABLED_ROLE_PATHS = Set.of(
             "the_insane_damned_paranoid_killer",
-            "awesome_binglus",
-            "jester"
+            "awesome_binglus"
     );
     private static final List<String> EXPECTED_ROLE_PATHS = List.of(
             "swapper",
@@ -122,7 +122,7 @@ class NoellesRoleCatalogTest {
 
         assertFalse(firstRoundIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
         assertFalse(firstRoundIds.contains(StrawCraft.id("awesome_binglus")));
-        assertFalse(firstRoundIds.contains(StrawCraft.id("jester")));
+        assertTrue(firstRoundIds.contains(StrawCraft.id("jester")));
         assertFalse(firstRoundIds.contains(StrawCraft.id("riot_patrol")));
     }
 
@@ -142,18 +142,18 @@ class NoellesRoleCatalogTest {
     }
 
     @Test
-    void jesterRemainsDisabledUntilStasisPsychoAndNeutralWinHooksAreRuntimeOwned() {
+    void jesterIsRuntimeReadyAfterStasisPsychoAndNeutralWinHooksAreRuntimeOwned() {
         NoellesRoleCatalog.Entry entry = NoellesRoleCatalog.find(StrawCraft.id("jester")).orElseThrow();
         Set<Identifier> runtimeSelectionIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
                 .map(org.caecorthus.strawcraft.role.StrawRoleDefinition::id)
                 .collect(Collectors.toSet());
 
         assertEquals(org.caecorthus.strawcraft.role.StrawFaction.NEUTRAL, entry.faction());
-        assertEquals(NoellesRoleCatalog.Readiness.DISABLED, entry.readiness());
-        assertFalse(entry.firstRoundEligible());
-        assertFalse(entry.isRuntimeReady());
-        assertTrue(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
-        assertFalse(runtimeSelectionIds.contains(entry.id()));
+        assertEquals(NoellesRoleCatalog.Readiness.RUNTIME_READY, entry.readiness());
+        assertTrue(entry.firstRoundEligible());
+        assertTrue(entry.isRuntimeReady());
+        assertFalse(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
+        assertTrue(runtimeSelectionIds.contains(entry.id()));
     }
 
     @Test
@@ -192,6 +192,7 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("waiter"),
                 StrawCraft.id("mermaid"),
                 StrawCraft.id("demon_hunter"),
+                StrawCraft.id("jester"),
                 StrawCraft.id("vulture"),
                 StrawCraft.id("corrupt_cop"),
                 StrawCraft.id("pathogen")
@@ -239,7 +240,7 @@ class NoellesRoleCatalogTest {
         assertTrue(runtimeSelectionIds.contains(StrawCraft.id("pathogen")));
         assertTrue(runtimeSelectionIds.contains(StrawCraft.id("serial_killer")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("taotie")));
-        assertFalse(runtimeSelectionIds.contains(StrawCraft.id("jester")));
+        assertTrue(runtimeSelectionIds.contains(StrawCraft.id("jester")));
         assertTrue(runtimeSelectionIds.contains(StrawCraft.id("undercover")));
         assertTrue(runtimeSelectionIds.contains(StrawCraft.id("demon_hunter")));
     }

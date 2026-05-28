@@ -39,6 +39,7 @@ public final class RoleAssignedLoadouts {
         NoellesRoleStateComponent roleState = NoellesRoleStateComponent.KEY.get(player);
         PathogenInfectionPolicy.resetParticipantState(roleState);
         CorruptCopMomentPolicy.resetParticipantState(roleState);
+        JesterWinPolicy.resetParticipantState(roleState);
         if (plan.removeDisabledWatheGuns()) {
             RoundInventoryCleanup.removeDisabledWatheGuns(player.getInventory());
         }

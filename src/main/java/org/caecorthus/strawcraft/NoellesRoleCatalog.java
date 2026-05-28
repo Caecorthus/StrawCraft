@@ -55,7 +55,7 @@ public final class NoellesRoleCatalog {
             selectableGood("waiter"),
             selectableGood("mermaid"),
             selectableGood("demon_hunter"),
-            disabledNeutral("jester"),
+            selectableNeutral("jester"),
             selectableNeutral("vulture"),
             selectableNeutral("corrupt_cop"),
             selectableNeutral("pathogen"),

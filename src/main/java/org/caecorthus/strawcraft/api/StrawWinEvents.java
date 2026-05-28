@@ -2,6 +2,7 @@ package org.caecorthus.strawcraft.api;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
 import java.util.HashSet;
@@ -43,16 +44,22 @@ public final class StrawWinEvents {
     }
 
     public record WinContext(
+            Optional<ServerWorld> world,
             Identifier worldId,
             DefaultWin defaultWin,
             List<Participant> participants,
             long gameTime
     ) {
         public WinContext(Identifier worldId, DefaultWin defaultWin) {
-            this(worldId, defaultWin, List.of(), 0L);
+            this(Optional.empty(), worldId, defaultWin, List.of(), 0L);
+        }
+
+        public WinContext(ServerWorld world, Identifier worldId, DefaultWin defaultWin, List<Participant> participants, long gameTime) {
+            this(Optional.of(Objects.requireNonNull(world, "world")), worldId, defaultWin, participants, gameTime);
         }
 
         public WinContext {
+            Objects.requireNonNull(world, "world");
             Objects.requireNonNull(worldId, "worldId");
             Objects.requireNonNull(defaultWin, "defaultWin");
             participants = List.copyOf(participants);

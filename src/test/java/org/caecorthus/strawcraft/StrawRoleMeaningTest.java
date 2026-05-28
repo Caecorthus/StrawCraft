@@ -196,6 +196,15 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void onlyNoellesJesterReceivesJesterMomentMeaning() {
+        assertTrue(receivesJesterMoment(noellesRole("jester")));
+        assertFalse(receivesJesterMoment(noellesRole("corrupt_cop")));
+        assertFalse(receivesJesterMoment(noellesRole("vulture")));
+        assertFalse(receivesJesterMoment(role(WatheRoleIds.LOOSE_END, false, false)));
+        assertFalse(receivesJesterMoment(role(WatheRoleIds.CIVILIAN, true, false)));
+    }
+
+    @Test
     void bartenderToxicologistAndPoisonerReceivePoisonVisibilityMeaning() {
         assertTrue(receivesPoisonVisibility(noellesRole("bartender")));
         assertTrue(receivesPoisonVisibility(noellesRole("toxicologist")));
@@ -312,6 +321,10 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesCorruptCopMoment(Role role) {
         return invokeBoolean("receivesCorruptCopMoment", role);
+    }
+
+    private static boolean receivesJesterMoment(Role role) {
+        return invokeBoolean("receivesJesterMoment", role);
     }
 
     private static boolean receivesMermaidWaterAdaptation(Role role) {

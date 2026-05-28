@@ -23,6 +23,7 @@ public final class OfficialWatheWinHooks {
             GameFunctions.WinStatus winStatus
     ) {
         StrawWinEvents.WinContribution contribution = StrawWinEvents.collect(new StrawWinEvents.WinContext(
+                world,
                 world.getRegistryKey().getValue(),
                 defaultWinFor(winStatus),
                 participants(world, game),

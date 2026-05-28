@@ -77,6 +77,14 @@ class NoellesNeutralWinPolicyTest {
     }
 
     @Test
+    void looseEndWinnerOverrideAllowsOnlyRuntimeOwnedNeutralClaims() {
+        assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(JesterWinPolicy.JESTER_ROLE));
+        assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(CorruptCopMomentPolicy.CORRUPT_COP_ROLE));
+        assertFalse(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(VultureBodyFeastPolicy.VULTURE_ROLE));
+        assertFalse(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(StrawCraft.id("unknown_neutral")));
+    }
+
+    @Test
     void stateWithoutNeutralClaimLeavesDefaultWinUntouched() {
         StrawWinEvents.WinContribution contribution =
                 NoellesNeutralWinPolicy.contributeRecordedNeutralWins(UUID.randomUUID(), new NoellesRoleState());

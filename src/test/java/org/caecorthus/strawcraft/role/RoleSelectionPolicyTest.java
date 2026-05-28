@@ -189,10 +189,10 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("survival_master")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("waiter")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("mermaid")));
-        assertTrue(plan.assignments().containsValue(StrawCraft.id("vulture")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("jester")));
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("vulture")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("timekeeper")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("awesome_binglus")));
-        assertFalse(plan.assignments().containsValue(StrawCraft.id("jester")));
     }
 
     @Test

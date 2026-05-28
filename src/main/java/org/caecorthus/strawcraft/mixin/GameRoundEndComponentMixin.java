@@ -2,6 +2,11 @@ package org.caecorthus.strawcraft.mixin;
 
 import dev.doctor4t.wathe.cca.GameRoundEndComponent;
 import dev.doctor4t.wathe.game.GameFunctions;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.World;
+import org.caecorthus.strawcraft.NoellesNeutralWinPolicy;
+import org.caecorthus.strawcraft.NoellesRoleState;
+import org.caecorthus.strawcraft.NoellesRoleStateComponent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,6 +19,10 @@ import java.util.UUID;
 
 @Mixin(GameRoundEndComponent.class)
 public abstract class GameRoundEndComponentMixin {
+    @Shadow
+    @Final
+    private World world;
+
     @Shadow
     @Final
     private List<GameRoundEndComponent.RoundEndData> players;
@@ -32,6 +41,14 @@ public abstract class GameRoundEndComponentMixin {
         if (winStatus != GameFunctions.WinStatus.LOOSE_END) {
             return;
         }
+        if (hasNeutralWinClaim(playerUuid)) {
+            callback.setReturnValue(true);
+            return;
+        }
+        if (players.stream().anyMatch(player -> hasNeutralWinClaim(player.player().getId()))) {
+            callback.setReturnValue(false);
+            return;
+        }
 
         // EN: Official Wathe stores only round-end profiles client-side; for LOOSE_END, the sole survivor is the winner.
         // ZH: 官方 Wathe 客户端只保存结算玩家资料；LOOSE_END 下唯一存活者就是胜者。
@@ -48,5 +65,15 @@ public abstract class GameRoundEndComponentMixin {
             soleSurvivor = player;
         }
         callback.setReturnValue(soleSurvivor != null && soleSurvivor.player().getId().equals(playerUuid));
+    }
+
+    private boolean hasNeutralWinClaim(UUID playerUuid) {
+        PlayerEntity player = world.getPlayerByUuid(playerUuid);
+        return player != null
+                && NoellesRoleStateComponent.KEY.get(player)
+                .neutralWinClaims()
+                .stream()
+                .map(NoellesRoleState.NeutralWinClaim::roleId)
+                .anyMatch(NoellesNeutralWinPolicy::canOverrideLooseEndWinner);
     }
 }

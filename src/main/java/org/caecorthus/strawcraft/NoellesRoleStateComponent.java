@@ -315,6 +315,20 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         sync();
     }
 
+    public void setJesterMomentState(NoellesRoleState.JesterMomentState jesterState) {
+        state.setJesterMomentState(jesterState);
+        sync();
+    }
+
+    public NoellesRoleState.JesterMomentState jesterMomentState() {
+        return state.jesterMomentState();
+    }
+
+    public void clearJesterMomentState() {
+        state.clearJesterMomentState();
+        sync();
+    }
+
     public void setAbilityCooldown(String abilityId, long now, int cooldownTicks) {
         state.setAbilityCooldown(abilityId, now, cooldownTicks);
         sync();

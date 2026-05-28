@@ -38,6 +38,11 @@ public final class NoellesNeutralWinPolicy {
         return Optional.empty();
     }
 
+    public static boolean canOverrideLooseEndWinner(Identifier roleId) {
+        return JesterWinPolicy.JESTER_ROLE.equals(roleId)
+                || CorruptCopMomentPolicy.CORRUPT_COP_ROLE.equals(roleId);
+    }
+
     public static StrawWinEvents.WinContribution contributeRecordedNeutralWins(UUID playerUuid, NoellesRoleState state) {
         // Neutral claims are post-game notices only; Wathe still owns official winner-screen semantics.
         // 中立胜利声明只用于赛后通知；官方胜利界面语义仍由 Wathe 自己决定。

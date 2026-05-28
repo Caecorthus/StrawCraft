@@ -13,6 +13,7 @@ public final class StrawDeathReasons {
     public static final Identifier VOODOO = StrawCraft.id("voodoo");
     public static final Identifier DEMON_HUNTER_SHOT = StrawCraft.id("demon_hunter_shot");
     public static final Identifier THROWING_AXE = StrawCraft.id("throwing_axe");
+    public static final Identifier JESTER_TIMEOUT = StrawCraft.id("jester_timeout");
 
     private StrawDeathReasons() {
     }

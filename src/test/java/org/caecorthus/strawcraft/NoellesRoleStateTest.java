@@ -62,6 +62,17 @@ class NoellesRoleStateTest {
         AssassinGuessPolicy.resetRoundState(state, 6, 100L);
         state.setVoodooBondedTarget(UUID.randomUUID());
         state.setPathogenInfectedBy(UUID.randomUUID());
+        state.setJesterMomentState(new NoellesRoleState.JesterMomentState(
+                false,
+                true,
+                JesterWinPolicy.STASIS_TICKS,
+                false,
+                0,
+                Optional.of(UUID.randomUUID()),
+                1.0D,
+                2.0D,
+                3.0D
+        ));
         state.recordNeutralWinClaim(new NoellesRoleState.NeutralWinClaim(
                 StrawCraft.id("jester"),
                 StrawCraft.id("jester_killed"),
@@ -81,6 +92,7 @@ class NoellesRoleStateTest {
         assertTrue(state.voodooBondedTarget().isEmpty());
         assertTrue(state.pathogenInfectedBy().isEmpty());
         assertTrue(state.demonHunterFrenziedPlayers().isEmpty());
+        assertFalse(state.jesterMomentState().hasState());
         assertTrue(state.neutralWinClaims().isEmpty());
     }
 
@@ -124,6 +136,38 @@ class NoellesRoleStateTest {
         assertEquals(StrawCraft.id("jester_killed"), claim.trigger());
         assertEquals(Optional.of(opponent), claim.opponentUuid());
         assertEquals(240L, claim.gameTime());
+    }
+
+    @Test
+    void jesterMomentStateRoundTripsThroughNbt() {
+        UUID targetKiller = UUID.randomUUID();
+        NoellesRoleState saved = new NoellesRoleState();
+        saved.setJesterMomentState(new NoellesRoleState.JesterMomentState(
+                true,
+                false,
+                0,
+                true,
+                JesterRuntime.PSYCHO_TICKS,
+                Optional.of(targetKiller),
+                12.5D,
+                65.0D,
+                -7.25D
+        ));
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        NoellesRoleState.JesterMomentState state = loaded.jesterMomentState();
+        assertTrue(state.won());
+        assertTrue(state.inPsychoMode());
+        assertEquals(JesterRuntime.PSYCHO_TICKS, state.psychoModeTicks());
+        assertEquals(Optional.of(targetKiller), state.targetKiller());
+        assertEquals(12.5D, state.stasisX());
+        assertEquals(65.0D, state.stasisY());
+        assertEquals(-7.25D, state.stasisZ());
     }
 
     @Test

@@ -85,6 +85,86 @@ class JesterWinPolicyTest {
         ));
     }
 
+    @Test
+    void participantResetClearsJesterMomentStateAndNeutralClaimBetweenAssignments() {
+        NoellesRoleState state = new NoellesRoleState();
+        state.setJesterMomentState(new NoellesRoleState.JesterMomentState(
+                true,
+                false,
+                0,
+                true,
+                JesterRuntime.PSYCHO_TICKS,
+                Optional.of(UUID.randomUUID()),
+                1.0D,
+                2.0D,
+                3.0D
+        ));
+        state.recordNeutralWinClaim(new NoellesRoleState.NeutralWinClaim(
+                JesterWinPolicy.JESTER_ROLE,
+                JesterWinPolicy.TARGET_KILLED_TRIGGER,
+                Optional.of(UUID.randomUUID()),
+                300L
+        ));
+
+        JesterWinPolicy.resetParticipantState(state);
+
+        assertFalse(state.jesterMomentState().hasState());
+        assertTrue(state.neutralWinClaim(JesterWinPolicy.JESTER_ROLE).isEmpty());
+    }
+
+    @Test
+    void runtimeContributionPromotesJesterClaimToLooseEndReplacementAndExtraWinner() {
+        UUID jester = UUID.randomUUID();
+        NoellesRoleState state = new NoellesRoleState();
+        state.recordNeutralWinClaim(new NoellesRoleState.NeutralWinClaim(
+                JesterWinPolicy.JESTER_ROLE,
+                JesterWinPolicy.TARGET_KILLED_TRIGGER,
+                Optional.of(UUID.randomUUID()),
+                300L
+        ));
+        StrawWinEvents.WinContribution.Builder builder = StrawWinEvents.WinContribution.builder();
+
+        JesterRuntime.collectWinContribution(jester, state, StrawWinEvents.DefaultWin.PASSENGERS, builder);
+
+        StrawWinEvents.WinContribution contribution = builder.build();
+        assertFalse(contribution.suppressDefaultWin());
+        assertEquals(Optional.of(StrawWinEvents.DefaultWin.LOOSE_END), contribution.replacementDefaultWin());
+        assertTrue(contribution.extraWinners().contains(new StrawWinEvents.ExtraWinner(
+                jester,
+                JesterWinPolicy.JESTER_ROLE,
+                JesterWinPolicy.TARGET_KILLED_TRIGGER
+        )));
+    }
+
+    @Test
+    void psychoJesterSuppressesPassengerAndKillerDefaultWinsButNotTime() {
+        UUID jester = UUID.randomUUID();
+        NoellesRoleState state = new NoellesRoleState();
+        state.setJesterMomentState(new NoellesRoleState.JesterMomentState(
+                false,
+                false,
+                0,
+                true,
+                JesterRuntime.PSYCHO_TICKS,
+                Optional.of(UUID.randomUUID()),
+                1.0D,
+                2.0D,
+                3.0D
+        ));
+
+        StrawWinEvents.WinContribution.Builder passengerBuilder = StrawWinEvents.WinContribution.builder();
+        JesterRuntime.collectWinContribution(jester, state, StrawWinEvents.DefaultWin.PASSENGERS, passengerBuilder);
+        assertTrue(passengerBuilder.build().suppressDefaultWin());
+
+        StrawWinEvents.WinContribution.Builder killerBuilder = StrawWinEvents.WinContribution.builder();
+        JesterRuntime.collectWinContribution(jester, state, StrawWinEvents.DefaultWin.KILLERS, killerBuilder);
+        assertTrue(killerBuilder.build().suppressDefaultWin());
+
+        StrawWinEvents.WinContribution.Builder timeBuilder = StrawWinEvents.WinContribution.builder();
+        JesterRuntime.collectWinContribution(jester, state, StrawWinEvents.DefaultWin.TIME, timeBuilder);
+        assertFalse(timeBuilder.build().suppressDefaultWin());
+    }
+
     private static JesterWinPolicy.KillAttemptInput killAttempt(
             boolean victimJester,
             boolean jesterInStasis,

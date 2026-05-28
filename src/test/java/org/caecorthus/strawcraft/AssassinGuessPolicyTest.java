@@ -55,7 +55,7 @@ class AssassinGuessPolicyTest {
         assertFalse(AssassinGuessPolicy.isGuessableRole(role(WatheRoleIds.VIGILANTE, true, false), true));
         assertFalse(AssassinGuessPolicy.isGuessableRole(noellesRole("assassin", false, true), true));
         assertFalse(AssassinGuessPolicy.isGuessableRole(noellesRole("spiritualist", true, false), true));
-        assertFalse(AssassinGuessPolicy.isGuessableRole(noellesRole("jester", false, false), true));
+        assertTrue(AssassinGuessPolicy.isGuessableRole(noellesRole("jester", false, false), true));
         assertFalse(AssassinGuessPolicy.isGuessableRole(noellesRole("unknown_guest", true, false), true));
     }
 

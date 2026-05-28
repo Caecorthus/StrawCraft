@@ -169,6 +169,14 @@ public final class StrawRoleMeaning {
         return role != null && MermaidWaterAdaptationPolicy.MERMAID_ROLE.equals(role.identifier());
     }
 
+    public static boolean receivesJesterMoment(Role role) {
+        return matchesRoleId(role, JesterWinPolicy.JESTER_ROLE);
+    }
+
+    public static boolean isInnocent(Role role) {
+        return role != null && role.isInnocent();
+    }
+
     static boolean matchesRoleId(Role role, Identifier roleId) {
         return role != null && roleId.equals(role.identifier());
     }
