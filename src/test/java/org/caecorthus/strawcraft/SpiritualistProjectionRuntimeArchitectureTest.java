@@ -14,6 +14,7 @@ class SpiritualistProjectionRuntimeArchitectureTest {
     private static final Path RUNTIME = Path.of("src/main/java/org/caecorthus/strawcraft/SpiritualistProjectionRuntime.java");
     private static final Path PAYLOAD = Path.of("src/main/java/org/caecorthus/strawcraft/SpiritualistProjectionPayload.java");
     private static final Path CLIENT = Path.of("src/main/java/org/caecorthus/strawcraft/client/StrawCraftClient.java");
+    private static final Path ROLE_CATALOG = Path.of("src/main/java/org/caecorthus/strawcraft/NoellesRoleCatalog.java");
     private static final Path MOD_INITIALIZER = Path.of("src/main/java/org/caecorthus/strawcraft/StrawCraft.java");
     private static final Path LIVING_MIXIN = Path.of("src/main/java/org/caecorthus/strawcraft/mixin/LivingEntityMixin.java");
     private static final Path SOUND_MIXIN = Path.of("src/main/java/org/caecorthus/strawcraft/mixin/ServerCommonNetworkHandlerMixin.java");
@@ -79,6 +80,25 @@ class SpiritualistProjectionRuntimeArchitectureTest {
         assertTrue(client.contains("ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickSpiritualistProjection)"));
         assertTrue(client.contains("ClientPlayNetworking.send(new SpiritualistProjectionPayload())"));
         assertFalse(client.contains("new SpiritualistProjectionPayload(target"));
+    }
+
+    @Test
+    void spiritualistStaysDesignRequiredUntilPlayableClientProjectionExists() throws IOException {
+        String catalog = Files.readString(ROLE_CATALOG, StandardCharsets.UTF_8);
+        String client = Files.readString(CLIENT, StandardCharsets.UTF_8);
+        String mixinConfig = Files.readString(MIXIN_CONFIG, StandardCharsets.UTF_8);
+
+        // Runtime state alone is not a playable projection; promotion needs a real camera/freecam/view slice.
+        // 仅有运行时状态还不是可玩的投射；提升就绪前需要真实的相机、自由视角或视图切片。
+        assertTrue(catalog.contains("good(\"spiritualist\")"));
+        assertFalse(catalog.contains("selectableGood(\"spiritualist\")"));
+        assertFalse(client.contains("setCameraEntity"));
+        assertFalse(client.contains("GameRenderer"));
+        assertFalse(client.contains("Camera"));
+        assertFalse(client.contains("freecam"));
+        assertFalse(client.contains("Freecam"));
+        assertFalse(mixinConfig.contains("CameraMixin"));
+        assertFalse(mixinConfig.contains("GameRendererMixin"));
     }
 
     @Test
