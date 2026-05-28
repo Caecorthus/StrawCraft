@@ -38,6 +38,7 @@ public final class RoleAssignedLoadouts {
         }
         NoellesRoleStateComponent roleState = NoellesRoleStateComponent.KEY.get(player);
         PathogenInfectionPolicy.resetParticipantState(roleState);
+        CorruptCopMomentPolicy.resetParticipantState(roleState);
         if (plan.removeDisabledWatheGuns()) {
             RoundInventoryCleanup.removeDisabledWatheGuns(player.getInventory());
         }
@@ -61,6 +62,10 @@ public final class RoleAssignedLoadouts {
         if (StrawRoleMeaning.receivesAssassinGuess(role)) {
             int totalPlayers = GameWorldComponent.KEY.get(player.getWorld()).getRoles().size();
             AssassinGuessPolicy.resetRoundState(roleState, totalPlayers, player.getWorld().getTime());
+        }
+        if (StrawRoleMeaning.receivesCorruptCopMoment(role)) {
+            int totalPlayers = GameWorldComponent.KEY.get(player.getWorld()).getRoles().size();
+            CorruptCopMomentPolicy.resetRoundState(roleState, totalPlayers);
         }
         NoellesAssignedLoadouts.giveAssignedItems(player, plan.assignmentItemGrants());
         if (grantsItem(plan.assignmentItemGrants(), StrawCraftItems.ANTIDOTE_ID)) {

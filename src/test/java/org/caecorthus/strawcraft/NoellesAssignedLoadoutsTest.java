@@ -105,8 +105,17 @@ class NoellesAssignedLoadoutsTest {
     }
 
     @Test
+    void corruptCopReceivesOfficialWatheRevolverButNoFakeNeutralMasterKey() {
+        RoleAssignedLoadouts.AssignmentPlan plan = RoleAssignedLoadouts.planAssignedLoadout(noellesRole("corrupt_cop"), false);
+
+        assertEquals(List.of(new NoellesAssignedLoadouts.ItemGrant(Identifier.of("wathe", "revolver"), 1)),
+                plan.assignmentItemGrants());
+        assertTrue(plan.unsupportedItemGrants().isEmpty());
+    }
+
+    @Test
     void neutralRolesDoNotReceiveFakeMasterKeyPlaceholders() {
-        for (String rolePath : List.of("vulture", "pathogen", "taotie", "corrupt_cop")) {
+        for (String rolePath : List.of("vulture", "pathogen", "taotie")) {
             RoleAssignedLoadouts.AssignmentPlan plan = RoleAssignedLoadouts.planAssignedLoadout(noellesRole(rolePath), false);
 
             assertTrue(plan.assignmentItemGrants().isEmpty(), rolePath + " should not receive a fake neutral key");

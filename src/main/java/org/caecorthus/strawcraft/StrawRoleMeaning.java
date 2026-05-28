@@ -157,6 +157,10 @@ public final class StrawRoleMeaning {
         return role != null && DemonHunterPsychoPolicy.DEMON_HUNTER_ROLE.equals(role.identifier());
     }
 
+    public static boolean receivesCorruptCopMoment(Role role) {
+        return role != null && CorruptCopMomentPolicy.CORRUPT_COP_ROLE.equals(role.identifier());
+    }
+
     public static boolean receivesMermaidWaterAdaptation(Role role) {
         return role != null && MermaidWaterAdaptationPolicy.MERMAID_ROLE.equals(role.identifier());
     }

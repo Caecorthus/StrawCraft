@@ -15,6 +15,7 @@ import java.util.Map;
 final class NoellesAssignedLoadouts {
     static final Identifier WATHE_WALKIE_TALKIE = Identifier.of("wathe", "walkie_talkie");
     static final Identifier WATHE_NOTE = Identifier.of("wathe", "note");
+    static final Identifier WATHE_REVOLVER = Identifier.of("wathe", "revolver");
     static final Identifier STRAW_MASTER_KEY = StrawCraft.id("master_key");
     static final Identifier STRAW_ANTIDOTE = StrawCraft.id("antidote");
     static final Identifier STRAW_NOISEMAKER = StrawCraft.id("noisemaker");
@@ -29,7 +30,8 @@ final class NoellesAssignedLoadouts {
             supported("conductor", STRAW_MASTER_KEY, 1),
             supported("toxicologist", STRAW_ANTIDOTE, 1),
             supported("noisemaker", STRAW_NOISEMAKER, 1),
-            supported("engineer", STRAW_REPAIR_TOOL, 1)
+            supported("engineer", STRAW_REPAIR_TOOL, 1),
+            supported("corrupt_cop", WATHE_REVOLVER, 1)
     );
 
     private NoellesAssignedLoadouts() {

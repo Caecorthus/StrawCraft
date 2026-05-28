@@ -62,6 +62,7 @@ public final class StrawCraft implements ModInitializer {
         PathogenInfectionRuntime.register();
         AssassinGuessRuntime.register();
         SerialKillerRuntime.register();
+        CorruptCopMomentRuntime.register();
         DemonHunterPsychoRuntime.register();
         WatheOfficialBridge.rewriteGlobalShopEntries();
         TaczAmmoRefillTimers.register();
