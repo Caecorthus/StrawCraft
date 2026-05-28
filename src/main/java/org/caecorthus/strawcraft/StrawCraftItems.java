@@ -15,6 +15,7 @@ public final class StrawCraftItems {
     public static final Identifier WAITER_SERVICE_TRAY_ID = StrawCraft.id("waiter_service_tray");
     public static final Identifier POISON_NEEDLE_ID = StrawCraft.id("poison_needle");
     public static final Identifier DEMON_HUNTER_PISTOL_ID = StrawCraft.id("demon_hunter_pistol");
+    public static final Identifier THROWING_AXE_ID = StrawCraft.id("throwing_axe");
 
     public static Item MASTER_KEY;
     public static Item ANTIDOTE;
@@ -25,6 +26,7 @@ public final class StrawCraftItems {
     public static Item WAITER_SERVICE_TRAY;
     public static Item POISON_NEEDLE;
     public static Item DEMON_HUNTER_PISTOL;
+    public static Item THROWING_AXE;
 
     private StrawCraftItems() {
     }
@@ -39,5 +41,6 @@ public final class StrawCraftItems {
         WAITER_SERVICE_TRAY = Registry.register(Registries.ITEM, WAITER_SERVICE_TRAY_ID, new WaiterServiceItem(new Item.Settings().maxCount(1)));
         POISON_NEEDLE = Registry.register(Registries.ITEM, POISON_NEEDLE_ID, new PoisonNeedleItem(new Item.Settings().maxCount(1)));
         DEMON_HUNTER_PISTOL = Registry.register(Registries.ITEM, DEMON_HUNTER_PISTOL_ID, new DemonHunterPistolItem(new Item.Settings().maxCount(1)));
+        THROWING_AXE = Registry.register(Registries.ITEM, THROWING_AXE_ID, new Item(new Item.Settings().maxCount(1)));
     }
 }
