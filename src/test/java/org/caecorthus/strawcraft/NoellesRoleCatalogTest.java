@@ -38,6 +38,7 @@ class NoellesRoleCatalogTest {
             "survival_master",
             "waiter",
             "mermaid",
+            "demon_hunter",
             "vulture"
     );
     private static final Set<String> EXPECTED_DESIGN_REQUIRED_ROLE_PATHS = Set.of(
@@ -47,7 +48,6 @@ class NoellesRoleCatalogTest {
             "bandit",
             "time_keeper",
             "spiritualist",
-            "demon_hunter",
             "corrupt_cop",
             "pathogen",
             "taotie"
@@ -157,6 +157,7 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("survival_master"),
                 StrawCraft.id("waiter"),
                 StrawCraft.id("mermaid"),
+                StrawCraft.id("demon_hunter"),
                 StrawCraft.id("vulture")
         ), runtimeIds);
     }
@@ -196,12 +197,12 @@ class NoellesRoleCatalogTest {
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("morphling")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("spiritualist")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("bandit")));
-        assertFalse(runtimeSelectionIds.contains(StrawCraft.id("demon_hunter")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("corrupt_cop")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("pathogen")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("taotie")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("jester")));
         assertTrue(runtimeSelectionIds.contains(StrawCraft.id("undercover")));
+        assertTrue(runtimeSelectionIds.contains(StrawCraft.id("demon_hunter")));
     }
 
     @Test

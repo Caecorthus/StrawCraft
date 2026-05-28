@@ -67,6 +67,7 @@ class NoellesRoleStateTest {
         assertEquals(OptionalLong.empty(), state.getTimestamp("taotie_last_swallow"));
         assertFalse(state.isAbilityOnCooldown("detective_investigate", 101L));
         assertTrue(state.voodooBondedTarget().isEmpty());
+        assertTrue(state.demonHunterFrenziedPlayers().isEmpty());
         assertTrue(state.neutralWinClaims().isEmpty());
     }
 
@@ -135,6 +136,30 @@ class NoellesRoleStateTest {
         assertEquals(Optional.of(secondTarget), loaded.voodooBondedTarget());
         loaded.clearVoodooBondedTarget();
         assertTrue(loaded.voodooBondedTarget().isEmpty());
+    }
+
+    @Test
+    void demonHunterFrenziedPlayersTrackIndependentlyAndRoundTripThroughNbt() {
+        UUID firstFrenzied = UUID.randomUUID();
+        UUID secondFrenzied = UUID.randomUUID();
+        NoellesRoleState saved = new NoellesRoleState();
+
+        assertTrue(saved.trackDemonHunterFrenziedPlayer(firstFrenzied));
+        assertTrue(saved.trackDemonHunterFrenziedPlayer(secondFrenzied));
+        assertFalse(saved.trackDemonHunterFrenziedPlayer(firstFrenzied));
+        assertTrue(saved.hasDemonHunterFrenziedPlayer(firstFrenzied));
+        assertEquals(2, saved.demonHunterFrenziedPlayers().size());
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        assertTrue(loaded.hasDemonHunterFrenziedPlayer(firstFrenzied));
+        assertTrue(loaded.hasDemonHunterFrenziedPlayer(secondFrenzied));
+        assertTrue(loaded.untrackDemonHunterFrenziedPlayer(firstFrenzied));
+        assertFalse(loaded.hasDemonHunterFrenziedPlayer(firstFrenzied));
+        assertTrue(loaded.hasDemonHunterFrenziedPlayer(secondFrenzied));
     }
 
     @Test

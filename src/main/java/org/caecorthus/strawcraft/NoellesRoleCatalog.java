@@ -52,7 +52,7 @@ public final class NoellesRoleCatalog {
             selectableGood("detective"),
             selectableGood("waiter"),
             selectableGood("mermaid"),
-            good("demon_hunter"),
+            selectableGood("demon_hunter"),
             disabledNeutral("jester"),
             selectableNeutral("vulture"),
             neutral("corrupt_cop"),

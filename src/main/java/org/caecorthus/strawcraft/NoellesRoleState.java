@@ -25,6 +25,7 @@ public final class NoellesRoleState {
     private static final String UUID_SETS_KEY = "UuidSets";
     private static final String REPORTER_MARKED_TARGET_KEY = "reporter_marked_target";
     private static final String VOODOO_BONDED_TARGET_KEY = "voodoo_bonded_target";
+    private static final String DEMON_HUNTER_FRENZIED_PLAYERS_KEY = "demon_hunter_frenzied_players";
     private static final String NEUTRAL_WIN_CLAIMS_KEY = "NeutralWinClaims";
     private static final String TIMED_BOMB_KEY = "TimedBomb";
     private static final String TIMED_BOMB_OWNER_UUID_KEY = "OwnerUuid";
@@ -135,6 +136,18 @@ public final class NoellesRoleState {
         return uuidSets.computeIfAbsent(key, ignored -> new HashSet<>()).add(uuid);
     }
 
+    public boolean removeUuidFromSet(String key, UUID uuid) {
+        Set<UUID> uuids = uuidSets.get(key);
+        if (uuids == null) {
+            return false;
+        }
+        boolean removed = uuids.remove(uuid);
+        if (uuids.isEmpty()) {
+            uuidSets.remove(key);
+        }
+        return removed;
+    }
+
     public boolean uuidSetContains(String key, UUID uuid) {
         return uuidSets.getOrDefault(key, Set.of()).contains(uuid);
     }
@@ -173,6 +186,28 @@ public final class NoellesRoleState {
 
     public void clearVoodooBondedTarget() {
         clearUuidSet(VOODOO_BONDED_TARGET_KEY);
+    }
+
+    public boolean trackDemonHunterFrenziedPlayer(UUID targetUuid) {
+        Objects.requireNonNull(targetUuid, "targetUuid");
+        return addUuidToSet(DEMON_HUNTER_FRENZIED_PLAYERS_KEY, targetUuid);
+    }
+
+    public boolean untrackDemonHunterFrenziedPlayer(UUID targetUuid) {
+        Objects.requireNonNull(targetUuid, "targetUuid");
+        return removeUuidFromSet(DEMON_HUNTER_FRENZIED_PLAYERS_KEY, targetUuid);
+    }
+
+    public boolean hasDemonHunterFrenziedPlayer(UUID targetUuid) {
+        return uuidSetContains(DEMON_HUNTER_FRENZIED_PLAYERS_KEY, targetUuid);
+    }
+
+    public Set<UUID> demonHunterFrenziedPlayers() {
+        return uuidSet(DEMON_HUNTER_FRENZIED_PLAYERS_KEY);
+    }
+
+    public void clearDemonHunterFrenziedPlayers() {
+        clearUuidSet(DEMON_HUNTER_FRENZIED_PLAYERS_KEY);
     }
 
     public void recordNeutralWinClaim(NeutralWinClaim claim) {

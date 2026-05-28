@@ -8,6 +8,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
+import org.caecorthus.strawcraft.DemonHunterPsychoRuntime;
 import org.caecorthus.strawcraft.SilentPsychoModeAccess;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -55,12 +56,14 @@ public abstract class PlayerPsychoComponentMixin implements SilentPsychoModeAcce
     private void strawcraft$rememberLoudPsychoMode(CallbackInfoReturnable<Boolean> callback) {
         if (callback.getReturnValueZ()) {
             strawcraft$silentPsycho = false;
+            DemonHunterPsychoRuntime.onLoudPsychoStarted(player);
         }
     }
 
     @Inject(method = "stopPsycho()V", at = @At("HEAD"), cancellable = true, require = 0)
     private void strawcraft$stopSilentPsychoWithoutGlobalCounter(CallbackInfo callback) {
         if (!strawcraft$silentPsycho) {
+            DemonHunterPsychoRuntime.onLoudPsychoStopped(player);
             return;
         }
 

@@ -87,6 +87,14 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         return added;
     }
 
+    public boolean removeUuidFromSet(String key, UUID uuid) {
+        boolean removed = state.removeUuidFromSet(key, uuid);
+        if (removed) {
+            sync();
+        }
+        return removed;
+    }
+
     public boolean uuidSetContains(String key, UUID uuid) {
         return state.uuidSetContains(key, uuid);
     }
@@ -125,6 +133,35 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
 
     public void clearVoodooBondedTarget() {
         state.clearVoodooBondedTarget();
+        sync();
+    }
+
+    public boolean trackDemonHunterFrenziedPlayer(UUID targetUuid) {
+        boolean added = state.trackDemonHunterFrenziedPlayer(targetUuid);
+        if (added) {
+            sync();
+        }
+        return added;
+    }
+
+    public boolean untrackDemonHunterFrenziedPlayer(UUID targetUuid) {
+        boolean removed = state.untrackDemonHunterFrenziedPlayer(targetUuid);
+        if (removed) {
+            sync();
+        }
+        return removed;
+    }
+
+    public boolean hasDemonHunterFrenziedPlayer(UUID targetUuid) {
+        return state.hasDemonHunterFrenziedPlayer(targetUuid);
+    }
+
+    public Set<UUID> demonHunterFrenziedPlayers() {
+        return state.demonHunterFrenziedPlayers();
+    }
+
+    public void clearDemonHunterFrenziedPlayers() {
+        state.clearDemonHunterFrenziedPlayers();
         sync();
     }
 

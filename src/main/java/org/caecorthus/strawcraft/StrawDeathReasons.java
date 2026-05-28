@@ -10,6 +10,7 @@ public final class StrawDeathReasons {
     public static final Identifier BOMB = StrawCraft.id("bomb");
     public static final Identifier ASSASSINATED = StrawCraft.id("assassinated");
     public static final Identifier VOODOO = StrawCraft.id("voodoo");
+    public static final Identifier DEMON_HUNTER_SHOT = StrawCraft.id("demon_hunter_shot");
 
     private StrawDeathReasons() {
     }
