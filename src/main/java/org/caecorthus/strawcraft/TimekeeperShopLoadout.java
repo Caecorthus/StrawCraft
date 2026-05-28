@@ -16,8 +16,8 @@ import java.util.function.Supplier;
 
 public final class TimekeeperShopLoadout {
     static final String TIME_SUBTRACTION_ENTRY_ID = "timekeeper_subtract_time";
-    private static final int TIME_SUBTRACTION_PRICE = 150;
-    private static final int TIME_SUBTRACTION_TICKS = 600;
+    private static final int TIME_SUBTRACTION_PRICE = 100;
+    private static final int TIME_SUBTRACTION_TICKS = 900;
 
     private TimekeeperShopLoadout() {
     }

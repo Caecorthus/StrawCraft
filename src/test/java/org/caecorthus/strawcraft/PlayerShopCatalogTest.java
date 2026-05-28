@@ -105,11 +105,11 @@ class PlayerShopCatalogTest {
     @Test
     void timekeeperPresentationOnlyExposesTimerEntryWithOriginalPurchaseIndex() {
         ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
-        ShopEntry timer = entry("timekeeper_subtract_time", 150, ShopEntry.Type.TOOL);
+        ShopEntry timer = entry("timekeeper_subtract_time", 100, ShopEntry.Type.TOOL);
         ShopEntry lockpick = entry("lockpick", 50, ShopEntry.Type.TOOL);
 
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
-                role("timekeeper", false, true),
+                role("time_keeper", false, true),
                 List.of(knife, timer, lockpick)
         );
 
@@ -117,8 +117,10 @@ class PlayerShopCatalogTest {
         assertEquals(List.of(1), presentation.visibleEntries().stream()
                 .map(PlayerShopCatalog.VisibleEntry::wathePurchaseIndex)
                 .toList());
+        assertTrue(PlayerShopCatalog.allowsPurchaseForRole(role("time_keeper", false, true), List.of(knife, timer, lockpick), 1));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("time_keeper", false, true), List.of(knife, timer, lockpick), 0));
         assertTrue(PlayerShopCatalog.allowsPurchaseForRole(role("timekeeper", false, true), List.of(knife, timer, lockpick), 1));
-        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("timekeeper", false, true), List.of(knife, timer, lockpick), 0));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("killer", true, false), List.of(knife, timer, lockpick), 1));
         assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("bartender", false, true), List.of(knife, timer, lockpick), 1));
     }
 
@@ -360,7 +362,7 @@ class PlayerShopCatalogTest {
         List<ShopEntry> entries = List.of(knife, poison, defenseVial);
 
         assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("detective", false, true), entries, 2));
-        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("timekeeper", false, true), entries, 2));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("time_keeper", false, true), entries, 2));
         assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("reporter", false, true), entries, 2));
         assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("poisoner", true, false), entries, 2));
         assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("killer", true, false), entries, 2));

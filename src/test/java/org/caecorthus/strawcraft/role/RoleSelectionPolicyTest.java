@@ -168,7 +168,7 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("scavenger")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("silencer")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("poisoner")));
-        assertTrue(plan.assignments().containsValue(StrawCraft.id("timekeeper")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("time_keeper")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("undercover")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("conductor")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("bartender")));
@@ -187,7 +187,7 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("waiter")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("mermaid")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("vulture")));
-        assertFalse(plan.assignments().containsValue(StrawCraft.id("time_keeper")));
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("timekeeper")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("awesome_binglus")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("jester")));
     }

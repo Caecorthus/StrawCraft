@@ -34,7 +34,9 @@ public final class StrawRoleMeaning {
     }
 
     public static boolean usesTimekeeperShop(Role role) {
-        return matchesRoleId(role, StrawCraft.id("timekeeper"));
+        // Prefer the official NoellesRoles id while accepting the legacy internal alias.
+        // 优先使用 NoellesRoles 官方 id，同时兼容旧的内部别名。
+        return matchesAnyRoleId(role, StrawCraft.id("time_keeper"), StrawCraft.id("timekeeper"));
     }
 
     public static boolean usesReporterShop(Role role) {
@@ -157,6 +159,19 @@ public final class StrawRoleMeaning {
 
     static boolean matchesRoleId(Role role, Identifier roleId) {
         return role != null && roleId.equals(role.identifier());
+    }
+
+    private static boolean matchesAnyRoleId(Role role, Identifier... roleIds) {
+        if (role == null) {
+            return false;
+        }
+        Identifier actualRoleId = role.identifier();
+        for (Identifier roleId : roleIds) {
+            if (roleId.equals(actualRoleId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static StrawFaction factionFor(Role role) {

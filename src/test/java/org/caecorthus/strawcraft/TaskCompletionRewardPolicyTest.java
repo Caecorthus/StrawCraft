@@ -16,7 +16,7 @@ class TaskCompletionRewardPolicyTest {
         for (Identifier roleId : List.of(
                 StrawCraft.id("bartender"),
                 StrawCraft.id("recaller"),
-                StrawCraft.id("timekeeper"),
+                StrawCraft.id("time_keeper"),
                 StrawCraft.id("reporter"),
                 StrawCraft.id("waiter")
         )) {
@@ -37,6 +37,7 @@ class TaskCompletionRewardPolicyTest {
         assertEquals(List.of(), TaskCompletionRewardPolicy.compute(player, StrawCraft.id("civilian")));
         assertEquals(List.of(), TaskCompletionRewardPolicy.compute(player, StrawCraft.id("killer")));
         assertEquals(List.of(), TaskCompletionRewardPolicy.compute(player, StrawCraft.id("conductor")));
+        assertEquals(List.of(), TaskCompletionRewardPolicy.compute(player, StrawCraft.id("timekeeper")));
         assertEquals(List.of(), TaskCompletionRewardPolicy.compute(player, null));
     }
 }

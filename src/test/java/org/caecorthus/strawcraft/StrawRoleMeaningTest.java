@@ -112,6 +112,14 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void officialTimeKeeperAndLegacyAliasUseTimekeeperShopMeaning() {
+        assertTrue(usesTimekeeperShop(noellesRole("time_keeper")));
+        assertTrue(usesTimekeeperShop(noellesRole("timekeeper")));
+        assertFalse(usesTimekeeperShop(noellesRole("bartender")));
+        assertFalse(usesTimekeeperShop(role(WatheRoleIds.CIVILIAN, true, false)));
+    }
+
+    @Test
     void onlyNoellesAssassinReceivesGuessMeaningAndKeepsKillerFaction() {
         Role assassin = noellesRole("assassin");
 
@@ -254,6 +262,10 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesPathogenInfection(Role role) {
         return invokeBoolean("receivesPathogenInfection", role);
+    }
+
+    private static boolean usesTimekeeperShop(Role role) {
+        return invokeBoolean("usesTimekeeperShop", role);
     }
 
     private static boolean receivesAssassinGuess(Role role) {

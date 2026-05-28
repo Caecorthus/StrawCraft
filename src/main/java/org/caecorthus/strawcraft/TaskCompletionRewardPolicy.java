@@ -14,7 +14,7 @@ public final class TaskCompletionRewardPolicy {
     private static final Set<Identifier> TASK_REWARD_ROLE_IDS = Set.of(
             StrawCraft.id("bartender"),
             StrawCraft.id("recaller"),
-            StrawCraft.id("timekeeper"),
+            StrawCraft.id("time_keeper"),
             StrawCraft.id("reporter"),
             StrawCraft.id("waiter")
     );

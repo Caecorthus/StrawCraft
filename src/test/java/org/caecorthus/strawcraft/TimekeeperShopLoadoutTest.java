@@ -26,7 +26,7 @@ class TimekeeperShopLoadoutTest {
                 .toList());
 
         ShopEntry timer = entries.get(1);
-        assertEquals(150, timer.price());
+        assertEquals(100, timer.price());
         assertEquals(ShopEntry.Type.TOOL, timer.type());
     }
 
@@ -36,7 +36,7 @@ class TimekeeperShopLoadoutTest {
 
         assertTrue(TimekeeperShopLoadout.subtractTime(adjustment::addAndGet));
 
-        assertEquals(-600, adjustment.get());
+        assertEquals(-900, adjustment.get());
     }
 
     @Test

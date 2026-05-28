@@ -76,7 +76,7 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("bomber"), selected.get(thirdKiller));
         assertEquals(StrawCraft.id("assassin"), selected.get(fourthKiller));
         assertEquals(WatheRoleIds.VIGILANTE, selected.get(vigilante));
-        assertEquals(StrawCraft.id("timekeeper"), selected.get(firstCivilian));
+        assertEquals(StrawCraft.id("time_keeper"), selected.get(firstCivilian));
         assertEquals(StrawCraft.id("undercover"), selected.get(secondCivilian));
         assertEquals(StrawCraft.id("conductor"), selected.get(thirdCivilian));
         assertEquals(StrawCraft.id("bartender"), selected.get(fourthCivilian));
@@ -112,7 +112,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("silencer"),
                 StrawCraft.id("poisoner"),
                 StrawCraft.id("bandit"),
-                StrawCraft.id("timekeeper"),
+                StrawCraft.id("time_keeper"),
                 StrawCraft.id("undercover"),
                 StrawCraft.id("conductor"),
                 StrawCraft.id("bartender"),
@@ -135,7 +135,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("pathogen")
         ), candidateIds);
         assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));
-        assertFalse(candidateIds.contains(StrawCraft.id("time_keeper")));
+        assertFalse(candidateIds.contains(StrawCraft.id("timekeeper")));
         assertFalse(candidateIds.contains(StrawCraft.id("jester")));
         assertFalse(candidateIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
     }
@@ -155,7 +155,7 @@ class NoellesRuntimeRoleSelectionTest {
 
         assertEquals(StrawCraft.id("swapper"), selected.get(killer));
         assertEquals(StrawCraft.id("vulture"), selected.get(looseEnd));
-        assertEquals(StrawCraft.id("timekeeper"), selected.get(civilian));
+        assertEquals(StrawCraft.id("time_keeper"), selected.get(civilian));
     }
 
     @Test
@@ -239,7 +239,7 @@ class NoellesRuntimeRoleSelectionTest {
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
 
         assertEquals(StrawCraft.id("undercover"), selected.get(existingUndercover));
-        assertEquals(StrawCraft.id("timekeeper"), selected.get(civilian));
+        assertEquals(StrawCraft.id("time_keeper"), selected.get(civilian));
         assertEquals(1, selected.values().stream()
                 .filter(StrawCraft.id("undercover")::equals)
                 .count());
@@ -330,7 +330,7 @@ class NoellesRuntimeRoleSelectionTest {
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
 
         assertEquals(StrawCraft.id("swapper"), selected.get(maybeForcedKiller));
-        assertEquals(StrawCraft.id("timekeeper"), selected.get(maybeForcedCivilian));
+        assertEquals(StrawCraft.id("time_keeper"), selected.get(maybeForcedCivilian));
         assertEquals(1, selected.values().stream()
                 .filter(roleId -> StrawCraft.id("swapper").equals(roleId) || WatheRoleIds.KILLER.equals(roleId))
                 .count());
