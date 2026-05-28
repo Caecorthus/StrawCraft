@@ -25,6 +25,7 @@ public final class StrawCraft implements ModInitializer {
         StrawInteractionBlacklistAdapter.register();
         WatheOfficialBridge.register();
         ConductorMasterKeyRuntime.register();
+        EngineerRepairToolRuntime.register();
         StrawCorpseMetadata.registerEvents();
         ScavengerHiddenBodies.registerEvents();
         DetectiveKillHistoryRuntime.registerEvents();
