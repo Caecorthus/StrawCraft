@@ -70,6 +70,21 @@ class ToxicologistAntidotePolicyTest {
         assertEquals(ToxicologistAntidotePolicy.CureTarget.NONE, ToxicologistAntidotePolicy.selectCureTarget(input));
     }
 
+    @Test
+    void bartenderPoisonAwarenessDoesNotGrantAntidoteCure() {
+        ToxicologistAntidotePolicy.Input input = new ToxicologistAntidotePolicy.Input(
+                NoellesRoleCatalog.find(StrawCraft.id("bartender")).orElseThrow().watheRole(),
+                true,
+                true,
+                true,
+                true,
+                true,
+                ToxicologistAntidotePolicy.MAX_CURE_DISTANCE_SQUARED
+        );
+
+        assertEquals(ToxicologistAntidotePolicy.CureTarget.NONE, ToxicologistAntidotePolicy.selectCureTarget(input));
+    }
+
     private static ToxicologistAntidotePolicy.Input input(
             boolean toxicologistRole,
             boolean selfPoisoned,

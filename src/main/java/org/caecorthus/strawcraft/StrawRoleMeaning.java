@@ -80,6 +80,15 @@ public final class StrawRoleMeaning {
         return role != null && StrawCraft.id("survival_master").equals(role.identifier());
     }
 
+    public static boolean receivesPoisonVisibility(Role role) {
+        // 为理解毒饮的职业复用 Wathe 官方毒药可视钩子。
+        // 为理解毒饮的职业复用 Wathe 官方毒药可视钩子。
+        // 为理解毒饮的职业复用 Wathe 官方毒药可视钩子。
+        return role != null && (StrawCraft.id("toxicologist").equals(role.identifier())
+                || StrawCraft.id("bartender").equals(role.identifier())
+                || usesPoisonerShop(role));
+    }
+
     public static boolean receivesToxicologistPoisonVisibility(Role role) {
         return role != null && (StrawCraft.id("toxicologist").equals(role.identifier())
                 || usesPoisonerShop(role));

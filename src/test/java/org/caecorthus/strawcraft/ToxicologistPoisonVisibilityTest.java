@@ -19,8 +19,22 @@ class ToxicologistPoisonVisibilityTest {
     }
 
     @Test
+    void bartenderCanSeeOfficialWathePoison() {
+        assertTrue(ToxicologistPoisonVisibility.canSeePoison(noellesRole("bartender")));
+    }
+
+    @Test
     void otherRolesDoNotGainPoisonVisibility() {
         assertFalse(ToxicologistPoisonVisibility.canSeePoison(noellesRole("detective")));
+        assertFalse(ToxicologistPoisonVisibility.canSeePoison(new Role(
+                StrawCraft.id("unknown_fixture"),
+                0xFFFFFF,
+                false,
+                false,
+                Role.MoodType.REAL,
+                200,
+                false
+        )));
         assertFalse(ToxicologistPoisonVisibility.canSeePoison(null));
     }
 

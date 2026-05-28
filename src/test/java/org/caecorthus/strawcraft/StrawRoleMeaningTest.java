@@ -147,6 +147,16 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void bartenderToxicologistAndPoisonerReceivePoisonVisibilityMeaning() {
+        assertTrue(receivesPoisonVisibility(noellesRole("bartender")));
+        assertTrue(receivesPoisonVisibility(noellesRole("toxicologist")));
+        assertTrue(receivesPoisonVisibility(noellesRole("poisoner")));
+        assertFalse(receivesPoisonVisibility(noellesRole("detective")));
+        assertFalse(receivesPoisonVisibility(role(WatheRoleIds.CIVILIAN, true, false)));
+        assertFalse(receivesToxicologistPoisonVisibility(noellesRole("bartender")));
+    }
+
+    @Test
     void nullAndUnknownRoleDoNotReceivePrivilegedBehavior() {
         Role unknownRole = role(Identifier.of("strawcraft", "unknown_fixture"), false, false);
 
@@ -162,6 +172,8 @@ class StrawRoleMeaningTest {
         assertFalse(receivesReporterMark(null));
         assertFalse(receivesVoodooDeathBond(null));
         assertFalse(receivesPhantomInvisibility(null));
+        assertFalse(receivesPoisonVisibility(null));
+        assertFalse(receivesToxicologistPoisonVisibility(null));
         assertTrue(ammoFactionFor(null).isEmpty());
         assertFalse(canUseKillerShop(unknownRole));
         assertFalse(receivesVigilanteLoadout(unknownRole));
@@ -174,6 +186,8 @@ class StrawRoleMeaningTest {
         assertFalse(receivesReporterMark(unknownRole));
         assertFalse(receivesVoodooDeathBond(unknownRole));
         assertFalse(receivesPhantomInvisibility(unknownRole));
+        assertFalse(receivesPoisonVisibility(unknownRole));
+        assertFalse(receivesToxicologistPoisonVisibility(unknownRole));
         assertTrue(ammoFactionFor(unknownRole).isEmpty());
     }
 
@@ -219,6 +233,14 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesPhantomInvisibility(Role role) {
         return invokeBoolean("receivesPhantomInvisibility", role);
+    }
+
+    private static boolean receivesPoisonVisibility(Role role) {
+        return invokeBoolean("receivesPoisonVisibility", role);
+    }
+
+    private static boolean receivesToxicologistPoisonVisibility(Role role) {
+        return invokeBoolean("receivesToxicologistPoisonVisibility", role);
     }
 
     private static Optional<GunAmmoFaction> ammoFactionFor(Role role) {

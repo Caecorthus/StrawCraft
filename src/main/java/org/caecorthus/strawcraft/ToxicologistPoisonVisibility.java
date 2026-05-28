@@ -15,7 +15,7 @@ public final class ToxicologistPoisonVisibility {
     }
 
     static boolean canSeePoison(@Nullable Role role) {
-        return StrawRoleMeaning.receivesToxicologistPoisonVisibility(role);
+        return StrawRoleMeaning.receivesPoisonVisibility(role);
     }
 
     private static boolean canViewerSeePoison(PlayerEntity viewer) {

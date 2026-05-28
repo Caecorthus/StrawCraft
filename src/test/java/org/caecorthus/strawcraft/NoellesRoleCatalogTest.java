@@ -94,6 +94,7 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("poisoner"),
                 StrawCraft.id("timekeeper"),
                 StrawCraft.id("conductor"),
+                StrawCraft.id("bartender"),
                 StrawCraft.id("noisemaker"),
                 StrawCraft.id("voodoo"),
                 StrawCraft.id("coroner"),
