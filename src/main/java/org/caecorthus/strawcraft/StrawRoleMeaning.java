@@ -40,6 +40,10 @@ public final class StrawRoleMeaning {
         return matchesRoleId(role, StrawCraft.id("reporter"));
     }
 
+    public static boolean usesPoisonerShop(Role role) {
+        return matchesRoleId(role, StrawCraft.id("poisoner"));
+    }
+
     public static Optional<GunAmmoFaction> ammoFactionFor(Role role) {
         return defaultAmmoFactionTags().resolveMeaning(meaningFor(role));
     }
@@ -77,7 +81,8 @@ public final class StrawRoleMeaning {
     }
 
     public static boolean receivesToxicologistPoisonVisibility(Role role) {
-        return role != null && StrawCraft.id("toxicologist").equals(role.identifier());
+        return role != null && (StrawCraft.id("toxicologist").equals(role.identifier())
+                || usesPoisonerShop(role));
     }
 
     public static boolean receivesAttendantRoomManifest(Role role) {

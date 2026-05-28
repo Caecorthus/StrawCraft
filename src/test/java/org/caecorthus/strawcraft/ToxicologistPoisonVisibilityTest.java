@@ -13,14 +13,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ToxicologistPoisonVisibilityTest {
     @Test
-    void toxicologistCanSeeOfficialWathePoison() {
+    void toxicologistAndPoisonerCanSeeOfficialWathePoison() {
         assertTrue(ToxicologistPoisonVisibility.canSeePoison(noellesRole("toxicologist")));
+        assertTrue(ToxicologistPoisonVisibility.canSeePoison(noellesRole("poisoner")));
     }
 
     @Test
     void otherRolesDoNotGainPoisonVisibility() {
         assertFalse(ToxicologistPoisonVisibility.canSeePoison(noellesRole("detective")));
-        assertFalse(ToxicologistPoisonVisibility.canSeePoison(noellesRole("poisoner")));
         assertFalse(ToxicologistPoisonVisibility.canSeePoison(null));
     }
 

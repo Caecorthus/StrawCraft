@@ -35,6 +35,9 @@ public final class PlayerShopCatalog {
         if (StrawRoleMeaning.usesReporterShop(role)) {
             return reporterPresentation(materializedEntries);
         }
+        if (StrawRoleMeaning.usesPoisonerShop(role)) {
+            return PoisonerShopLoadout.presentation(materializedEntries);
+        }
         if (StrawRoleMeaning.canUseKillerShop(role)) {
             return fullPresentation(materializedEntries);
         }

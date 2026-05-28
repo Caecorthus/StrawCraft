@@ -23,7 +23,9 @@ public final class ToxicologistPoisonVisibility {
             return false;
         }
         try {
-            // Ask official Wathe for the viewer role, then keep the Toxicologist decision addon-side.
+            // Ask official Wathe for the viewer role, then keep addon poison-vision roles local.
+            // 先向官方 Wathe 查询观察者职业，再在 StrawCraft 本地决定哪些附加职业能看见毒。
+            // 先向官方 Wathe 查询观察者职业，再在 addon 侧判定可见毒物的职业。
             // 先向官方 Wathe 读取观察者职业，再在 StrawCraft 侧判断 Toxicologist 权限。
             Role role = GameWorldComponent.KEY.get(viewer.getWorld()).getRole(viewer);
             return canSeePoison(role);
