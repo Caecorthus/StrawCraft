@@ -25,6 +25,7 @@ class MixinTargetBytecodeTest {
                 "@Inject",
                 "handler",
                 List.of(methodTarget),
+                List.of(),
                 false,
                 0
         );

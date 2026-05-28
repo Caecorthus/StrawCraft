@@ -5,6 +5,7 @@ import dev.doctor4t.wathe.entity.PlayerBodyEntity;
 import dev.doctor4t.wathe.api.event.GameEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.Box;
 import org.caecorthus.strawcraft.api.StrawDeathEvents;
@@ -30,11 +31,11 @@ public final class ScavengerHiddenBodies {
     }
 
     static void recordRoleDeath(StrawDeathEvents.RoleDeathContext context) {
-        if (!context.official().spawnBodyRequested() || !context.official().watheBaselineOwnsBodyAndSpectator()) {
-            return;
-        }
-
-        if (context.killerRoleId().filter(ScavengerHiddenBodyVisibility.SCAVENGER_ROLE::equals).isEmpty()) {
+        if (!shouldRecordHiddenBody(
+                context.official().spawnBodyRequested(),
+                context.official().watheBaselineOwnsBodyAndSpectator(),
+                context.killerRoleId()
+        )) {
             return;
         }
 
@@ -57,11 +58,11 @@ public final class ScavengerHiddenBodies {
             return;
         }
 
-        Optional<net.minecraft.util.Identifier> killerRoleId = Optional.ofNullable(
+        Optional<Identifier> killerRoleId = Optional.ofNullable(
                         GameWorldComponent.KEY.get(killer.getWorld()).getRole(killer)
                 )
                 .flatMap(StrawRoleMeaning::roleIdFor);
-        if (killerRoleId.filter(ScavengerHiddenBodyVisibility.SCAVENGER_ROLE::equals).isEmpty()) {
+        if (!shouldMarkSpawnedBody(victim.getWorld().isClient(), killerRoleId)) {
             return;
         }
 
@@ -69,6 +70,20 @@ public final class ScavengerHiddenBodies {
         // 服务端记录负责回合状态；tracked data 只把渲染判断同步给客户端。
         STATE.recordHiddenBody(victim.getWorld().getRegistryKey().getValue(), victim.getUuid());
         ((ScavengerHiddenBodyEntity) body).strawcraft$setHiddenByScavenger(true);
+    }
+
+    static boolean shouldRecordHiddenBody(
+            boolean spawnBodyRequested,
+            boolean watheBaselineOwnsBodyAndSpectator,
+            Optional<Identifier> killerRoleId
+    ) {
+        return spawnBodyRequested
+                && watheBaselineOwnsBodyAndSpectator
+                && killerRoleId.filter(ScavengerHiddenBodyVisibility.SCAVENGER_ROLE::equals).isPresent();
+    }
+
+    static boolean shouldMarkSpawnedBody(boolean clientWorld, Optional<Identifier> killerRoleId) {
+        return !clientWorld && killerRoleId.filter(ScavengerHiddenBodyVisibility.SCAVENGER_ROLE::equals).isPresent();
     }
 
     private static void clearRoundWorld(net.minecraft.world.World world) {

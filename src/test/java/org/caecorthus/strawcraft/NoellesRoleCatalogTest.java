@@ -88,6 +88,7 @@ class NoellesRoleCatalogTest {
 
         assertEquals(Set.of(
                 StrawCraft.id("bomber"),
+                StrawCraft.id("scavenger"),
                 StrawCraft.id("timekeeper"),
                 StrawCraft.id("conductor"),
                 StrawCraft.id("toxicologist"),

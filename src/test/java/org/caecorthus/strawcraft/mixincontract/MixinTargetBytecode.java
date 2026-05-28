@@ -23,6 +23,20 @@ final class MixinTargetBytecode {
         return visitor.found();
     }
 
+    static boolean hasMethodInvocation(
+            String ownerClass,
+            String methodName,
+            String descriptor,
+            String invokedOwner,
+            String invokedName,
+            String invokedDescriptor
+    ) {
+        MethodInvocationSearchVisitor visitor =
+                new MethodInvocationSearchVisitor(methodName, descriptor, invokedOwner, invokedName, invokedDescriptor);
+        read(ownerClass, visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        return visitor.found();
+    }
+
     static boolean hasMixinTarget(String ownerClass, String targetOwnerClass) {
         MixinTargetSearchVisitor visitor = new MixinTargetSearchVisitor(targetOwnerClass.replace('.', '/'));
         read(ownerClass, visitor);
@@ -36,6 +50,10 @@ final class MixinTargetBytecode {
     }
 
     private static boolean read(String ownerClass, ClassVisitor visitor) {
+        return read(ownerClass, visitor, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+    }
+
+    private static boolean read(String ownerClass, ClassVisitor visitor, int flags) {
         String resourceName = ownerClass.replace('.', '/') + ".class";
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try (var input = classLoader.getResourceAsStream(resourceName)) {
@@ -43,7 +61,7 @@ final class MixinTargetBytecode {
                 return false;
             }
 
-            new ClassReader(input).accept(visitor, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            new ClassReader(input).accept(visitor, flags);
             return true;
         } catch (IOException exception) {
             throw new UncheckedIOException("Could not read " + resourceName, exception);
@@ -78,11 +96,16 @@ final class MixinTargetBytecode {
             String annotationName,
             String handlerMethod,
             List<String> methodTargets,
+            List<String> atTargets,
             Boolean remap,
             Integer require
     ) {
         boolean targetsMethod(String methodName) {
             return methodTargets.stream().anyMatch(target -> matchesMethodName(target, methodName));
+        }
+
+        boolean targetsAt(String atTarget) {
+            return atTargets.contains(atTarget);
         }
 
         private static boolean matchesMethodName(String target, String methodName) {
@@ -99,6 +122,7 @@ final class MixinTargetBytecode {
             return annotationName
                     + " on " + handlerMethod
                     + " method=" + methodTargets
+                    + " atTarget=" + atTargets
                     + " remap=" + remap
                     + " require=" + require;
         }
@@ -121,6 +145,58 @@ final class MixinTargetBytecode {
                 found = true;
             }
             return null;
+        }
+
+        private boolean found() {
+            return found;
+        }
+    }
+
+    private static final class MethodInvocationSearchVisitor extends ClassVisitor {
+        private final String methodName;
+        private final String descriptor;
+        private final String invokedOwner;
+        private final String invokedName;
+        private final String invokedDescriptor;
+        private boolean found;
+
+        private MethodInvocationSearchVisitor(
+                String methodName,
+                String descriptor,
+                String invokedOwner,
+                String invokedName,
+                String invokedDescriptor
+        ) {
+            super(ASM9);
+            this.methodName = methodName;
+            this.descriptor = descriptor;
+            this.invokedOwner = invokedOwner;
+            this.invokedName = invokedName;
+            this.invokedDescriptor = invokedDescriptor;
+        }
+
+        @Override
+        public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+            if (!methodName.equals(name) || !this.descriptor.equals(descriptor)) {
+                return null;
+            }
+
+            return new MethodVisitor(ASM9) {
+                @Override
+                public void visitMethodInsn(
+                        int opcode,
+                        String owner,
+                        String name,
+                        String descriptor,
+                        boolean isInterface
+                ) {
+                    if (invokedOwner.equals(owner)
+                            && invokedName.equals(name)
+                            && invokedDescriptor.equals(descriptor)) {
+                        found = true;
+                    }
+                }
+            };
         }
 
         private boolean found() {
@@ -266,6 +342,7 @@ final class MixinTargetBytecode {
         private final String handlerMethod;
         private final List<InjectionAnnotation> injections;
         private final List<String> methodTargets = new ArrayList<>();
+        private final List<String> atTargets = new ArrayList<>();
         private Boolean remap;
         private Integer require;
 
@@ -306,11 +383,28 @@ final class MixinTargetBytecode {
         }
 
         @Override
+        public AnnotationVisitor visitAnnotation(String name, String descriptor) {
+            if (!"at".equals(name) || !"Lorg/spongepowered/asm/mixin/injection/At;".equals(descriptor)) {
+                return null;
+            }
+
+            return new AnnotationVisitor(ASM9) {
+                @Override
+                public void visit(String name, Object value) {
+                    if ("target".equals(name) && value instanceof String atTarget) {
+                        atTargets.add(atTarget);
+                    }
+                }
+            };
+        }
+
+        @Override
         public void visitEnd() {
             injections.add(new InjectionAnnotation(
                     annotationName,
                     handlerMethod,
                     List.copyOf(methodTargets),
+                    List.copyOf(atTargets),
                     remap,
                     require
             ));

@@ -24,7 +24,7 @@ public final class NoellesRoleCatalog {
             disabledKiller("the_insane_damned_paranoid_killer"),
             selectableKiller("bomber"),
             killer("assassin"),
-            killer("scavenger"),
+            selectableKiller("scavenger"),
             killer("serial_killer"),
             killer("silencer"),
             killer("poisoner"),
