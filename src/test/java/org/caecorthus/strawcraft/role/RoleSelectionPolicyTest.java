@@ -146,13 +146,13 @@ class RoleSelectionPolicyTest {
 
     @Test
     void runtimeNoellesDefinitionsAssignImplementedRolesButSkipDisabledAndDeferredRoles() {
-        List<UUID> players = players(24);
+        List<UUID> players = players(25);
         StrawRoleSelectionContext context = new StrawRoleSelectionContext(
                 players,
                 6,
                 1,
                 0,
-                17,
+                18,
                 NoellesRoleCatalog.runtimeSelectionDisabledIds(),
                 Map.of()
         );
@@ -168,6 +168,7 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("silencer")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("poisoner")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("timekeeper")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("undercover")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("conductor")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("bartender")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("noisemaker")));
@@ -187,8 +188,27 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("vulture")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("time_keeper")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("awesome_binglus")));
-        assertFalse(plan.assignments().containsValue(StrawCraft.id("undercover")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("jester")));
+    }
+
+    @Test
+    void runtimeNoellesDefinitionsDoNotAssignUndercoverWithOnlyOneKillerSeat() {
+        List<UUID> players = players(24);
+        StrawRoleSelectionContext context = new StrawRoleSelectionContext(
+                players,
+                1,
+                1,
+                0,
+                17,
+                NoellesRoleCatalog.runtimeSelectionDisabledIds(),
+                Map.of()
+        );
+        List<StrawRoleDefinition> definitions = new java.util.ArrayList<>(NoellesRoleCatalog.runtimeSelectionDefinitions());
+        definitions.add(new StrawRoleDefinition(CIVILIAN, StrawFaction.GOOD, true, false, unused -> true));
+
+        RoleSelectionPolicy.SelectionPlan plan = RoleSelectionPolicy.assign(context, definitions);
+
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("undercover")));
     }
 
     @Test

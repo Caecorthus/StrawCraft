@@ -5,11 +5,13 @@ import dev.doctor4t.wathe.api.WatheRoles;
 import net.minecraft.util.Identifier;
 import org.caecorthus.strawcraft.role.StrawFaction;
 import org.caecorthus.strawcraft.role.StrawRoleDefinition;
+import org.caecorthus.strawcraft.role.StrawRoleSelectionContext;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public final class NoellesRoleCatalog {
     private static final int KILLER_COLOR = 0xC13A38;
@@ -31,7 +33,7 @@ public final class NoellesRoleCatalog {
             killer("bandit"),
             selectableGood("timekeeper"),
             good("time_keeper"),
-            unsupportedGood("undercover"),
+            undercover(),
             selectableGood("conductor"),
             disabledGood("awesome_binglus"),
             selectableGood("bartender"),
@@ -151,6 +153,17 @@ public final class NoellesRoleCatalog {
         return entry(path, StrawFaction.GOOD, true, Readiness.RUNTIME_READY);
     }
 
+    private static Entry undercover() {
+        return entry(
+                "undercover",
+                StrawFaction.GOOD,
+                true,
+                Readiness.RUNTIME_READY,
+                Role.MoodType.NONE,
+                context -> context.killerTargetCount() >= 2
+        );
+    }
+
     private static Entry disabledGood(String path) {
         return entry(path, StrawFaction.GOOD, false, Readiness.DISABLED);
     }
@@ -172,18 +185,32 @@ public final class NoellesRoleCatalog {
     }
 
     private static Entry entry(String path, StrawFaction faction, boolean firstRoundEligible, Readiness readiness) {
+        return entry(path, faction, firstRoundEligible, readiness, defaultMoodType(faction), context -> true);
+    }
+
+    private static Entry entry(
+            String path,
+            StrawFaction faction,
+            boolean firstRoundEligible,
+            Readiness readiness,
+            Role.MoodType moodType,
+            Predicate<StrawRoleSelectionContext> appearance
+    ) {
         Identifier id = StrawCraft.id(path);
         boolean innocent = faction == StrawFaction.GOOD;
         boolean killerTools = faction == StrawFaction.KILLER;
-        Role.MoodType moodType = faction == StrawFaction.KILLER ? Role.MoodType.FAKE : Role.MoodType.REAL;
         return new Entry(
                 id,
                 faction,
                 firstRoundEligible,
                 readiness,
                 new Role(id, colorFor(faction), innocent, killerTools, moodType, DEFAULT_MAX_SPRINT_TICKS, false),
-                new StrawRoleDefinition(id, faction, false, true, context -> true)
+                new StrawRoleDefinition(id, faction, false, true, appearance)
         );
+    }
+
+    private static Role.MoodType defaultMoodType(StrawFaction faction) {
+        return faction == StrawFaction.KILLER ? Role.MoodType.FAKE : Role.MoodType.REAL;
     }
 
     private static int colorFor(StrawFaction faction) {

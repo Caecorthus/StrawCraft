@@ -1,5 +1,6 @@
 package org.caecorthus.strawcraft;
 
+import dev.doctor4t.wathe.api.Role;
 import net.minecraft.util.Identifier;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +21,7 @@ class NoellesRoleCatalogTest {
             "silencer",
             "poisoner",
             "timekeeper",
+            "undercover",
             "conductor",
             "bartender",
             "noisemaker",
@@ -50,7 +52,7 @@ class NoellesRoleCatalogTest {
             "pathogen",
             "taotie"
     );
-    private static final Set<String> EXPECTED_UNSUPPORTED_ROLE_PATHS = Set.of("undercover");
+    private static final Set<String> EXPECTED_UNSUPPORTED_ROLE_PATHS = Set.of();
     private static final Set<String> EXPECTED_DISABLED_ROLE_PATHS = Set.of(
             "the_insane_damned_paranoid_killer",
             "awesome_binglus",
@@ -138,6 +140,7 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("silencer"),
                 StrawCraft.id("poisoner"),
                 StrawCraft.id("timekeeper"),
+                StrawCraft.id("undercover"),
                 StrawCraft.id("conductor"),
                 StrawCraft.id("bartender"),
                 StrawCraft.id("noisemaker"),
@@ -198,7 +201,17 @@ class NoellesRoleCatalogTest {
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("pathogen")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("taotie")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("jester")));
-        assertFalse(runtimeSelectionIds.contains(StrawCraft.id("undercover")));
+        assertTrue(runtimeSelectionIds.contains(StrawCraft.id("undercover")));
+    }
+
+    @Test
+    void undercoverWatheRoleIsInnocentNoMoodAndNoKillerTools() {
+        Role role = NoellesRoleCatalog.find(StrawCraft.id("undercover")).orElseThrow().watheRole();
+
+        assertTrue(role.isInnocent());
+        assertFalse(role.canUseKiller());
+        assertEquals(Role.MoodType.NONE, role.getMoodType());
+        assertEquals(200, role.getMaxSprintTime());
     }
 
     @Test
