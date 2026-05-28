@@ -33,6 +33,7 @@ class NoellesRoleCatalogTest {
             "engineer",
             "detective",
             "survival_master",
+            "waiter",
             "mermaid"
     );
     private static final Set<String> EXPECTED_DESIGN_REQUIRED_ROLE_PATHS = Set.of(
@@ -43,7 +44,6 @@ class NoellesRoleCatalogTest {
             "bandit",
             "time_keeper",
             "spiritualist",
-            "waiter",
             "demon_hunter",
             "vulture",
             "corrupt_cop",
@@ -151,6 +151,7 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("engineer"),
                 StrawCraft.id("detective"),
                 StrawCraft.id("survival_master"),
+                StrawCraft.id("waiter"),
                 StrawCraft.id("mermaid")
         ), runtimeIds);
     }
@@ -190,7 +191,6 @@ class NoellesRoleCatalogTest {
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("silencer")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("morphling")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("spiritualist")));
-        assertFalse(runtimeSelectionIds.contains(StrawCraft.id("waiter")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("bandit")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("demon_hunter")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("corrupt_cop")));

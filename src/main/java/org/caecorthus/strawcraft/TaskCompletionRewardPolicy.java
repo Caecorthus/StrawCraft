@@ -16,8 +16,6 @@ public final class TaskCompletionRewardPolicy {
             StrawCraft.id("recaller"),
             StrawCraft.id("timekeeper"),
             StrawCraft.id("reporter"),
-            // Waiter is listed here, but catalog readiness keeps it ineligible until implemented.
-            // waiter 先登记为任务职业；在目录标记为运行就绪前不会获得奖励。
             StrawCraft.id("waiter")
     );
 

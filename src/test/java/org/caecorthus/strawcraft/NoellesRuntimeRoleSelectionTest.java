@@ -39,6 +39,7 @@ class NoellesRuntimeRoleSelectionTest {
         UUID fourthKiller = new UUID(0, 19);
         UUID fifteenthCivilian = new UUID(0, 20);
         UUID sixteenthCivilian = new UUID(0, 21);
+        UUID seventeenthCivilian = new UUID(0, 22);
         Map<UUID, Identifier> officialAssignments = linkedAssignments(
                 entry(firstCivilian, WatheRoleIds.CIVILIAN),
                 entry(firstKiller, WatheRoleIds.KILLER),
@@ -60,7 +61,8 @@ class NoellesRuntimeRoleSelectionTest {
                 entry(fourteenthCivilian, WatheRoleIds.CIVILIAN),
                 entry(fourthKiller, WatheRoleIds.KILLER),
                 entry(fifteenthCivilian, WatheRoleIds.CIVILIAN),
-                entry(sixteenthCivilian, WatheRoleIds.CIVILIAN)
+                entry(sixteenthCivilian, WatheRoleIds.CIVILIAN),
+                entry(seventeenthCivilian, WatheRoleIds.CIVILIAN)
         );
 
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
@@ -85,7 +87,8 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("survival_master"), selected.get(thirteenthCivilian));
         assertEquals(StrawCraft.id("engineer"), selected.get(fourteenthCivilian));
         assertEquals(StrawCraft.id("detective"), selected.get(fifteenthCivilian));
-        assertEquals(StrawCraft.id("mermaid"), selected.get(sixteenthCivilian));
+        assertEquals(StrawCraft.id("waiter"), selected.get(sixteenthCivilian));
+        assertEquals(StrawCraft.id("mermaid"), selected.get(seventeenthCivilian));
     }
 
     @Test
@@ -115,6 +118,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("engineer"),
                 StrawCraft.id("detective"),
                 StrawCraft.id("survival_master"),
+                StrawCraft.id("waiter"),
                 StrawCraft.id("mermaid")
         ), candidateIds);
         assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));

@@ -48,7 +48,7 @@ public final class NoellesRoleCatalog {
             selectableGood("engineer"),
             good("spiritualist"),
             selectableGood("detective"),
-            good("waiter"),
+            selectableGood("waiter"),
             selectableGood("mermaid"),
             good("demon_hunter"),
             disabledNeutral("jester"),
