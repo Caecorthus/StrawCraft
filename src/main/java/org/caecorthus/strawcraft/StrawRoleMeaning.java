@@ -80,6 +80,10 @@ public final class StrawRoleMeaning {
         return role != null && StrawCraft.id("toxicologist").equals(role.identifier());
     }
 
+    public static boolean receivesAttendantRoomManifest(Role role) {
+        return role != null && StrawCraft.id("attendant").equals(role.identifier());
+    }
+
     static boolean matchesRoleId(Role role, Identifier roleId) {
         return role != null && roleId.equals(role.identifier());
     }

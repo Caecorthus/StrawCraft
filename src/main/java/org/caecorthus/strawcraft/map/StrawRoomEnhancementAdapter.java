@@ -6,6 +6,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.TeleportTarget;
+import org.caecorthus.strawcraft.AttendantRoomManifest;
 import org.caecorthus.strawcraft.StrawCraft;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public final class StrawRoomEnhancementAdapter {
             teleportToRoom(player, world, assignment.spawn());
             player.giveItemStack(StrawRoomKeyFactory.create(assignment.room().keyName()));
         }
+        AttendantRoomManifest.giveToAssignedAttendants(participants, gameComponent.getRoles(), assignments, map.get().rooms());
 
         int overflow = participantIds.size() - assignments.size();
         if (overflow > 0) {
