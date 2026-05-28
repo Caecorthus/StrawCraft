@@ -8,13 +8,18 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.EntityHitResult;
 import org.caecorthus.strawcraft.CoronerInspectPayload;
 import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
 import org.caecorthus.strawcraft.RecallerRecallPayload;
+import org.caecorthus.strawcraft.SwapperSwapPayload;
 import org.caecorthus.strawcraft.VultureFeastPayload;
 import org.caecorthus.strawcraft.map.StrawMapVotingComponent;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.UUID;
 
 public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding mapVoteKey;
@@ -22,6 +27,8 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding coronerInspectKey;
     private static KeyBinding vultureFeastKey;
     private static KeyBinding recallerRecallKey;
+    private static KeyBinding swapperSwapKey;
+    private static UUID pendingSwapperTarget;
     private static boolean wasVotingActive;
     private static boolean autoOpenedVotingScreen;
 
@@ -57,11 +64,18 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_R,
                 "category.strawcraft.keybinds"
         ));
+        swapperSwapKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.swapper_swap",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_X,
+                "category.strawcraft.keybinds"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVotingScreen);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickDetectiveInvestigation);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickCoronerInspection);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVultureFeast);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickRecallerRecall);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickSwapperSwap);
     }
 
     private static void tickVotingScreen(MinecraftClient client) {
@@ -145,6 +159,7 @@ public final class StrawCraftClient implements ClientModInitializer {
 
     private static void tickRecallerRecall(MinecraftClient client) {
         if (client.player == null || client.world == null) {
+            pendingSwapperTarget = null;
             return;
         }
 
@@ -153,5 +168,48 @@ public final class StrawCraftClient implements ClientModInitializer {
             // Recaller 不发送坐标；服务端负责保存并消耗权威传送点。
             ClientPlayNetworking.send(new RecallerRecallPayload());
         }
+    }
+
+    private static void tickSwapperSwap(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            pendingSwapperTarget = null;
+            return;
+        }
+
+        if (!swapperSwapKey.wasPressed()) {
+            return;
+        }
+
+        if (!(client.crosshairTarget instanceof EntityHitResult hitResult)
+                || !(hitResult.getEntity() instanceof PlayerEntity target)
+                || target == client.player) {
+            pendingSwapperTarget = null;
+            client.player.sendMessage(Text.translatable("message.strawcraft.swapper.select_target")
+                    .formatted(Formatting.YELLOW), true);
+            return;
+        }
+
+        UUID targetUuid = target.getUuid();
+        if (pendingSwapperTarget == null) {
+            pendingSwapperTarget = targetUuid;
+            client.player.sendMessage(Text.translatable(
+                    "message.strawcraft.swapper.selected_first",
+                    target.getDisplayName()
+            ).formatted(Formatting.AQUA), true);
+            return;
+        }
+        if (pendingSwapperTarget.equals(targetUuid)) {
+            pendingSwapperTarget = null;
+            client.player.sendMessage(Text.translatable("message.strawcraft.swapper.selection_cleared")
+                    .formatted(Formatting.YELLOW), true);
+            return;
+        }
+
+        // The client sends only the two selected UUIDs; the server owns every gameplay check.
+        // 客户端只发送两个选中 UUID；所有玩法校验都由服务端负责。
+        ClientPlayNetworking.send(new SwapperSwapPayload(pendingSwapperTarget, targetUuid));
+        pendingSwapperTarget = null;
+        client.player.sendMessage(Text.translatable("message.strawcraft.swapper.requested")
+                .formatted(Formatting.GREEN), true);
     }
 }

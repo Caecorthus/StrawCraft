@@ -18,7 +18,7 @@ public final class NoellesRoleCatalog {
     private static final int DEFAULT_MAX_SPRINT_TICKS = 200;
 
     private static final List<Entry> ROLES = List.of(
-            killer("swapper"),
+            selectableKiller("swapper"),
             killer("phantom"),
             killer("morphling"),
             disabledKiller("the_insane_damned_paranoid_killer"),
