@@ -114,6 +114,20 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         sync();
     }
 
+    public void setVoodooBondedTarget(UUID targetUuid) {
+        state.setVoodooBondedTarget(targetUuid);
+        sync();
+    }
+
+    public java.util.Optional<UUID> voodooBondedTarget() {
+        return state.voodooBondedTarget();
+    }
+
+    public void clearVoodooBondedTarget() {
+        state.clearVoodooBondedTarget();
+        sync();
+    }
+
     public void recordNeutralWinClaim(NoellesRoleState.NeutralWinClaim claim) {
         state.recordNeutralWinClaim(claim);
         sync();

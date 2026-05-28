@@ -101,6 +101,10 @@ public final class StrawRoleMeaning {
         return role != null && StrawCraft.id("reporter").equals(role.identifier());
     }
 
+    public static boolean receivesVoodooDeathBond(Role role) {
+        return role != null && VoodooBondPolicy.VOODOO_ROLE.equals(role.identifier());
+    }
+
     static boolean matchesRoleId(Role role, Identifier roleId) {
         return role != null && roleId.equals(role.identifier());
     }

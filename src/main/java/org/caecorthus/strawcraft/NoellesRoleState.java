@@ -24,6 +24,7 @@ public final class NoellesRoleState {
     private static final String COUNTERS_KEY = "Counters";
     private static final String UUID_SETS_KEY = "UuidSets";
     private static final String REPORTER_MARKED_TARGET_KEY = "reporter_marked_target";
+    private static final String VOODOO_BONDED_TARGET_KEY = "voodoo_bonded_target";
     private static final String NEUTRAL_WIN_CLAIMS_KEY = "NeutralWinClaims";
     private static final String TIMED_BOMB_KEY = "TimedBomb";
     private static final String TIMED_BOMB_OWNER_UUID_KEY = "OwnerUuid";
@@ -158,6 +159,20 @@ public final class NoellesRoleState {
 
     public void clearReporterMarkedTarget() {
         clearUuidSet(REPORTER_MARKED_TARGET_KEY);
+    }
+
+    public void setVoodooBondedTarget(UUID targetUuid) {
+        Objects.requireNonNull(targetUuid, "targetUuid");
+        clearVoodooBondedTarget();
+        addUuidToSet(VOODOO_BONDED_TARGET_KEY, targetUuid);
+    }
+
+    public Optional<UUID> voodooBondedTarget() {
+        return uuidSet(VOODOO_BONDED_TARGET_KEY).stream().findFirst();
+    }
+
+    public void clearVoodooBondedTarget() {
+        clearUuidSet(VOODOO_BONDED_TARGET_KEY);
     }
 
     public void recordNeutralWinClaim(NeutralWinClaim claim) {

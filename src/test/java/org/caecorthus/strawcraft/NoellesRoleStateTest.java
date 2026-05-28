@@ -52,6 +52,7 @@ class NoellesRoleStateTest {
         state.setFlag(ProfessorIronManProtection.PROTECTION_FLAG, true);
         state.setTimestamp("taotie_last_swallow", 260L);
         state.tryBeginAbilityCooldown("detective_investigate", 100L, 1800);
+        state.setVoodooBondedTarget(UUID.randomUUID());
         state.recordNeutralWinClaim(new NoellesRoleState.NeutralWinClaim(
                 StrawCraft.id("jester"),
                 StrawCraft.id("jester_killed"),
@@ -65,6 +66,7 @@ class NoellesRoleStateTest {
         assertFalse(state.hasFlag(ProfessorIronManProtection.PROTECTION_FLAG));
         assertEquals(OptionalLong.empty(), state.getTimestamp("taotie_last_swallow"));
         assertFalse(state.isAbilityOnCooldown("detective_investigate", 101L));
+        assertTrue(state.voodooBondedTarget().isEmpty());
         assertTrue(state.neutralWinClaims().isEmpty());
     }
 
@@ -112,6 +114,27 @@ class NoellesRoleStateTest {
         assertEquals(Optional.of(secondTarget), loaded.reporterMarkedTarget());
         loaded.clearReporterMarkedTarget();
         assertTrue(loaded.reporterMarkedTarget().isEmpty());
+    }
+
+    @Test
+    void voodooBondedTargetStoresExactlyOneUuidAndRoundTripsThroughNbt() {
+        UUID firstTarget = UUID.randomUUID();
+        UUID secondTarget = UUID.randomUUID();
+        NoellesRoleState saved = new NoellesRoleState();
+        saved.setVoodooBondedTarget(firstTarget);
+        saved.setVoodooBondedTarget(secondTarget);
+
+        assertEquals(Optional.of(secondTarget), saved.voodooBondedTarget());
+        assertEquals(1, saved.uuidSet("voodoo_bonded_target").size());
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        assertEquals(Optional.of(secondTarget), loaded.voodooBondedTarget());
+        loaded.clearVoodooBondedTarget();
+        assertTrue(loaded.voodooBondedTarget().isEmpty());
     }
 
     @Test

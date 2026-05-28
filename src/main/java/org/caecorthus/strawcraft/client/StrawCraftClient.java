@@ -16,6 +16,7 @@ import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
 import org.caecorthus.strawcraft.RecallerRecallPayload;
 import org.caecorthus.strawcraft.ReporterMarkPayload;
 import org.caecorthus.strawcraft.SwapperSwapPayload;
+import org.caecorthus.strawcraft.VoodooBondPayload;
 import org.caecorthus.strawcraft.VultureFeastPayload;
 import org.caecorthus.strawcraft.map.StrawMapVotingComponent;
 import org.lwjgl.glfw.GLFW;
@@ -30,6 +31,7 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding recallerRecallKey;
     private static KeyBinding swapperSwapKey;
     private static KeyBinding reporterMarkKey;
+    private static KeyBinding voodooBondKey;
     private static UUID pendingSwapperTarget;
     private static boolean wasVotingActive;
     private static boolean autoOpenedVotingScreen;
@@ -78,6 +80,12 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_N,
                 "category.strawcraft.keybinds"
         ));
+        voodooBondKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.voodoo_bond",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_Z,
+                "category.strawcraft.keybinds"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVotingScreen);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickDetectiveInvestigation);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickCoronerInspection);
@@ -85,6 +93,7 @@ public final class StrawCraftClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickRecallerRecall);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickSwapperSwap);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickReporterMark);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVoodooBond);
     }
 
     private static void tickVotingScreen(MinecraftClient client) {
@@ -242,5 +251,27 @@ public final class StrawCraftClient implements ClientModInitializer {
         // Reporter sends only the aimed player's UUID; tracking state and every gameplay check stay server-owned.
         // 记者只发送准星指向玩家的 UUID；追踪状态和所有玩法判定都留在服务端。
         ClientPlayNetworking.send(new ReporterMarkPayload(target.getUuid()));
+    }
+
+    private static void tickVoodooBond(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (!voodooBondKey.wasPressed()) {
+            return;
+        }
+
+        if (!(client.crosshairTarget instanceof EntityHitResult hitResult)
+                || !(hitResult.getEntity() instanceof PlayerEntity target)
+                || target == client.player) {
+            client.player.sendMessage(Text.translatable("message.strawcraft.voodoo.select_target")
+                    .formatted(Formatting.YELLOW), true);
+            return;
+        }
+
+        // Voodoo sends only the aimed player's UUID; the server owns the bond and all gameplay checks.
+        // 巫毒只发送准星指向玩家的 UUID；绑定状态和所有玩法判定都留在服务端。
+        ClientPlayNetworking.send(new VoodooBondPayload(target.getUuid()));
     }
 }

@@ -36,7 +36,7 @@ public final class NoellesRoleCatalog {
             disabledGood("awesome_binglus"),
             good("bartender"),
             selectableGood("noisemaker"),
-            good("voodoo"),
+            selectableGood("voodoo"),
             selectableGood("coroner"),
             selectableGood("recaller"),
             selectableGood("toxicologist"),
