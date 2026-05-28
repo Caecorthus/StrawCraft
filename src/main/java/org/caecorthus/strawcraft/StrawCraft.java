@@ -18,6 +18,7 @@ public final class StrawCraft implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        StrawCraftEntities.register();
         StrawCraftItems.register();
         NoellesRoleCatalog.registerWithWathe();
         StrawMapConfigReloader.register();
@@ -41,6 +42,7 @@ public final class StrawCraft implements ModInitializer {
         RoleAssignedLoadouts.register();
         VanillaHealthBridge.registerKillRequestHandler();
         KillerShopLoadout.registerShopEntriesHandler();
+        BanditShopLoadout.registerShopEntriesHandler();
         TimekeeperShopLoadout.registerShopEntriesHandler();
         ReporterShopLoadout.registerShopEntriesHandler();
         BartenderDefenseVialShopLoadout.registerShopEntriesHandler();
@@ -49,6 +51,7 @@ public final class StrawCraft implements ModInitializer {
         PoisonerShopLoadout.registerShopEntriesHandler();
         WaiterServiceRuntime.register();
         PoisonerShopLoadout.registerPurchasePriceHandler();
+        BanditShopLoadout.registerPurchasePriceHandler();
         BomberTimedBombRuntime.register();
         RecallerRecallRuntime.register();
         SwapperSwapRuntime.register();

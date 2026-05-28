@@ -4,9 +4,11 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -16,6 +18,7 @@ import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
 import org.caecorthus.strawcraft.PhantomInvisibilityPayload;
 import org.caecorthus.strawcraft.RecallerRecallPayload;
 import org.caecorthus.strawcraft.ReporterMarkPayload;
+import org.caecorthus.strawcraft.StrawCraftEntities;
 import org.caecorthus.strawcraft.SwapperSwapPayload;
 import org.caecorthus.strawcraft.VoodooBondPayload;
 import org.caecorthus.strawcraft.VultureFeastPayload;
@@ -40,6 +43,8 @@ public final class StrawCraftClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        EntityRendererRegistry.register(StrawCraftEntities.THROWING_AXE, FlyingItemEntityRenderer::new);
+
         mapVoteKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.strawcraft.map_vote",
                 InputUtil.Type.KEYSYM,

@@ -20,6 +20,7 @@ class NoellesRoleCatalogTest {
             "scavenger",
             "silencer",
             "poisoner",
+            "bandit",
             "timekeeper",
             "undercover",
             "conductor",
@@ -45,7 +46,6 @@ class NoellesRoleCatalogTest {
             "morphling",
             "assassin",
             "serial_killer",
-            "bandit",
             "time_keeper",
             "spiritualist",
             "corrupt_cop",
@@ -139,6 +139,7 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("scavenger"),
                 StrawCraft.id("silencer"),
                 StrawCraft.id("poisoner"),
+                StrawCraft.id("bandit"),
                 StrawCraft.id("timekeeper"),
                 StrawCraft.id("undercover"),
                 StrawCraft.id("conductor"),
@@ -196,7 +197,7 @@ class NoellesRoleCatalogTest {
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("assassin")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("morphling")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("spiritualist")));
-        assertFalse(runtimeSelectionIds.contains(StrawCraft.id("bandit")));
+        assertTrue(runtimeSelectionIds.contains(StrawCraft.id("bandit")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("corrupt_cop")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("pathogen")));
         assertFalse(runtimeSelectionIds.contains(StrawCraft.id("taotie")));

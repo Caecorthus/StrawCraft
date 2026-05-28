@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,21 +36,14 @@ class ThrowingAxeFoundationArchitectureTest {
     }
 
     @Test
-    void throwingAxeFoundationDoesNotExposeBanditAsRuntimeReadyOrShopRouted() throws IOException {
-        assertFalse(NoellesRoleCatalog.find(StrawCraft.id("bandit")).orElseThrow().isRuntimeReady());
-        assertFalse(NoellesRoleCatalog.runtimeSelectionDisabledIds().isEmpty());
-        assertTrue(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(StrawCraft.id("bandit")));
+    void throwingAxeRuntimePromotesBanditAndRoutesShopThroughBanditLoadout() throws IOException {
+        assertTrue(NoellesRoleCatalog.find(StrawCraft.id("bandit")).orElseThrow().isRuntimeReady());
+        assertFalse(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(StrawCraft.id("bandit")));
 
-        Set<String> shopFiles = Set.of(
-                "KillerShopLoadout.java",
-                "PlayerShopCatalog.java",
-                "KillerShopCatalog.java"
-        );
-        for (String shopFile : shopFiles) {
-            String source = Files.readString(MAIN_ROOT.resolve(shopFile), StandardCharsets.UTF_8);
-            assertFalse(source.contains("THROWING_AXE"), shopFile + " must not route the foundation item into shops yet");
-            assertFalse(source.contains("throwing_axe"), shopFile + " must not route the foundation item into shops yet");
-        }
+        String playerShopCatalog = Files.readString(MAIN_ROOT.resolve("PlayerShopCatalog.java"), StandardCharsets.UTF_8);
+        String killerShopCatalog = Files.readString(MAIN_ROOT.resolve("KillerShopCatalog.java"), StandardCharsets.UTF_8);
+        assertTrue(playerShopCatalog.contains("BanditShopLoadout.presentation(materializedEntries)"));
+        assertFalse(killerShopCatalog.contains("throwing_axe"), "ordinary killer gun replacement must not expose the Bandit axe");
     }
 
     @Test

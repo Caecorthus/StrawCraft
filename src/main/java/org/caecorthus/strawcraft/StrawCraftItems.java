@@ -41,6 +41,6 @@ public final class StrawCraftItems {
         WAITER_SERVICE_TRAY = Registry.register(Registries.ITEM, WAITER_SERVICE_TRAY_ID, new WaiterServiceItem(new Item.Settings().maxCount(1)));
         POISON_NEEDLE = Registry.register(Registries.ITEM, POISON_NEEDLE_ID, new PoisonNeedleItem(new Item.Settings().maxCount(1)));
         DEMON_HUNTER_PISTOL = Registry.register(Registries.ITEM, DEMON_HUNTER_PISTOL_ID, new DemonHunterPistolItem(new Item.Settings().maxCount(1)));
-        THROWING_AXE = Registry.register(Registries.ITEM, THROWING_AXE_ID, new Item(new Item.Settings().maxCount(1)));
+        THROWING_AXE = Registry.register(Registries.ITEM, THROWING_AXE_ID, new ThrowingAxeItem(new Item.Settings().maxCount(1)));
     }
 }

@@ -152,12 +152,14 @@ class PlayerShopCatalogTest {
         ShopEntry scorpion = entry("scorpion", 75, ShopEntry.Type.POISON);
         ShopEntry psycho = entry("psycho_mode", 150, ShopEntry.Type.POISON);
         ShopEntry timedBomb = entry("timed_bomb", 300, ShopEntry.Type.WEAPON);
+        ShopEntry timekeeperTimer = entry(TimekeeperShopLoadout.TIME_SUBTRACTION_ENTRY_ID, 150, ShopEntry.Type.TOOL);
         ShopEntry silentPsycho = entry(SilencerShopLoadout.SILENT_PSYCHO_ENTRY_ID, 350, ShopEntry.Type.POISON);
         ShopEntry poisonNeedle = entry(PoisonerShopLoadout.POISON_NEEDLE_ENTRY_ID, 50, ShopEntry.Type.POISON);
 
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
                 role("killer", true, false),
-                List.of(knife, p320, grenade, poison, scorpion, psycho, timedBomb, silentPsycho, poisonNeedle)
+                List.of(knife, p320, grenade, poison, scorpion, psycho, timedBomb, timekeeperTimer,
+                        silentPsycho, poisonNeedle)
         );
 
         assertEquals(List.of(knife, p320, grenade, poison, scorpion, psycho), presentation.entries());
@@ -168,6 +170,64 @@ class PlayerShopCatalogTest {
         assertFalse(presentation.allowsWathePurchaseIndex(6));
         assertFalse(presentation.allowsWathePurchaseIndex(7));
         assertFalse(presentation.allowsWathePurchaseIndex(8));
+        assertFalse(presentation.allowsWathePurchaseIndex(9));
+    }
+
+    @Test
+    void banditPresentationHidesExplosivesPoisonsAndRoleOnlyEntriesWhileKeepingBaselineWeapons() {
+        ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
+        ShopEntry p320 = entry("p320", 300, ShopEntry.Type.WEAPON);
+        ShopEntry throwingAxe = entry(BanditShopLoadout.THROWING_AXE_ENTRY_ID, 200, ShopEntry.Type.WEAPON);
+        ShopEntry grenade = entry("grenade", 350, ShopEntry.Type.WEAPON);
+        ShopEntry poison = entry("poison_vial", 75, ShopEntry.Type.POISON);
+        ShopEntry scorpion = entry("scorpion", 75, ShopEntry.Type.POISON);
+        ShopEntry psycho = entry("psycho_mode", 150, ShopEntry.Type.POISON);
+        ShopEntry timedBomb = entry("timed_bomb", 300, ShopEntry.Type.WEAPON);
+        ShopEntry timekeeperTimer = entry(TimekeeperShopLoadout.TIME_SUBTRACTION_ENTRY_ID, 150, ShopEntry.Type.TOOL);
+        ShopEntry silentPsycho = entry(SilencerShopLoadout.SILENT_PSYCHO_ENTRY_ID, 350, ShopEntry.Type.POISON);
+        ShopEntry poisonNeedle = entry(PoisonerShopLoadout.POISON_NEEDLE_ENTRY_ID, 50, ShopEntry.Type.POISON);
+        ShopEntry defenseVial = entry("defense_vial", 100, ShopEntry.Type.TOOL);
+        ShopEntry waiterTray = entry("waiter_service_tray", 50, ShopEntry.Type.TOOL);
+        ShopEntry reporterNote = entry("reporter_note", 25, ShopEntry.Type.TOOL);
+        ShopEntry lockpick = entry("lockpick", 50, ShopEntry.Type.TOOL);
+
+        PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
+                role("bandit", true, false),
+                List.of(knife, p320, throwingAxe, grenade, poison, scorpion, psycho, timedBomb, timekeeperTimer, silentPsycho,
+                        poisonNeedle, defenseVial, waiterTray, reporterNote, lockpick)
+        );
+
+        assertEquals(List.of("knife", "p320", BanditShopLoadout.THROWING_AXE_ENTRY_ID, "lockpick"), presentation.entries().stream()
+                .map(StrawShopEntry::idFor)
+                .toList());
+        assertEquals(List.of(100, 150, 200, 50), presentation.entries().stream()
+                .map(ShopEntry::price)
+                .toList());
+        assertEquals(List.of(0, 1, 2, 14), presentation.visibleEntries().stream()
+                .map(PlayerShopCatalog.VisibleEntry::wathePurchaseIndex)
+                .toList());
+    }
+
+    @Test
+    void nonBanditRolesCannotSeeOrBuyThrowingAxeAndBanditCannotBuyHiddenStaleEntries() {
+        ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
+        ShopEntry p320 = entry("p320", 300, ShopEntry.Type.WEAPON);
+        ShopEntry throwingAxe = entry(BanditShopLoadout.THROWING_AXE_ENTRY_ID, 200, ShopEntry.Type.WEAPON);
+        ShopEntry grenade = entry("grenade", 350, ShopEntry.Type.WEAPON);
+        ShopEntry timekeeperTimer = entry(TimekeeperShopLoadout.TIME_SUBTRACTION_ENTRY_ID, 150, ShopEntry.Type.TOOL);
+        List<ShopEntry> entries = List.of(knife, p320, throwingAxe, grenade, timekeeperTimer);
+
+        assertTrue(PlayerShopCatalog.allowsPurchaseForRole(role("bandit", true, false), entries, 0));
+        assertTrue(PlayerShopCatalog.allowsPurchaseForRole(role("bandit", true, false), entries, 1));
+        assertTrue(PlayerShopCatalog.allowsPurchaseForRole(role("bandit", true, false), entries, 2));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("bandit", true, false), entries, 3));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("bandit", true, false), entries, 4));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("killer", true, false), entries, 2));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("killer", true, false), entries, 4));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("bomber", true, false), entries, 2));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("bomber", true, false), entries, 4));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("scavenger", true, false), entries, 2));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("scavenger", true, false), entries, 4));
     }
 
     @Test

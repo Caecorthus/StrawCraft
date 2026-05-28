@@ -56,6 +56,10 @@ public final class StrawRoleMeaning {
         return matchesRoleId(role, StrawCraft.id("poisoner"));
     }
 
+    public static boolean usesBanditShop(Role role) {
+        return matchesRoleId(role, StrawCraft.id("bandit"));
+    }
+
     public static Optional<GunAmmoFaction> ammoFactionFor(Role role) {
         return defaultAmmoFactionTags().resolveMeaning(meaningFor(role));
     }
