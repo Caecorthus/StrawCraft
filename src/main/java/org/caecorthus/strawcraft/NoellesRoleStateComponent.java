@@ -127,6 +127,20 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         sync();
     }
 
+    public void setSerialKillerCurrentTarget(UUID targetUuid) {
+        state.setSerialKillerCurrentTarget(targetUuid);
+        sync();
+    }
+
+    public java.util.Optional<UUID> serialKillerCurrentTarget() {
+        return state.serialKillerCurrentTarget();
+    }
+
+    public void clearSerialKillerCurrentTarget() {
+        state.clearSerialKillerCurrentTarget();
+        sync();
+    }
+
     public void setVoodooBondedTarget(UUID targetUuid) {
         state.setVoodooBondedTarget(targetUuid);
         sync();

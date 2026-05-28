@@ -149,6 +149,28 @@ class NoellesRoleStateTest {
     }
 
     @Test
+    void serialKillerCurrentTargetStoresExactlyOneUuidAndRoundTripsThroughNbt() {
+        UUID firstTarget = UUID.randomUUID();
+        UUID secondTarget = UUID.randomUUID();
+        NoellesRoleState saved = new NoellesRoleState();
+
+        saved.setSerialKillerCurrentTarget(firstTarget);
+        saved.setSerialKillerCurrentTarget(secondTarget);
+
+        assertEquals(Optional.of(secondTarget), saved.serialKillerCurrentTarget());
+        assertEquals(1, saved.uuidSet("serial_killer_current_target").size());
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        assertEquals(Optional.of(secondTarget), loaded.serialKillerCurrentTarget());
+        loaded.clearSerialKillerCurrentTarget();
+        assertTrue(loaded.serialKillerCurrentTarget().isEmpty());
+    }
+
+    @Test
     void voodooBondedTargetStoresExactlyOneUuidAndRoundTripsThroughNbt() {
         UUID firstTarget = UUID.randomUUID();
         UUID secondTarget = UUID.randomUUID();

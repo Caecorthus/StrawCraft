@@ -103,6 +103,10 @@ public final class StrawRoleMeaning {
         return role != null && AssassinGuessPolicy.ASSASSIN_ROLE.equals(role.identifier());
     }
 
+    public static boolean receivesSerialKillerTargeting(Role role) {
+        return role != null && StrawCraft.id("serial_killer").equals(role.identifier());
+    }
+
     public static boolean receivesSurvivalMasterCountdown(Role role) {
         return role != null && StrawCraft.id("survival_master").equals(role.identifier());
     }

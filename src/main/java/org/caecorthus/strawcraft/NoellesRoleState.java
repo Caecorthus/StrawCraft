@@ -26,6 +26,7 @@ public final class NoellesRoleState {
     private static final String REPORTER_MARKED_TARGET_KEY = "reporter_marked_target";
     private static final String VOODOO_BONDED_TARGET_KEY = "voodoo_bonded_target";
     private static final String PATHOGEN_INFECTED_BY_KEY = "pathogen_infected_by";
+    private static final String SERIAL_KILLER_CURRENT_TARGET_KEY = "serial_killer_current_target";
     private static final String DEMON_HUNTER_FRENZIED_PLAYERS_KEY = "demon_hunter_frenzied_players";
     private static final String NEUTRAL_WIN_CLAIMS_KEY = "NeutralWinClaims";
     private static final String TIMED_BOMB_KEY = "TimedBomb";
@@ -184,6 +185,20 @@ public final class NoellesRoleState {
 
     public void clearReporterMarkedTarget() {
         clearUuidSet(REPORTER_MARKED_TARGET_KEY);
+    }
+
+    public void setSerialKillerCurrentTarget(UUID targetUuid) {
+        Objects.requireNonNull(targetUuid, "targetUuid");
+        clearSerialKillerCurrentTarget();
+        addUuidToSet(SERIAL_KILLER_CURRENT_TARGET_KEY, targetUuid);
+    }
+
+    public Optional<UUID> serialKillerCurrentTarget() {
+        return uuidSet(SERIAL_KILLER_CURRENT_TARGET_KEY).stream().findFirst();
+    }
+
+    public void clearSerialKillerCurrentTarget() {
+        clearUuidSet(SERIAL_KILLER_CURRENT_TARGET_KEY);
     }
 
     public void setVoodooBondedTarget(UUID targetUuid) {

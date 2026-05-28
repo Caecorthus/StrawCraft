@@ -109,6 +109,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("bomber"),
                 StrawCraft.id("assassin"),
                 StrawCraft.id("scavenger"),
+                StrawCraft.id("serial_killer"),
                 StrawCraft.id("silencer"),
                 StrawCraft.id("poisoner"),
                 StrawCraft.id("bandit"),

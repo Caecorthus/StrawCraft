@@ -95,6 +95,7 @@ public final class KillRewardPolicy {
         DIRECT_KILL,
         INDIRECT_KILL,
         KILLER_TEAMMATE,
-        GOOD_VICTIM_POOL
+        GOOD_VICTIM_POOL,
+        SERIAL_KILLER_TARGET
     }
 }
