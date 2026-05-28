@@ -94,9 +94,9 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("toxicologist"),
                 StrawCraft.id("reporter"),
                 StrawCraft.id("professor"),
-                StrawCraft.id("detective")
+                StrawCraft.id("detective"),
+                StrawCraft.id("survival_master")
         ), runtimeIds);
-        assertFalse(runtimeIds.contains(StrawCraft.id("survival_master")));
     }
 
     @Test

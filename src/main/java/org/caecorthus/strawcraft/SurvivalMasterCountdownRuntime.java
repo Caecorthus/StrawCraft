@@ -90,7 +90,7 @@ public final class SurvivalMasterCountdownRuntime {
     private static void initializeWorld(ServerWorld world, GameWorldComponent game) {
         RoundRuntime runtime = runtimeFor(world);
         runtime.state.reset();
-        runtime.startingKillerCount = game.getAllKillerTeamPlayers().size();
+        runtime.startingKillerCount = countStartingKillers(game.getRoles().values());
     }
 
     static void resetWorld(ServerWorld world) {
@@ -103,8 +103,20 @@ public final class SurvivalMasterCountdownRuntime {
     private static RoundRuntime runtimeFor(ServerWorld world) {
         return RUNTIMES.computeIfAbsent(
                 world.getRegistryKey().getValue(),
-                unused -> new RoundRuntime(GameWorldComponent.KEY.get(world).getAllKillerTeamPlayers().size())
+                unused -> new RoundRuntime(countStartingKillers(GameWorldComponent.KEY.get(world).getRoles().values()))
         );
+    }
+
+    static int countStartingKillers(Iterable<Role> roles) {
+        int killerCount = 0;
+        for (Role role : roles) {
+            // Count rewritten StrawCraft killer meanings after Noelles runtime selection.
+            // 在 Noelles 运行时改写后，按 StrawCraft 职业语义统计杀手席位。
+            if (StrawRoleMeaning.canUseKillerShop(role)) {
+                killerCount++;
+            }
+        }
+        return killerCount;
     }
 
     private static void endRoundAsPassengers(ServerWorld world) {

@@ -27,6 +27,7 @@ class NoellesRuntimeRoleSelectionTest {
         UUID fifthCivilian = new UUID(0, 7);
         UUID sixthCivilian = new UUID(0, 8);
         UUID secondKiller = new UUID(0, 9);
+        UUID seventhCivilian = new UUID(0, 10);
         Map<UUID, Identifier> officialAssignments = linkedAssignments(
                 entry(firstCivilian, WatheRoleIds.CIVILIAN),
                 entry(firstKiller, WatheRoleIds.KILLER),
@@ -36,7 +37,8 @@ class NoellesRuntimeRoleSelectionTest {
                 entry(fourthCivilian, WatheRoleIds.CIVILIAN),
                 entry(fifthCivilian, WatheRoleIds.CIVILIAN),
                 entry(sixthCivilian, WatheRoleIds.CIVILIAN),
-                entry(secondKiller, WatheRoleIds.KILLER)
+                entry(secondKiller, WatheRoleIds.KILLER),
+                entry(seventhCivilian, WatheRoleIds.CIVILIAN)
         );
 
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
@@ -49,7 +51,8 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("toxicologist"), selected.get(thirdCivilian));
         assertEquals(StrawCraft.id("reporter"), selected.get(fourthCivilian));
         assertEquals(StrawCraft.id("professor"), selected.get(fifthCivilian));
-        assertEquals(StrawCraft.id("detective"), selected.get(sixthCivilian));
+        assertEquals(StrawCraft.id("survival_master"), selected.get(sixthCivilian));
+        assertEquals(StrawCraft.id("detective"), selected.get(seventhCivilian));
     }
 
     @Test
@@ -66,9 +69,9 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("toxicologist"),
                 StrawCraft.id("reporter"),
                 StrawCraft.id("professor"),
-                StrawCraft.id("detective")
+                StrawCraft.id("detective"),
+                StrawCraft.id("survival_master")
         ), candidateIds);
-        assertFalse(candidateIds.contains(StrawCraft.id("survival_master")));
         assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));
         assertFalse(candidateIds.contains(StrawCraft.id("undercover")));
         assertFalse(candidateIds.contains(StrawCraft.id("time_keeper")));
@@ -109,6 +112,24 @@ class NoellesRuntimeRoleSelectionTest {
         Role assignedRole = selected.get(killer);
         assertEquals(StrawCraft.id("bomber"), assignedRole.identifier());
         assertTrue(StrawRoleMeaning.canUseKillerShop(assignedRole));
+    }
+
+    @Test
+    void survivalMasterCountdownCountsRewrittenKillerRolesAfterRuntimeSelection() {
+        UUID firstCivilian = new UUID(0, 1);
+        UUID firstKiller = new UUID(0, 2);
+        UUID secondCivilian = new UUID(0, 3);
+        UUID secondKiller = new UUID(0, 4);
+        Map<UUID, Role> selected = NoellesRuntimeRoleSelection.planAssignments(linkedRoleAssignments(
+                roleEntry(firstCivilian, role(WatheRoleIds.CIVILIAN, true, false)),
+                roleEntry(firstKiller, role(WatheRoleIds.KILLER, false, true)),
+                roleEntry(secondCivilian, role(WatheRoleIds.CIVILIAN, true, false)),
+                roleEntry(secondKiller, role(WatheRoleIds.KILLER, false, true))
+        ));
+
+        assertEquals(StrawCraft.id("bomber"), selected.get(firstKiller).identifier());
+        assertEquals(StrawCraft.id("scavenger"), selected.get(secondKiller).identifier());
+        assertEquals(2, SurvivalMasterCountdownRuntime.countStartingKillers(selected.values()));
     }
 
     @Test
