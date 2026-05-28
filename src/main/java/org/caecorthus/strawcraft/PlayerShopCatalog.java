@@ -65,7 +65,8 @@ public final class PlayerShopCatalog {
         for (int index = 0; index < materializedEntries.size(); index++) {
             ShopEntry entry = materializedEntries.get(index);
             if (!ScavengerShopLoadout.isResetKnifeCooldownEntry(entry)
-                    && !ReporterShopLoadout.isReporterNoteEntry(entry)) {
+                    && !ReporterShopLoadout.isReporterNoteEntry(entry)
+                    && !BomberTimedBombRuntime.isTimedBombEntry(entry)) {
                 visibleEntries.add(new VisibleEntry(index, entry));
             }
         }
@@ -74,22 +75,24 @@ public final class PlayerShopCatalog {
 
     private static Presentation bomberPresentation(List<ShopEntry> materializedEntries) {
         List<VisibleEntry> grenades = new ArrayList<>();
+        List<VisibleEntry> timedBombs = new ArrayList<>();
         List<VisibleEntry> remainingEntries = new ArrayList<>();
         for (int index = 0; index < materializedEntries.size(); index++) {
             ShopEntry entry = materializedEntries.get(index);
             if (isGrenade(entry)) {
                 grenades.add(new VisibleEntry(index, entry));
+            } else if (BomberTimedBombRuntime.isTimedBombEntry(entry)) {
+                timedBombs.add(new VisibleEntry(index, entry));
             } else if (!isBomberDeniedEntry(entry)) {
                 remainingEntries.add(new VisibleEntry(index, entry));
             }
         }
 
-        // Bomber can safely reuse Wathe's existing grenade and tool deliveries now.
-        // Timed bombs and other Noelles-only items stay deferred until their runtime behavior exists in StrawCraft.
-        // 炸弹客目前只复用 Wathe 已有的手雷和工具交付逻辑。
-        // 定时炸弹等 Noelles 专属物品等 StrawCraft 有对应运行时行为后再接入。
-        List<VisibleEntry> visibleEntries = new ArrayList<>(grenades.size() + remainingEntries.size());
+        // Bomber keeps explosives first while preserving Wathe's original purchase indices.
+        // Bomber 会把爆炸物排在前面，同时保留 Wathe 原始购买索引。
+        List<VisibleEntry> visibleEntries = new ArrayList<>(grenades.size() + timedBombs.size() + remainingEntries.size());
         visibleEntries.addAll(grenades);
+        visibleEntries.addAll(timedBombs);
         visibleEntries.addAll(remainingEntries);
         return new Presentation(visibleEntries);
     }
@@ -157,6 +160,7 @@ public final class PlayerShopCatalog {
     private static boolean isScavengerDeniedEntry(ShopEntry entry) {
         return matches(entry, "p320", stack -> false)
                 || ReporterShopLoadout.isReporterNoteEntry(entry)
+                || BomberTimedBombRuntime.isTimedBombEntry(entry)
                 || matches(entry, "revolver", stack -> stack.isOf(WatheItems.REVOLVER))
                 || matches(entry, "grenade", stack -> stack.isOf(WatheItems.GRENADE))
                 || matches(entry, "poison_vial", stack -> stack.isOf(WatheItems.POISON_VIAL))

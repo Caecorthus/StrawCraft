@@ -91,4 +91,57 @@ class NoellesRoleStateTest {
         assertEquals(Optional.of(opponent), claim.opponentUuid());
         assertEquals(240L, claim.gameTime());
     }
+
+    @Test
+    void timedBombRoundTripsThroughNbtAndResetClearsIt() {
+        UUID owner = UUID.randomUUID();
+        UUID carrier = UUID.randomUUID();
+        NoellesRoleState saved = new NoellesRoleState();
+        saved.setTimedBomb(new NoellesRoleState.TimedBomb(
+                owner,
+                carrier,
+                900L,
+                NoellesRoleState.TimedBombPhase.ARMED,
+                720L
+        ));
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+        NoellesRoleState.TimedBomb bomb = loaded.timedBomb().orElseThrow();
+        assertEquals(owner, bomb.ownerUuid());
+        assertEquals(carrier, bomb.carrierUuid());
+        assertEquals(900L, bomb.fuseDeadlineTick());
+        assertEquals(NoellesRoleState.TimedBombPhase.ARMED, bomb.phase());
+        assertEquals(720L, bomb.transferCooldownDeadlineTick());
+
+        loaded.reset();
+
+        assertTrue(loaded.timedBomb().isEmpty());
+    }
+
+    @Test
+    void writingEmptyTimedBombStateClearsStaleNbtKey() {
+        UUID owner = UUID.randomUUID();
+        UUID carrier = UUID.randomUUID();
+        NoellesRoleState withBomb = new NoellesRoleState();
+        withBomb.setTimedBomb(new NoellesRoleState.TimedBomb(
+                owner,
+                carrier,
+                900L,
+                NoellesRoleState.TimedBombPhase.ARMED,
+                720L
+        ));
+        NbtCompound nbt = new NbtCompound();
+        withBomb.writeToNbt(nbt);
+
+        NoellesRoleState empty = new NoellesRoleState();
+        empty.writeToNbt(nbt);
+
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+        assertTrue(loaded.timedBomb().isEmpty());
+    }
 }

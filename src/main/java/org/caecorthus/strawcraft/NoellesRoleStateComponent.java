@@ -118,6 +118,20 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         return state.neutralWinClaims();
     }
 
+    public void setTimedBomb(NoellesRoleState.TimedBomb bomb) {
+        state.setTimedBomb(bomb);
+        sync();
+    }
+
+    public java.util.Optional<NoellesRoleState.TimedBomb> timedBomb() {
+        return state.timedBomb();
+    }
+
+    public void clearTimedBomb() {
+        state.clearTimedBomb();
+        sync();
+    }
+
     public void sync() {
         if (player != null && !player.getWorld().isClient()) {
             KEY.sync(player);

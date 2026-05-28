@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
@@ -23,6 +24,12 @@ public final class NoellesRoleState {
     private static final String COUNTERS_KEY = "Counters";
     private static final String UUID_SETS_KEY = "UuidSets";
     private static final String NEUTRAL_WIN_CLAIMS_KEY = "NeutralWinClaims";
+    private static final String TIMED_BOMB_KEY = "TimedBomb";
+    private static final String TIMED_BOMB_OWNER_UUID_KEY = "OwnerUuid";
+    private static final String TIMED_BOMB_CARRIER_UUID_KEY = "CarrierUuid";
+    private static final String TIMED_BOMB_FUSE_DEADLINE_KEY = "FuseDeadlineTick";
+    private static final String TIMED_BOMB_PHASE_KEY = "Phase";
+    private static final String TIMED_BOMB_TRANSFER_COOLDOWN_KEY = "TransferCooldownDeadlineTick";
     private static final String CLAIM_ROLE_ID_KEY = "RoleId";
     private static final String CLAIM_TRIGGER_KEY = "Trigger";
     private static final String CLAIM_OPPONENT_UUID_KEY = "OpponentUuid";
@@ -34,6 +41,7 @@ public final class NoellesRoleState {
     private final Map<String, Integer> counters = new HashMap<>();
     private final Map<String, Set<UUID>> uuidSets = new HashMap<>();
     private final Map<String, NeutralWinClaim> neutralWinClaims = new HashMap<>();
+    private Optional<TimedBomb> timedBomb = Optional.empty();
 
     public void reset() {
         abilityCooldownDeadlines.clear();
@@ -42,6 +50,7 @@ public final class NoellesRoleState {
         counters.clear();
         uuidSets.clear();
         neutralWinClaims.clear();
+        timedBomb = Optional.empty();
     }
 
     public boolean tryBeginAbilityCooldown(String abilityId, long now, int cooldownTicks) {
@@ -143,6 +152,18 @@ public final class NoellesRoleState {
         return Collections.unmodifiableSet(neutralWinClaims.values().stream().collect(Collectors.toSet()));
     }
 
+    public void setTimedBomb(TimedBomb bomb) {
+        timedBomb = Optional.of(Objects.requireNonNull(bomb, "bomb"));
+    }
+
+    public Optional<TimedBomb> timedBomb() {
+        return timedBomb;
+    }
+
+    public void clearTimedBomb() {
+        timedBomb = Optional.empty();
+    }
+
     public void readFromNbt(NbtCompound nbt) {
         abilityCooldownDeadlines.clear();
         flags.clear();
@@ -150,6 +171,7 @@ public final class NoellesRoleState {
         counters.clear();
         uuidSets.clear();
         neutralWinClaims.clear();
+        timedBomb = Optional.empty();
 
         NbtCompound cooldowns = nbt.getCompound(COOLDOWNS_KEY);
         for (String abilityId : cooldowns.getKeys()) {
@@ -190,6 +212,10 @@ public final class NoellesRoleState {
             readNeutralWinClaim(savedNeutralWinClaims.getCompound(key))
                     .ifPresent(this::recordNeutralWinClaim);
         }
+
+        if (nbt.contains(TIMED_BOMB_KEY, NbtElement.COMPOUND_TYPE)) {
+            timedBomb = readTimedBomb(nbt.getCompound(TIMED_BOMB_KEY));
+        }
     }
 
     public void writeToNbt(NbtCompound nbt) {
@@ -220,6 +246,42 @@ public final class NoellesRoleState {
         NbtCompound savedNeutralWinClaims = new NbtCompound();
         neutralWinClaims.forEach((key, claim) -> savedNeutralWinClaims.put(key, writeNeutralWinClaim(claim)));
         nbt.put(NEUTRAL_WIN_CLAIMS_KEY, savedNeutralWinClaims);
+
+        if (timedBomb.isPresent()) {
+            nbt.put(TIMED_BOMB_KEY, writeTimedBomb(timedBomb.get()));
+        } else {
+            nbt.remove(TIMED_BOMB_KEY);
+        }
+    }
+
+    private static Optional<TimedBomb> readTimedBomb(NbtCompound nbt) {
+        try {
+            UUID ownerUuid = UUID.fromString(nbt.getString(TIMED_BOMB_OWNER_UUID_KEY));
+            UUID carrierUuid = UUID.fromString(nbt.getString(TIMED_BOMB_CARRIER_UUID_KEY));
+            TimedBombPhase phase = TimedBombPhase.fromNbt(nbt.getString(TIMED_BOMB_PHASE_KEY));
+            if (phase == null) {
+                return Optional.empty();
+            }
+            return Optional.of(new TimedBomb(
+                    ownerUuid,
+                    carrierUuid,
+                    nbt.getLong(TIMED_BOMB_FUSE_DEADLINE_KEY),
+                    phase,
+                    nbt.getLong(TIMED_BOMB_TRANSFER_COOLDOWN_KEY)
+            ));
+        } catch (IllegalArgumentException ignored) {
+            return Optional.empty();
+        }
+    }
+
+    private static NbtCompound writeTimedBomb(TimedBomb bomb) {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putString(TIMED_BOMB_OWNER_UUID_KEY, bomb.ownerUuid().toString());
+        nbt.putString(TIMED_BOMB_CARRIER_UUID_KEY, bomb.carrierUuid().toString());
+        nbt.putLong(TIMED_BOMB_FUSE_DEADLINE_KEY, bomb.fuseDeadlineTick());
+        nbt.putString(TIMED_BOMB_PHASE_KEY, bomb.phase().serializedName());
+        nbt.putLong(TIMED_BOMB_TRANSFER_COOLDOWN_KEY, bomb.transferCooldownDeadlineTick());
+        return nbt;
     }
 
     private static Optional<NeutralWinClaim> readNeutralWinClaim(NbtCompound nbt) {
@@ -244,6 +306,45 @@ public final class NoellesRoleState {
         claim.opponentUuid().ifPresent(uuid -> nbt.putString(CLAIM_OPPONENT_UUID_KEY, uuid.toString()));
         nbt.putLong(CLAIM_GAME_TIME_KEY, claim.gameTime());
         return nbt;
+    }
+
+    public enum TimedBombPhase {
+        ARMED("armed");
+
+        private final String serializedName;
+
+        TimedBombPhase(String serializedName) {
+            this.serializedName = serializedName;
+        }
+
+        public String serializedName() {
+            return serializedName;
+        }
+
+        private static TimedBombPhase fromNbt(String serializedName) {
+            for (TimedBombPhase phase : values()) {
+                if (phase.serializedName.equals(serializedName)) {
+                    return phase;
+                }
+            }
+            return null;
+        }
+    }
+
+    public record TimedBomb(
+            UUID ownerUuid,
+            UUID carrierUuid,
+            long fuseDeadlineTick,
+            TimedBombPhase phase,
+            long transferCooldownDeadlineTick
+    ) {
+        public TimedBomb {
+            // Timed bombs are server-owned state; the carrier field lets future transfer logic move it safely.
+            // 定时炸弹状态由服务端持有；carrier 字段让后续转移逻辑可以安全迁移它。
+            Objects.requireNonNull(ownerUuid, "ownerUuid");
+            Objects.requireNonNull(carrierUuid, "carrierUuid");
+            Objects.requireNonNull(phase, "phase");
+        }
     }
 
     public record NeutralWinClaim(

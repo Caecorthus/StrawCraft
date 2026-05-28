@@ -17,19 +17,21 @@ class PlayerShopCatalogTest {
         ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
         ShopEntry p320 = entry("p320", 300, ShopEntry.Type.WEAPON);
         ShopEntry grenade = entry("grenade", 350, ShopEntry.Type.WEAPON);
+        ShopEntry timedBomb = entry("timed_bomb", 300, ShopEntry.Type.WEAPON);
         ShopEntry lockpick = entry("lockpick", 50, ShopEntry.Type.TOOL);
         ShopEntry poison = entry("poison_vial", 75, ShopEntry.Type.POISON);
 
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
                 role("bomber", true, false),
-                List.of(knife, p320, grenade, lockpick, poison)
+                List.of(knife, p320, grenade, timedBomb, lockpick, poison)
         );
 
-        assertEquals(List.of(grenade, lockpick), presentation.entries());
-        assertEquals(List.of(2, 3), presentation.visibleEntries().stream()
+        assertEquals(List.of(grenade, timedBomb, lockpick), presentation.entries());
+        assertEquals(List.of(2, 3, 4), presentation.visibleEntries().stream()
                 .map(PlayerShopCatalog.VisibleEntry::wathePurchaseIndex)
                 .toList());
         assertSame(grenade, presentation.entryAtVisibleIndex(0).orElseThrow().entry());
+        assertSame(timedBomb, presentation.entryAtVisibleIndex(1).orElseThrow().entry());
     }
 
     @Test
@@ -37,17 +39,19 @@ class PlayerShopCatalogTest {
         ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
         ShopEntry p320 = entry("p320", 300, ShopEntry.Type.WEAPON);
         ShopEntry grenade = entry("grenade", 350, ShopEntry.Type.WEAPON);
+        ShopEntry timedBomb = entry("timed_bomb", 300, ShopEntry.Type.WEAPON);
         ShopEntry lockpick = entry("lockpick", 50, ShopEntry.Type.TOOL);
 
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
                 role("bomber", true, false),
-                List.of(knife, p320, grenade, lockpick)
+                List.of(knife, p320, grenade, timedBomb, lockpick)
         );
 
         assertFalse(presentation.allowsWathePurchaseIndex(0));
         assertFalse(presentation.allowsWathePurchaseIndex(1));
         assertTrue(presentation.allowsWathePurchaseIndex(2));
         assertTrue(presentation.allowsWathePurchaseIndex(3));
+        assertTrue(presentation.allowsWathePurchaseIndex(4));
         assertFalse(presentation.allowsWathePurchaseIndex(99));
     }
 
@@ -57,6 +61,7 @@ class PlayerShopCatalogTest {
         ShopEntry p320 = entry("p320", 300, ShopEntry.Type.WEAPON);
         ShopEntry grenade = entry("grenade", 350, ShopEntry.Type.WEAPON);
         ShopEntry lockpick = entry("lockpick", 50, ShopEntry.Type.TOOL);
+        ShopEntry timedBomb = entry("timed_bomb", 300, ShopEntry.Type.WEAPON);
         ShopEntry poison = entry("poison_vial", 75, ShopEntry.Type.POISON);
         ShopEntry scorpion = entry("scorpion", 75, ShopEntry.Type.POISON);
         ShopEntry psycho = entry("psycho_mode", 150, ShopEntry.Type.POISON);
@@ -64,11 +69,11 @@ class PlayerShopCatalogTest {
 
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
                 role("scavenger", true, false),
-                List.of(knife, p320, grenade, lockpick, poison, scorpion, psycho, reset)
+                List.of(knife, p320, grenade, lockpick, timedBomb, poison, scorpion, psycho, reset)
         );
 
         assertEquals(List.of(knife, reset, lockpick), presentation.entries());
-        assertEquals(List.of(0, 7, 3), presentation.visibleEntries().stream()
+        assertEquals(List.of(0, 8, 3), presentation.visibleEntries().stream()
                 .map(PlayerShopCatalog.VisibleEntry::wathePurchaseIndex)
                 .toList());
     }
@@ -143,10 +148,11 @@ class PlayerShopCatalogTest {
         ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
         ShopEntry p320 = entry("p320", 300, ShopEntry.Type.WEAPON);
         ShopEntry grenade = entry("grenade", 350, ShopEntry.Type.WEAPON);
+        ShopEntry timedBomb = entry("timed_bomb", 300, ShopEntry.Type.WEAPON);
 
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
                 role("killer", true, false),
-                List.of(knife, p320, grenade)
+                List.of(knife, p320, grenade, timedBomb)
         );
 
         assertEquals(List.of(knife, p320, grenade), presentation.entries());
@@ -154,6 +160,7 @@ class PlayerShopCatalogTest {
                 .map(PlayerShopCatalog.VisibleEntry::wathePurchaseIndex)
                 .toList());
         assertEquals("p320", StrawShopEntry.idFor(presentation.entries().get(1)));
+        assertFalse(presentation.allowsWathePurchaseIndex(3));
     }
 
     @Test
