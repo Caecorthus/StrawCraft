@@ -81,6 +81,24 @@ class NoellesRoleCatalogTest {
     }
 
     @Test
+    void runtimeSelectionDefinitionsAreExactlyTheHardenedSafeRoles() {
+        Set<Identifier> runtimeIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
+                .map(org.caecorthus.strawcraft.role.StrawRoleDefinition::id)
+                .collect(Collectors.toSet());
+
+        assertEquals(Set.of(
+                StrawCraft.id("bomber"),
+                StrawCraft.id("timekeeper"),
+                StrawCraft.id("conductor"),
+                StrawCraft.id("toxicologist"),
+                StrawCraft.id("reporter"),
+                StrawCraft.id("professor"),
+                StrawCraft.id("detective")
+        ), runtimeIds);
+        assertFalse(runtimeIds.contains(StrawCraft.id("survival_master")));
+    }
+
+    @Test
     void languageFilesCoverRegisteredAnnouncementRolesAndGoals() throws java.io.IOException {
         String english = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/resources/assets/strawcraft/lang/en_us.json"));
         String chinese = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/resources/assets/strawcraft/lang/zh_cn.json"));

@@ -146,13 +146,13 @@ class RoleSelectionPolicyTest {
 
     @Test
     void runtimeNoellesDefinitionsAssignImplementedRolesButSkipDisabledAndDeferredRoles() {
-        List<UUID> players = players(4);
+        List<UUID> players = players(7);
         StrawRoleSelectionContext context = new StrawRoleSelectionContext(
                 players,
                 1,
                 0,
                 0,
-                2,
+                6,
                 NoellesRoleCatalog.runtimeSelectionDisabledIds(),
                 Map.of()
         );
@@ -162,11 +162,19 @@ class RoleSelectionPolicyTest {
         RoleSelectionPolicy.SelectionPlan plan = RoleSelectionPolicy.assign(context, definitions);
 
         assertTrue(plan.assignments().containsValue(StrawCraft.id("bomber")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("timekeeper")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("conductor")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("toxicologist")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("reporter")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("professor")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("detective")));
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("time_keeper")));
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("scavenger")));
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("survival_master")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("awesome_binglus")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("undercover")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("jester")));
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("vulture")));
     }
 
     private static List<StrawRoleDefinition> definitions() {

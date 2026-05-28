@@ -17,42 +17,58 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NoellesRuntimeRoleSelectionTest {
     @Test
-    void runtimeSelectionKeepsOfficialSeatsAndReplacesEligibleRolesWithImplementedNoellesRoles() {
-        UUID civilian = new UUID(0, 1);
+    void runtimeSelectionKeepsOfficialSeatsAndAssignsEverySafeImplementedNoellesRole() {
+        UUID firstCivilian = new UUID(0, 1);
         UUID killer = new UUID(0, 2);
         UUID vigilante = new UUID(0, 3);
         UUID secondCivilian = new UUID(0, 4);
+        UUID thirdCivilian = new UUID(0, 5);
+        UUID fourthCivilian = new UUID(0, 6);
+        UUID fifthCivilian = new UUID(0, 7);
+        UUID sixthCivilian = new UUID(0, 8);
         Map<UUID, Identifier> officialAssignments = linkedAssignments(
-                entry(civilian, WatheRoleIds.CIVILIAN),
+                entry(firstCivilian, WatheRoleIds.CIVILIAN),
                 entry(killer, WatheRoleIds.KILLER),
                 entry(vigilante, WatheRoleIds.VIGILANTE),
-                entry(secondCivilian, WatheRoleIds.CIVILIAN)
+                entry(secondCivilian, WatheRoleIds.CIVILIAN),
+                entry(thirdCivilian, WatheRoleIds.CIVILIAN),
+                entry(fourthCivilian, WatheRoleIds.CIVILIAN),
+                entry(fifthCivilian, WatheRoleIds.CIVILIAN),
+                entry(sixthCivilian, WatheRoleIds.CIVILIAN)
         );
 
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
 
         assertEquals(StrawCraft.id("bomber"), selected.get(killer));
-        assertTrue(selected.containsValue(StrawCraft.id("toxicologist")));
-        assertTrue(selected.containsValue(StrawCraft.id("professor")));
         assertEquals(WatheRoleIds.VIGILANTE, selected.get(vigilante));
+        assertEquals(StrawCraft.id("timekeeper"), selected.get(firstCivilian));
+        assertEquals(StrawCraft.id("conductor"), selected.get(secondCivilian));
+        assertEquals(StrawCraft.id("toxicologist"), selected.get(thirdCivilian));
+        assertEquals(StrawCraft.id("reporter"), selected.get(fourthCivilian));
+        assertEquals(StrawCraft.id("professor"), selected.get(fifthCivilian));
+        assertEquals(StrawCraft.id("detective"), selected.get(sixthCivilian));
     }
 
     @Test
-    void disabledAndDeferredNoellesRolesAreNotRuntimeSelectionCandidates() {
+    void runtimeSelectionCandidatesAreExactlyThePromotedSafeRoles() {
         Set<Identifier> candidateIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
                 .map(StrawRoleDefinition::id)
                 .collect(java.util.stream.Collectors.toSet());
 
-        assertTrue(candidateIds.contains(StrawCraft.id("bomber")));
-        assertTrue(candidateIds.contains(StrawCraft.id("toxicologist")));
-        assertTrue(candidateIds.contains(StrawCraft.id("detective")));
-        assertTrue(candidateIds.contains(StrawCraft.id("professor")));
-        assertFalse(candidateIds.contains(StrawCraft.id("timekeeper")));
+        assertEquals(Set.of(
+                StrawCraft.id("bomber"),
+                StrawCraft.id("timekeeper"),
+                StrawCraft.id("conductor"),
+                StrawCraft.id("toxicologist"),
+                StrawCraft.id("reporter"),
+                StrawCraft.id("professor"),
+                StrawCraft.id("detective")
+        ), candidateIds);
         assertFalse(candidateIds.contains(StrawCraft.id("scavenger")));
+        assertFalse(candidateIds.contains(StrawCraft.id("survival_master")));
         assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));
         assertFalse(candidateIds.contains(StrawCraft.id("undercover")));
-        assertFalse(candidateIds.contains(StrawCraft.id("conductor")));
-        assertFalse(candidateIds.contains(StrawCraft.id("reporter")));
+        assertFalse(candidateIds.contains(StrawCraft.id("time_keeper")));
         assertFalse(candidateIds.contains(StrawCraft.id("jester")));
         assertFalse(candidateIds.contains(StrawCraft.id("vulture")));
         assertFalse(candidateIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
@@ -104,8 +120,7 @@ class NoellesRuntimeRoleSelectionTest {
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
 
         assertEquals(StrawCraft.id("bomber"), selected.get(maybeForcedKiller));
-        assertTrue(Set.of(StrawCraft.id("toxicologist"), StrawCraft.id("professor"), StrawCraft.id("detective"), WatheRoleIds.CIVILIAN)
-                .contains(selected.get(maybeForcedCivilian)));
+        assertEquals(StrawCraft.id("timekeeper"), selected.get(maybeForcedCivilian));
         assertEquals(1, selected.values().stream()
                 .filter(roleId -> StrawCraft.id("bomber").equals(roleId) || WatheRoleIds.KILLER.equals(roleId))
                 .count());
