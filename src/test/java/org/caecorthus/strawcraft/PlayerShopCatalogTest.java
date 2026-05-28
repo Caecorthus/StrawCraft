@@ -157,6 +157,28 @@ class PlayerShopCatalogTest {
     }
 
     @Test
+    void poisonerUsesOrdinaryKillerShopIncludingOfficialPoisonVialOnly() {
+        ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
+        ShopEntry p320 = entry("p320", 300, ShopEntry.Type.WEAPON);
+        ShopEntry poison = entry("poison_vial", 75, ShopEntry.Type.POISON);
+        ShopEntry reset = entry("scavenger_reset_knife_cooldown", 150, ShopEntry.Type.WEAPON);
+        ShopEntry reporterNote = entry("reporter_note", 25, ShopEntry.Type.TOOL);
+
+        PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
+                role("poisoner", true, false),
+                List.of(knife, p320, poison, reset, reporterNote)
+        );
+
+        assertEquals(List.of(knife, p320, poison), presentation.entries());
+        assertEquals(List.of(0, 1, 2), presentation.visibleEntries().stream()
+                .map(PlayerShopCatalog.VisibleEntry::wathePurchaseIndex)
+                .toList());
+        assertTrue(presentation.allowsWathePurchaseIndex(2));
+        assertFalse(presentation.allowsWathePurchaseIndex(3));
+        assertFalse(presentation.allowsWathePurchaseIndex(4));
+    }
+
+    @Test
     void roleWithoutShopHasEmptyPresentation() {
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
                 role("bartender", false, true),
