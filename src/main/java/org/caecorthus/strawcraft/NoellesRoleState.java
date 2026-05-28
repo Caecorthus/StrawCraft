@@ -27,6 +27,8 @@ public final class NoellesRoleState {
     private static final String VOODOO_BONDED_TARGET_KEY = "voodoo_bonded_target";
     private static final String PATHOGEN_INFECTED_BY_KEY = "pathogen_infected_by";
     private static final String SERIAL_KILLER_CURRENT_TARGET_KEY = "serial_killer_current_target";
+    private static final String TAOTIE_SWALLOWED_PLAYERS_KEY = "taotie_swallowed_players";
+    private static final String TAOTIE_SWALLOWED_BY_KEY = "taotie_swallowed_by";
     private static final String DEMON_HUNTER_FRENZIED_PLAYERS_KEY = "demon_hunter_frenzied_players";
     private static final String NEUTRAL_WIN_CLAIMS_KEY = "NeutralWinClaims";
     private static final String TIMED_BOMB_KEY = "TimedBomb";
@@ -206,6 +208,42 @@ public final class NoellesRoleState {
 
     public void clearSerialKillerCurrentTarget() {
         clearUuidSet(SERIAL_KILLER_CURRENT_TARGET_KEY);
+    }
+
+    public boolean trackTaotieSwallowedPlayer(UUID targetUuid) {
+        Objects.requireNonNull(targetUuid, "targetUuid");
+        return addUuidToSet(TAOTIE_SWALLOWED_PLAYERS_KEY, targetUuid);
+    }
+
+    public boolean untrackTaotieSwallowedPlayer(UUID targetUuid) {
+        Objects.requireNonNull(targetUuid, "targetUuid");
+        return removeUuidFromSet(TAOTIE_SWALLOWED_PLAYERS_KEY, targetUuid);
+    }
+
+    public Set<UUID> taotieSwallowedPlayers() {
+        return uuidSet(TAOTIE_SWALLOWED_PLAYERS_KEY);
+    }
+
+    public void clearTaotieSwallowedPlayers() {
+        clearUuidSet(TAOTIE_SWALLOWED_PLAYERS_KEY);
+    }
+
+    public void setTaotieSwallowedBy(UUID taotieUuid) {
+        Objects.requireNonNull(taotieUuid, "taotieUuid");
+        clearTaotieSwallowedBy();
+        addUuidToSet(TAOTIE_SWALLOWED_BY_KEY, taotieUuid);
+    }
+
+    public Optional<UUID> taotieSwallowedBy() {
+        return uuidSet(TAOTIE_SWALLOWED_BY_KEY).stream().findFirst();
+    }
+
+    public boolean isTaotieSwallowed() {
+        return taotieSwallowedBy().isPresent();
+    }
+
+    public void clearTaotieSwallowedBy() {
+        clearUuidSet(TAOTIE_SWALLOWED_BY_KEY);
     }
 
     public void setVoodooBondedTarget(UUID targetUuid) {

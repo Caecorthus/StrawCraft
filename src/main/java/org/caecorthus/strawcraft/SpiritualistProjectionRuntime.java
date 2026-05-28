@@ -45,7 +45,7 @@ public final class SpiritualistProjectionRuntime {
                 game.isRunning(),
                 StrawRoleMeaning.receivesSpiritualistProjection(game.getRole(spiritualist)),
                 GameFunctions.isPlayerAliveAndSurvival(spiritualist),
-                false,
+                roleState.isTaotieSwallowed(),
                 !roleState.isAbilityOnCooldown(SpiritualistProjectionPolicy.ABILITY_ID, currentGameTime),
                 SpiritualistProjectionPolicy.isProjecting(roleState)
         ));
@@ -124,6 +124,7 @@ public final class SpiritualistProjectionRuntime {
         boolean shouldForceReturn = !game.isRunning()
                 || !isSpiritualistRole(game.getRole(player))
                 || !GameFunctions.isPlayerAliveAndSurvival(player)
+                || roleState.isTaotieSwallowed()
                 || SpiritualistProjectionPolicy.movedTooFarFromBody(
                 projection,
                 player.getX(),

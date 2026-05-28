@@ -152,8 +152,9 @@ public final class MorphlingDisguiseRuntime {
     }
 
     private static boolean isSwallowed(ServerPlayerEntity player) {
-        // Taotie swallowing has no StrawCraft runtime predicate yet; keep the source guard explicit for that future hook.
+        // Taotie foundation exposes only server-owned swallowed state; no spectator or camera behavior is implied here.
+        // 饕餮基础层这里只提供服务端吞噬状态；不代表已经实现旁观者或镜头行为。
         // 饕餮吞噬目前还没有 StrawCraft 运行时谓词；先保留这个源逻辑守卫位置，方便之后接入。
-        return false;
+        return NoellesRoleStateComponent.KEY.get(player).isTaotieSwallowed();
     }
 }

@@ -141,6 +141,49 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         sync();
     }
 
+    public boolean trackTaotieSwallowedPlayer(UUID targetUuid) {
+        boolean added = state.trackTaotieSwallowedPlayer(targetUuid);
+        if (added) {
+            sync();
+        }
+        return added;
+    }
+
+    public boolean untrackTaotieSwallowedPlayer(UUID targetUuid) {
+        boolean removed = state.untrackTaotieSwallowedPlayer(targetUuid);
+        if (removed) {
+            sync();
+        }
+        return removed;
+    }
+
+    public Set<UUID> taotieSwallowedPlayers() {
+        return state.taotieSwallowedPlayers();
+    }
+
+    public void clearTaotieSwallowedPlayers() {
+        state.clearTaotieSwallowedPlayers();
+        sync();
+    }
+
+    public void setTaotieSwallowedBy(UUID taotieUuid) {
+        state.setTaotieSwallowedBy(taotieUuid);
+        sync();
+    }
+
+    public java.util.Optional<UUID> taotieSwallowedBy() {
+        return state.taotieSwallowedBy();
+    }
+
+    public boolean isTaotieSwallowed() {
+        return state.isTaotieSwallowed();
+    }
+
+    public void clearTaotieSwallowedBy() {
+        state.clearTaotieSwallowedBy();
+        sync();
+    }
+
     public void setVoodooBondedTarget(UUID targetUuid) {
         state.setVoodooBondedTarget(targetUuid);
         sync();

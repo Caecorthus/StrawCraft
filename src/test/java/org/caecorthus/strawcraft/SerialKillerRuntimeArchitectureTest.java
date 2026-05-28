@@ -31,6 +31,7 @@ class SerialKillerRuntimeArchitectureTest {
         assertTrue(runtime.contains("SerialKillerTargetPolicy.isTargetValid"));
         assertTrue(runtime.contains("SerialKillerTargetPolicy.bonusGrant"));
         assertTrue(runtime.contains("KillRewardPayout.apply"));
+        assertTrue(runtime.contains("isTaotieSwallowed()"));
     }
 
     @Test

@@ -171,6 +171,40 @@ class NoellesRoleStateTest {
     }
 
     @Test
+    void taotieSwallowedPlayersAndPerTargetOwnerRoundTripThroughNbt() {
+        UUID taotie = UUID.randomUUID();
+        UUID firstTarget = UUID.randomUUID();
+        UUID secondTarget = UUID.randomUUID();
+        NoellesRoleState savedTaotie = new NoellesRoleState();
+        NoellesRoleState savedTarget = new NoellesRoleState();
+
+        assertTrue(savedTaotie.trackTaotieSwallowedPlayer(firstTarget));
+        assertTrue(savedTaotie.trackTaotieSwallowedPlayer(secondTarget));
+        assertFalse(savedTaotie.trackTaotieSwallowedPlayer(firstTarget));
+        savedTarget.setTaotieSwallowedBy(taotie);
+
+        NbtCompound taotieNbt = new NbtCompound();
+        savedTaotie.writeToNbt(taotieNbt);
+        NbtCompound targetNbt = new NbtCompound();
+        savedTarget.writeToNbt(targetNbt);
+
+        NoellesRoleState loadedTaotie = new NoellesRoleState();
+        loadedTaotie.readFromNbt(taotieNbt);
+        NoellesRoleState loadedTarget = new NoellesRoleState();
+        loadedTarget.readFromNbt(targetNbt);
+
+        assertEquals(java.util.Set.of(firstTarget, secondTarget), loadedTaotie.taotieSwallowedPlayers());
+        assertTrue(loadedTaotie.untrackTaotieSwallowedPlayer(firstTarget));
+        assertEquals(java.util.Set.of(secondTarget), loadedTaotie.taotieSwallowedPlayers());
+        assertEquals(Optional.of(taotie), loadedTarget.taotieSwallowedBy());
+        assertTrue(loadedTarget.isTaotieSwallowed());
+
+        loadedTarget.clearTaotieSwallowedBy();
+        assertTrue(loadedTarget.taotieSwallowedBy().isEmpty());
+        assertFalse(loadedTarget.isTaotieSwallowed());
+    }
+
+    @Test
     void voodooBondedTargetStoresExactlyOneUuidAndRoundTripsThroughNbt() {
         UUID firstTarget = UUID.randomUUID();
         UUID secondTarget = UUID.randomUUID();

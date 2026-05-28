@@ -45,6 +45,7 @@ class SpiritualistProjectionRuntimeArchitectureTest {
         assertTrue(runtime.contains("StrawRoleMeaning.receivesSpiritualistProjection"));
         assertTrue(runtime.contains("NoellesRoleStateComponent.KEY.get(spiritualist)"));
         assertTrue(runtime.contains("roleState.isAbilityOnCooldown(SpiritualistProjectionPolicy.ABILITY_ID"));
+        assertTrue(runtime.contains("roleState.isTaotieSwallowed()"));
         assertTrue(runtime.contains("SpiritualistProjectionPolicy.startProjecting"));
         assertTrue(runtime.contains("SpiritualistProjectionPolicy.returnToBody"));
         assertTrue(runtime.contains("SpiritualistProjectionPolicy.forceReturn"));

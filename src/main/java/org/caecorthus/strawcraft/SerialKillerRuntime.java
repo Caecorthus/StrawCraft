@@ -162,9 +162,10 @@ public final class SerialKillerRuntime {
                 playerUuid.equals(serialKiller.getUuid()),
                 role != null,
                 candidate != null && GameFunctions.isPlayerAliveAndSurvival(candidate),
-                // Taotie swallowing has no StrawCraft runtime yet; keep the policy slot explicit for that future source rule.
+                // Serial Killer target validation treats swallowed players as unavailable without changing win flow.
+                // 连环杀手目标校验会把被吞玩家视为不可用，但不改变胜利流程。
                 // 饕餮吞噬运行时尚未迁移；这里保留显式字段，方便后续接上源规则。
-                false,
+                candidate != null && NoellesRoleStateComponent.KEY.get(candidate).isTaotieSwallowed(),
                 StrawRoleMeaning.canUseKillerShop(role),
                 StrawRoleMeaning.receivesUndercoverWalkieTalkie(role),
                 StrawRoleMeaning.receivesBodyguardProtection(role),

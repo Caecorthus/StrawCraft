@@ -41,6 +41,9 @@ class SerialKillerTargetPolicyTest {
         assertEquals(false, SerialKillerTargetPolicy.isTargetValid(target, List.of(
                 candidate(target, false, true, false, false, false, false, false, false)
         )));
+        assertEquals(false, SerialKillerTargetPolicy.isTargetValid(target, List.of(
+                candidate(target, false, true, true, true, false, false, false, false)
+        )));
     }
 
     @Test

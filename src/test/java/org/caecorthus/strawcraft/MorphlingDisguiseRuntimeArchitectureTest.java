@@ -63,6 +63,7 @@ class MorphlingDisguiseRuntimeArchitectureTest {
         assertTrue(runtime.contains("MorphlingDisguisePolicy.toggleCorpseMode"));
         assertTrue(runtime.contains("MorphlingDisguisePolicy.tick"));
         assertTrue(runtime.contains("roleState.setAbilityCooldown(MorphlingDisguisePolicy.ABILITY_ID"));
+        assertTrue(runtime.contains("isTaotieSwallowed()"));
         assertTrue(runtime.indexOf("MorphlingDisguisePolicy.validateStart") < runtime.indexOf("MorphlingDisguisePolicy.startMorph"));
     }
 
