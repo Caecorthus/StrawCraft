@@ -80,6 +80,7 @@ class NoellesNeutralWinPolicyTest {
     void looseEndWinnerOverrideAllowsOnlyRuntimeOwnedNeutralClaims() {
         assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(JesterWinPolicy.JESTER_ROLE));
         assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(CorruptCopMomentPolicy.CORRUPT_COP_ROLE));
+        assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(TaotieSwallowPolicy.TAOTIE_ROLE));
         assertFalse(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(VultureBodyFeastPolicy.VULTURE_ROLE));
         assertFalse(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(StrawCraft.id("unknown_neutral")));
     }

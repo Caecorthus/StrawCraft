@@ -14,36 +14,40 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TaotieFoundationArchitectureTest {
     private static final Path POLICY = Path.of("src/main/java/org/caecorthus/strawcraft/TaotieSwallowPolicy.java");
+    private static final Path RUNTIME = Path.of("src/main/java/org/caecorthus/strawcraft/TaotieSwallowRuntime.java");
     private static final Path CATALOG = Path.of("src/main/java/org/caecorthus/strawcraft/NoellesRoleCatalog.java");
     private static final Path STRAW_CRAFT = Path.of("src/main/java/org/caecorthus/strawcraft/StrawCraft.java");
     private static final Path OFFICIAL_WATHE_JAR = Path.of("libs/wathe-1.3.2-1.21.1.jar");
     private static final Path PAROX_WATHE_JAR = Path.of("libs/wathe-Parox-1.0.1.jar");
 
     @Test
-    void taotieFoundationHasNoRuntimePacketCameraSpectatorOrVoiceChatSliceYet() throws IOException {
+    void taotieFoundationNowHasRuntimePacketSpectatorCameraButNoVoiceChatDependency() throws IOException {
         String policy = Files.readString(POLICY, StandardCharsets.UTF_8);
         String initializer = Files.readString(STRAW_CRAFT, StandardCharsets.UTF_8);
+        String runtime = Files.readString(RUNTIME, StandardCharsets.UTF_8);
 
         assertTrue(policy.contains("TAOTIE_ROLE"));
         assertTrue(policy.contains("SWALLOW_DISTANCE_SQUARED"));
         assertTrue(policy.contains("TAOTIE_MOMENT_DURATION_TICKS"));
-        assertFalse(initializer.contains("Taotie"));
+        assertTrue(initializer.contains("TaotieSwallowRuntime.register()"));
+        assertTrue(runtime.contains("TaotieSwallowPayload"));
+        assertTrue(runtime.contains("GameMode.SPECTATOR"));
+        assertTrue(runtime.contains("setCameraEntity(taotie)"));
         assertFalse(policy.contains("ServerPlayNetworking"));
-        assertFalse(policy.contains("GameMode.SPECTATOR"));
-        assertFalse(policy.contains("Camera"));
         assertFalse(policy.contains("VoiceChat"));
+        assertFalse(runtime.contains("VoiceChat"));
     }
 
     @Test
-    void taotieRemainsDesignRequiredUntilWinAndGameplayHooksAreRuntimeOwned() throws IOException {
+    void taotieIsRuntimeReadyAfterGameplayWinAndCleanupHooksAreOwned() throws IOException {
         NoellesRoleCatalog.Entry entry = NoellesRoleCatalog.find(TaotieSwallowPolicy.TAOTIE_ROLE).orElseThrow();
         String catalog = Files.readString(CATALOG, StandardCharsets.UTF_8);
 
-        assertEquals(NoellesRoleCatalog.Readiness.DESIGN_REQUIRED, entry.readiness());
-        assertTrue(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
-        assertFalse(NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
+        assertEquals(NoellesRoleCatalog.Readiness.RUNTIME_READY, entry.readiness());
+        assertFalse(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
+        assertTrue(NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
                 .anyMatch(definition -> definition.id().equals(entry.id())));
-        assertTrue(catalog.contains("neutral(\"taotie\")"));
+        assertTrue(catalog.contains("selectableNeutral(\"taotie\")"));
     }
 
     @Test
@@ -57,17 +61,20 @@ class TaotieFoundationArchitectureTest {
     @Test
     void taotieFoundationAvoidsSparkNoellesAndParoxRuntimeDependencies() throws IOException {
         String policy = Files.readString(POLICY, StandardCharsets.UTF_8);
+        String runtime = Files.readString(RUNTIME, StandardCharsets.UTF_8);
 
         String trainmurdermysteryImport = "import org." + "trainmurdermystery";
         String noellesRolesImport = "import org." + "noellesroles";
         String xruiNoellesRuntime = "XruiDD." + "NoellesRoles";
         String paroxWathe = "wathe-" + "Parox";
 
-        assertFalse(policy.contains(trainmurdermysteryImport));
-        assertFalse(policy.contains(noellesRolesImport));
-        assertFalse(policy.contains(xruiNoellesRuntime));
-        assertFalse(policy.contains(paroxWathe));
-        assertFalse(policy.contains("CheckWinCondition"));
+        for (String source : java.util.List.of(policy, runtime)) {
+            assertFalse(source.contains(trainmurdermysteryImport));
+            assertFalse(source.contains(noellesRolesImport));
+            assertFalse(source.contains(xruiNoellesRuntime));
+            assertFalse(source.contains(paroxWathe));
+            assertFalse(source.contains("CheckWinCondition"));
+        }
     }
 
     private static boolean jarContains(Path jarPath, String entryName) throws IOException {

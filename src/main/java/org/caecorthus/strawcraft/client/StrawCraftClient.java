@@ -28,6 +28,7 @@ import org.caecorthus.strawcraft.SpiritualistProjectionPayload;
 import org.caecorthus.strawcraft.StrawCraftEntities;
 import org.caecorthus.strawcraft.StrawRoleMeaning;
 import org.caecorthus.strawcraft.SwapperSwapPayload;
+import org.caecorthus.strawcraft.TaotieSwallowPayload;
 import org.caecorthus.strawcraft.VoodooBondPayload;
 import org.caecorthus.strawcraft.VultureFeastPayload;
 import org.caecorthus.strawcraft.map.StrawMapVotingComponent;
@@ -44,6 +45,7 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding swapperSwapKey;
     private static KeyBinding reporterMarkKey;
     private static KeyBinding voodooBondKey;
+    private static KeyBinding taotieSwallowKey;
     private static KeyBinding phantomInvisibilityKey;
     private static KeyBinding spiritualistProjectionKey;
     private static KeyBinding pathogenInfectionKey;
@@ -106,6 +108,12 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_Z,
                 "category.strawcraft.keybinds"
         ));
+        taotieSwallowKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.taotie_swallow",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_T,
+                "category.strawcraft.keybinds"
+        ));
         phantomInvisibilityKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.strawcraft.phantom_invisibility",
                 InputUtil.Type.KEYSYM,
@@ -150,6 +158,7 @@ public final class StrawCraftClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickSwapperSwap);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickReporterMark);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVoodooBond);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickTaotieSwallow);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPhantomInvisibility);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickSpiritualistProjection);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPathogenInfection);
@@ -335,6 +344,28 @@ public final class StrawCraftClient implements ClientModInitializer {
         // Voodoo sends only the aimed player's UUID; the server owns the bond and all gameplay checks.
         // 巫毒只发送准星指向玩家的 UUID；绑定状态和所有玩法判定都留在服务端。
         ClientPlayNetworking.send(new VoodooBondPayload(target.getUuid()));
+    }
+
+    private static void tickTaotieSwallow(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (!taotieSwallowKey.wasPressed()) {
+            return;
+        }
+
+        if (!(client.crosshairTarget instanceof EntityHitResult hitResult)
+                || !(hitResult.getEntity() instanceof PlayerEntity target)
+                || target == client.player) {
+            client.player.sendMessage(Text.translatable("message.strawcraft.taotie.select_target")
+                    .formatted(Formatting.YELLOW), true);
+            return;
+        }
+
+        // Taotie sends only the aimed player's UUID; the server owns swallow validation and temporary spectator state.
+        // 饕餮只发送准星指向玩家的 UUID；吞噬判定和临时旁观状态都由服务端掌控。
+        ClientPlayNetworking.send(new TaotieSwallowPayload(target.getUuid()));
     }
 
     private static void tickPhantomInvisibility(MinecraftClient client) {

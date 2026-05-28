@@ -59,7 +59,7 @@ public final class NoellesRoleCatalog {
             selectableNeutral("vulture"),
             selectableNeutral("corrupt_cop"),
             selectableNeutral("pathogen"),
-            neutral("taotie")
+            selectableNeutral("taotie")
     );
 
     private static final Set<Identifier> FIRST_ROUND_DISABLED_IDS = ROLES.stream()

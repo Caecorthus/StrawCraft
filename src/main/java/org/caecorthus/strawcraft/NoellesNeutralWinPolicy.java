@@ -40,7 +40,8 @@ public final class NoellesNeutralWinPolicy {
 
     public static boolean canOverrideLooseEndWinner(Identifier roleId) {
         return JesterWinPolicy.JESTER_ROLE.equals(roleId)
-                || CorruptCopMomentPolicy.CORRUPT_COP_ROLE.equals(roleId);
+                || CorruptCopMomentPolicy.CORRUPT_COP_ROLE.equals(roleId)
+                || TaotieSwallowPolicy.TAOTIE_ROLE.equals(roleId);
     }
 
     public static StrawWinEvents.WinContribution contributeRecordedNeutralWins(UUID playerUuid, NoellesRoleState state) {

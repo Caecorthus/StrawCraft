@@ -139,7 +139,8 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("jester"),
                 StrawCraft.id("vulture"),
                 StrawCraft.id("corrupt_cop"),
-                StrawCraft.id("pathogen")
+                StrawCraft.id("pathogen"),
+                StrawCraft.id("taotie")
         ), candidateIds);
         assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));
         assertFalse(candidateIds.contains(StrawCraft.id("timekeeper")));
@@ -227,6 +228,31 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("jester"), selected.get(firstLooseEnd));
         assertEquals(StrawCraft.id("vulture"), selected.get(secondLooseEnd));
         assertEquals(StrawCraft.id("corrupt_cop"), selected.get(thirdLooseEnd));
+    }
+
+    @Test
+    void runtimeSelectionCanAssignTaotieAfterPathogenWhenFiveNeutralSeatsExist() {
+        UUID civilian = new UUID(0, 1);
+        UUID killer = new UUID(0, 2);
+        UUID firstLooseEnd = new UUID(0, 3);
+        UUID secondLooseEnd = new UUID(0, 4);
+        UUID thirdLooseEnd = new UUID(0, 5);
+        UUID fourthLooseEnd = new UUID(0, 6);
+        UUID fifthLooseEnd = new UUID(0, 7);
+        Map<UUID, Identifier> officialAssignments = linkedAssignments(
+                entry(civilian, WatheRoleIds.CIVILIAN),
+                entry(killer, WatheRoleIds.KILLER),
+                entry(firstLooseEnd, WatheRoleIds.LOOSE_END),
+                entry(secondLooseEnd, WatheRoleIds.LOOSE_END),
+                entry(thirdLooseEnd, WatheRoleIds.LOOSE_END),
+                entry(fourthLooseEnd, WatheRoleIds.LOOSE_END),
+                entry(fifthLooseEnd, WatheRoleIds.LOOSE_END)
+        );
+
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
+
+        assertEquals(StrawCraft.id("pathogen"), selected.get(fourthLooseEnd));
+        assertEquals(StrawCraft.id("taotie"), selected.get(fifthLooseEnd));
     }
 
     @Test

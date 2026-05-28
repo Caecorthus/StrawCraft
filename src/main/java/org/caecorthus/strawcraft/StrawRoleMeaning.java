@@ -149,6 +149,10 @@ public final class StrawRoleMeaning {
         return role != null && VoodooBondPolicy.VOODOO_ROLE.equals(role.identifier());
     }
 
+    public static boolean receivesTaotieSwallow(Role role) {
+        return role != null && TaotieSwallowPolicy.TAOTIE_ROLE.equals(role.identifier());
+    }
+
     public static boolean receivesPhantomInvisibility(Role role) {
         return role != null && PhantomInvisibilityPolicy.PHANTOM_ROLE.equals(role.identifier());
     }
