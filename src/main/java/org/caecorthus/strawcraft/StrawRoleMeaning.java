@@ -64,6 +64,10 @@ public final class StrawRoleMeaning {
         return role != null && StrawCraft.id("professor").equals(role.identifier());
     }
 
+    public static boolean receivesBodyguardProtection(Role role) {
+        return role != null && BodyguardProtectionPolicy.BODYGUARD_ROLE.equals(role.identifier());
+    }
+
     public static boolean receivesVultureBodyFeast(Role role) {
         return role != null && VultureBodyFeastPolicy.VULTURE_ROLE.equals(role.identifier());
     }

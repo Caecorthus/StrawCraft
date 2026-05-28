@@ -41,11 +41,11 @@ class VigilanteLoadoutTest {
 
     @Test
     void roleAssignedAdapterCleansInventoryForEveryRoleAndOnlyGrantsVigilanteGunToVigilantes() {
-        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(true, true, false, List.of(), List.of()),
+        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(true, true, false, false, List.of(), List.of()),
                 RoleAssignedLoadouts.planAssignedLoadout(role(WatheRoleIds.VIGILANTE, true, false), false));
-        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(true, false, false, List.of(), List.of()),
+        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(true, false, false, false, List.of(), List.of()),
                 RoleAssignedLoadouts.planAssignedLoadout(role(Identifier.of("wathe", "killer"), false, true), false));
-        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(false, false, false, List.of(), List.of()),
+        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(false, false, false, false, List.of(), List.of()),
                 RoleAssignedLoadouts.planAssignedLoadout(role(WatheRoleIds.VIGILANTE, true, false), true));
     }
 
@@ -53,6 +53,7 @@ class VigilanteLoadoutTest {
     void undercoverWalkieTalkieIsDeferredByNoellesAssignedLoadoutSlice() {
         assertEquals(new RoleAssignedLoadouts.AssignmentPlan(
                         true,
+                        false,
                         false,
                         false,
                         List.of(),
@@ -73,7 +74,7 @@ class VigilanteLoadoutTest {
         assertEquals(List.of(new NoellesAssignedLoadouts.ItemGrant(StrawCraft.id("master_key"), 1)),
                 conductorPlan.assignmentItemGrants());
         assertTrue(conductorPlan.unsupportedItemGrants().isEmpty());
-        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(true, false, false, List.of(), List.of()),
+        assertEquals(new RoleAssignedLoadouts.AssignmentPlan(true, false, false, false, List.of(), List.of()),
                 RoleAssignedLoadouts.planAssignedLoadout(role(Identifier.of("strawcraft", "scavenger"), false, true), false));
     }
 

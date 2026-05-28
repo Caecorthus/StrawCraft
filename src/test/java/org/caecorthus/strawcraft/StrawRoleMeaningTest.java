@@ -105,6 +105,13 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void onlyNoellesBodyguardReceivesNearbyProtectionMeaning() {
+        assertTrue(receivesBodyguardProtection(noellesRole("bodyguard")));
+        assertFalse(receivesBodyguardProtection(noellesRole("professor")));
+        assertFalse(receivesBodyguardProtection(role(WatheRoleIds.CIVILIAN, true, false)));
+    }
+
+    @Test
     void nullAndUnknownRoleDoNotReceivePrivilegedBehavior() {
         Role unknownRole = role(Identifier.of("strawcraft", "unknown_fixture"), false, false);
 
@@ -114,12 +121,14 @@ class StrawRoleMeaningTest {
         assertFalse(receivesUndercoverWalkieTalkie(null));
         assertFalse(receivesDetectiveInvestigation(null));
         assertFalse(receivesVultureBodyFeast(null));
+        assertFalse(receivesBodyguardProtection(null));
         assertTrue(ammoFactionFor(null).isEmpty());
         assertFalse(canUseKillerShop(unknownRole));
         assertFalse(receivesVigilanteLoadout(unknownRole));
         assertFalse(receivesUndercoverWalkieTalkie(unknownRole));
         assertFalse(receivesDetectiveInvestigation(unknownRole));
         assertFalse(receivesVultureBodyFeast(unknownRole));
+        assertFalse(receivesBodyguardProtection(unknownRole));
         assertTrue(ammoFactionFor(unknownRole).isEmpty());
     }
 
@@ -141,6 +150,10 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesVultureBodyFeast(Role role) {
         return invokeBoolean("receivesVultureBodyFeast", role);
+    }
+
+    private static boolean receivesBodyguardProtection(Role role) {
+        return invokeBoolean("receivesBodyguardProtection", role);
     }
 
     private static Optional<GunAmmoFaction> ammoFactionFor(Role role) {

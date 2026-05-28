@@ -30,6 +30,7 @@ class NoellesRuntimeRoleSelectionTest {
         UUID seventhCivilian = new UUID(0, 10);
         UUID thirdKiller = new UUID(0, 11);
         UUID eighthCivilian = new UUID(0, 12);
+        UUID ninthCivilian = new UUID(0, 13);
         Map<UUID, Identifier> officialAssignments = linkedAssignments(
                 entry(firstCivilian, WatheRoleIds.CIVILIAN),
                 entry(firstKiller, WatheRoleIds.KILLER),
@@ -42,7 +43,8 @@ class NoellesRuntimeRoleSelectionTest {
                 entry(secondKiller, WatheRoleIds.KILLER),
                 entry(seventhCivilian, WatheRoleIds.CIVILIAN),
                 entry(thirdKiller, WatheRoleIds.KILLER),
-                entry(eighthCivilian, WatheRoleIds.CIVILIAN)
+                entry(eighthCivilian, WatheRoleIds.CIVILIAN),
+                entry(ninthCivilian, WatheRoleIds.CIVILIAN)
         );
 
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
@@ -57,8 +59,9 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("toxicologist"), selected.get(fourthCivilian));
         assertEquals(StrawCraft.id("reporter"), selected.get(fifthCivilian));
         assertEquals(StrawCraft.id("professor"), selected.get(sixthCivilian));
-        assertEquals(StrawCraft.id("survival_master"), selected.get(seventhCivilian));
-        assertEquals(StrawCraft.id("detective"), selected.get(eighthCivilian));
+        assertEquals(StrawCraft.id("bodyguard"), selected.get(seventhCivilian));
+        assertEquals(StrawCraft.id("survival_master"), selected.get(eighthCivilian));
+        assertEquals(StrawCraft.id("detective"), selected.get(ninthCivilian));
     }
 
     @Test
@@ -77,6 +80,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("toxicologist"),
                 StrawCraft.id("reporter"),
                 StrawCraft.id("professor"),
+                StrawCraft.id("bodyguard"),
                 StrawCraft.id("detective"),
                 StrawCraft.id("survival_master")
         ), candidateIds);

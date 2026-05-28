@@ -25,6 +25,7 @@ public final class RoleAssignedLoadouts {
                 true,
                 VigilanteLoadout.shouldReplaceAssignedRole(role),
                 StrawRoleMeaning.receivesProfessorIronManProtection(role),
+                StrawRoleMeaning.receivesBodyguardProtection(role),
                 noellesPlan.itemGrants(),
                 noellesPlan.unsupportedItemGrants()
         );
@@ -40,6 +41,9 @@ public final class RoleAssignedLoadouts {
         }
         if (plan.grantProfessorIronManProtection()) {
             ProfessorIronManProtection.grant(NoellesRoleStateComponent.KEY.get(player), player.getWorld().getTime());
+        }
+        if (plan.grantBodyguardProtection()) {
+            BodyguardProtectionPolicy.grant(NoellesRoleStateComponent.KEY.get(player), player.getWorld().getTime());
         }
         if (StrawRoleMeaning.matchesRoleId(role, VultureBodyFeastPolicy.VULTURE_ROLE)) {
             int totalPlayers = GameWorldComponent.KEY.get(player.getWorld()).getRoles().size();
@@ -59,6 +63,7 @@ public final class RoleAssignedLoadouts {
             boolean removeDisabledWatheGuns,
             boolean grantVigilanteGun,
             boolean grantProfessorIronManProtection,
+            boolean grantBodyguardProtection,
             List<NoellesAssignedLoadouts.ItemGrant> assignmentItemGrants,
             List<NoellesAssignedLoadouts.UnsupportedItemGrant> unsupportedItemGrants
     ) {
@@ -68,7 +73,7 @@ public final class RoleAssignedLoadouts {
         }
 
         private static AssignmentPlan nothing() {
-            return new AssignmentPlan(false, false, false, List.of(), List.of());
+            return new AssignmentPlan(false, false, false, false, List.of(), List.of());
         }
     }
 }
