@@ -17,6 +17,7 @@ class NoellesRoleCatalogTest {
             "swapper",
             "phantom",
             "morphling",
+            "the_insane_damned_paranoid_killer",
             "bomber",
             "scavenger",
             "assassin",
@@ -27,6 +28,7 @@ class NoellesRoleCatalogTest {
             "time_keeper",
             "undercover",
             "conductor",
+            "awesome_binglus",
             "bartender",
             "noisemaker",
             "voodoo",
@@ -54,10 +56,7 @@ class NoellesRoleCatalogTest {
             "timekeeper"
     );
     private static final Set<String> EXPECTED_UNSUPPORTED_ROLE_PATHS = Set.of();
-    private static final Set<String> EXPECTED_DISABLED_ROLE_PATHS = Set.of(
-            "the_insane_damned_paranoid_killer",
-            "awesome_binglus"
-    );
+    private static final Set<String> EXPECTED_DISABLED_ROLE_PATHS = Set.of();
     private static final List<String> EXPECTED_ROLE_PATHS = List.of(
             "swapper",
             "phantom",
@@ -115,30 +114,30 @@ class NoellesRoleCatalogTest {
     }
 
     @Test
-    void disabledRolesAreNotEligibleForFirstRoundSelection() {
+    void runtimeReadyRolesAreEligibleForFirstRoundSelection() {
         Set<Identifier> firstRoundIds = NoellesRoleCatalog.firstRoundDefinitions().stream()
                 .map(org.caecorthus.strawcraft.role.StrawRoleDefinition::id)
                 .collect(Collectors.toSet());
 
-        assertFalse(firstRoundIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
-        assertFalse(firstRoundIds.contains(StrawCraft.id("awesome_binglus")));
+        assertTrue(firstRoundIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
+        assertTrue(firstRoundIds.contains(StrawCraft.id("awesome_binglus")));
         assertTrue(firstRoundIds.contains(StrawCraft.id("jester")));
         assertFalse(firstRoundIds.contains(StrawCraft.id("riot_patrol")));
     }
 
     @Test
-    void awesomeBinglusRemainsDisabledUntilSparkGatingEvidenceChanges() {
+    void awesomeBinglusIsSelectableAndGoodAfterOpeningNoteLoadoutIsOwned() {
         NoellesRoleCatalog.Entry entry = NoellesRoleCatalog.find(StrawCraft.id("awesome_binglus")).orElseThrow();
         Set<Identifier> runtimeSelectionIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
                 .map(org.caecorthus.strawcraft.role.StrawRoleDefinition::id)
                 .collect(Collectors.toSet());
 
         assertEquals(org.caecorthus.strawcraft.role.StrawFaction.GOOD, entry.faction());
-        assertEquals(NoellesRoleCatalog.Readiness.DISABLED, entry.readiness());
-        assertFalse(entry.firstRoundEligible());
-        assertFalse(entry.isRuntimeReady());
-        assertTrue(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
-        assertFalse(runtimeSelectionIds.contains(entry.id()));
+        assertEquals(NoellesRoleCatalog.Readiness.RUNTIME_READY, entry.readiness());
+        assertTrue(entry.firstRoundEligible());
+        assertTrue(entry.isRuntimeReady());
+        assertFalse(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
+        assertTrue(runtimeSelectionIds.contains(entry.id()));
     }
 
     @Test
@@ -166,6 +165,7 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("swapper"),
                 StrawCraft.id("phantom"),
                 StrawCraft.id("morphling"),
+                StrawCraft.id("the_insane_damned_paranoid_killer"),
                 StrawCraft.id("bomber"),
                 StrawCraft.id("scavenger"),
                 StrawCraft.id("assassin"),
@@ -176,6 +176,7 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("time_keeper"),
                 StrawCraft.id("undercover"),
                 StrawCraft.id("conductor"),
+                StrawCraft.id("awesome_binglus"),
                 StrawCraft.id("bartender"),
                 StrawCraft.id("noisemaker"),
                 StrawCraft.id("voodoo"),
@@ -245,6 +246,8 @@ class NoellesRoleCatalogTest {
         assertTrue(runtimeSelectionIds.contains(StrawCraft.id("jester")));
         assertTrue(runtimeSelectionIds.contains(StrawCraft.id("undercover")));
         assertTrue(runtimeSelectionIds.contains(StrawCraft.id("demon_hunter")));
+        assertTrue(runtimeSelectionIds.contains(StrawCraft.id("awesome_binglus")));
+        assertTrue(runtimeSelectionIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
     }
 
     @Test

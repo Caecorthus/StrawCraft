@@ -78,29 +78,29 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("swapper"), selected.get(firstKiller));
         assertEquals(StrawCraft.id("phantom"), selected.get(secondKiller));
         assertEquals(StrawCraft.id("morphling"), selected.get(thirdKiller));
-        assertEquals(StrawCraft.id("bomber"), selected.get(fourthKiller));
-        assertEquals(StrawCraft.id("assassin"), selected.get(fifthKiller));
+        assertEquals(StrawCraft.id("the_insane_damned_paranoid_killer"), selected.get(fourthKiller));
+        assertEquals(StrawCraft.id("bomber"), selected.get(fifthKiller));
         assertEquals(WatheRoleIds.VIGILANTE, selected.get(vigilante));
         assertEquals(StrawCraft.id("time_keeper"), selected.get(firstCivilian));
         assertEquals(StrawCraft.id("undercover"), selected.get(secondCivilian));
         assertEquals(StrawCraft.id("conductor"), selected.get(thirdCivilian));
-        assertEquals(StrawCraft.id("bartender"), selected.get(fourthCivilian));
-        assertEquals(StrawCraft.id("noisemaker"), selected.get(fifthCivilian));
-        assertEquals(StrawCraft.id("voodoo"), selected.get(sixthCivilian));
-        assertEquals(StrawCraft.id("coroner"), selected.get(seventhCivilian));
-        assertEquals(StrawCraft.id("recaller"), selected.get(eighthCivilian));
-        assertEquals(StrawCraft.id("toxicologist"), selected.get(ninthCivilian));
-        assertEquals(StrawCraft.id("reporter"), selected.get(tenthCivilian));
-        assertEquals(StrawCraft.id("professor"), selected.get(eleventhCivilian));
-        assertEquals(StrawCraft.id("attendant"), selected.get(twelfthCivilian));
-        assertEquals(StrawCraft.id("bodyguard"), selected.get(thirteenthCivilian));
-        assertEquals(StrawCraft.id("survival_master"), selected.get(fourteenthCivilian));
-        assertEquals(StrawCraft.id("engineer"), selected.get(fifteenthCivilian));
-        assertEquals(StrawCraft.id("spiritualist"), selected.get(sixteenthCivilian));
-        assertEquals(StrawCraft.id("detective"), selected.get(seventeenthCivilian));
-        assertEquals(StrawCraft.id("waiter"), selected.get(eighteenthCivilian));
-        assertEquals(StrawCraft.id("mermaid"), selected.get(nineteenthCivilian));
-        assertEquals(StrawCraft.id("demon_hunter"), selected.get(twentiethCivilian));
+        assertEquals(StrawCraft.id("awesome_binglus"), selected.get(fourthCivilian));
+        assertEquals(StrawCraft.id("bartender"), selected.get(fifthCivilian));
+        assertEquals(StrawCraft.id("noisemaker"), selected.get(sixthCivilian));
+        assertEquals(StrawCraft.id("voodoo"), selected.get(seventhCivilian));
+        assertEquals(StrawCraft.id("coroner"), selected.get(eighthCivilian));
+        assertEquals(StrawCraft.id("recaller"), selected.get(ninthCivilian));
+        assertEquals(StrawCraft.id("toxicologist"), selected.get(tenthCivilian));
+        assertEquals(StrawCraft.id("reporter"), selected.get(eleventhCivilian));
+        assertEquals(StrawCraft.id("professor"), selected.get(twelfthCivilian));
+        assertEquals(StrawCraft.id("attendant"), selected.get(thirteenthCivilian));
+        assertEquals(StrawCraft.id("bodyguard"), selected.get(fourteenthCivilian));
+        assertEquals(StrawCraft.id("survival_master"), selected.get(fifteenthCivilian));
+        assertEquals(StrawCraft.id("engineer"), selected.get(sixteenthCivilian));
+        assertEquals(StrawCraft.id("spiritualist"), selected.get(seventeenthCivilian));
+        assertEquals(StrawCraft.id("detective"), selected.get(eighteenthCivilian));
+        assertEquals(StrawCraft.id("waiter"), selected.get(nineteenthCivilian));
+        assertEquals(StrawCraft.id("mermaid"), selected.get(twentiethCivilian));
     }
 
     @Test
@@ -113,6 +113,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("swapper"),
                 StrawCraft.id("phantom"),
                 StrawCraft.id("morphling"),
+                StrawCraft.id("the_insane_damned_paranoid_killer"),
                 StrawCraft.id("bomber"),
                 StrawCraft.id("assassin"),
                 StrawCraft.id("scavenger"),
@@ -123,6 +124,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("time_keeper"),
                 StrawCraft.id("undercover"),
                 StrawCraft.id("conductor"),
+                StrawCraft.id("awesome_binglus"),
                 StrawCraft.id("bartender"),
                 StrawCraft.id("noisemaker"),
                 StrawCraft.id("voodoo"),
@@ -146,10 +148,10 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("pathogen"),
                 StrawCraft.id("taotie")
         ), candidateIds);
-        assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));
+        assertTrue(candidateIds.contains(StrawCraft.id("awesome_binglus")));
         assertFalse(candidateIds.contains(StrawCraft.id("timekeeper")));
         assertTrue(candidateIds.contains(StrawCraft.id("jester")));
-        assertFalse(candidateIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
+        assertTrue(candidateIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
     }
 
     @Test

@@ -23,7 +23,7 @@ public final class NoellesRoleCatalog {
             selectableKiller("swapper"),
             selectableKiller("phantom"),
             selectableKiller("morphling"),
-            disabledKiller("the_insane_damned_paranoid_killer"),
+            selectableKiller("the_insane_damned_paranoid_killer"),
             selectableKiller("bomber"),
             selectableKiller("assassin"),
             selectableKiller("scavenger"),
@@ -37,7 +37,7 @@ public final class NoellesRoleCatalog {
             selectableGood("conductor"),
             // Spark NoellesRoles registers Awesome Binglus and grants notes, but disables it at world load.
             // Spark 版 NoellesRoles 注册 Awesome Binglus 并发放便签，但在世界加载时禁用该职业。
-            disabledGood("awesome_binglus"),
+            selectableGood("awesome_binglus"),
             selectableGood("bartender"),
             selectableGood("noisemaker"),
             selectableGood("voodoo"),

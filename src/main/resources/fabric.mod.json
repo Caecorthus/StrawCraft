@@ -20,6 +20,9 @@
     "client": [
       "org.caecorthus.strawcraft.client.StrawCraftClient"
     ],
+    "voicechat": [
+      "org.caecorthus.strawcraft.voice.StrawCraftVoiceChatPlugin"
+    ],
     "cardinal-components": [
       "org.caecorthus.strawcraft.map.StrawCraftComponents"
     ]

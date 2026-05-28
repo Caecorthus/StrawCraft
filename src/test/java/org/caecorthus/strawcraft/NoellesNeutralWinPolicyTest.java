@@ -58,7 +58,7 @@ class NoellesNeutralWinPolicyTest {
     }
 
     @Test
-    void recordedNeutralClaimDoesNotOverrideOfficialWinnerSemantics() {
+    void recordedNeutralClaimOverridesLooseEndWinnerScreenSemantics() {
         UUID jester = UUID.randomUUID();
         NoellesRoleState state = new NoellesRoleState();
         state.recordNeutralWinClaim(new NoellesRoleState.NeutralWinClaim(
@@ -72,17 +72,33 @@ class NoellesNeutralWinPolicyTest {
                 NoellesNeutralWinPolicy.contributeRecordedNeutralWins(jester, state);
 
         assertFalse(contribution.suppressDefaultWin());
-        assertEquals(Optional.empty(), contribution.replacementDefaultWin());
-        assertTrue(contribution.extraWinners().isEmpty());
+        assertEquals(Optional.of(StrawWinEvents.DefaultWin.LOOSE_END), contribution.replacementDefaultWin());
+        assertEquals(1, contribution.extraWinners().size());
+        StrawWinEvents.ExtraWinner winner = contribution.extraWinners().iterator().next();
+        assertEquals(jester, winner.playerUuid());
+        assertEquals(JesterWinPolicy.JESTER_ROLE, winner.roleId());
     }
 
     @Test
-    void looseEndWinnerOverrideAllowsOnlyRuntimeOwnedNeutralClaims() {
+    void looseEndWinnerOverrideAllowsNoellesNeutralClaims() {
         assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(JesterWinPolicy.JESTER_ROLE));
+        assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(VultureBodyFeastPolicy.VULTURE_ROLE));
         assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(CorruptCopMomentPolicy.CORRUPT_COP_ROLE));
+        assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(PathogenWinPolicy.PATHOGEN_ROLE));
         assertTrue(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(TaotieSwallowPolicy.TAOTIE_ROLE));
-        assertFalse(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(VultureBodyFeastPolicy.VULTURE_ROLE));
         assertFalse(NoellesNeutralWinPolicy.canOverrideLooseEndWinner(StrawCraft.id("unknown_neutral")));
+    }
+
+    @Test
+    void winnerScreenPriorityMatchesNoellesNeutralDisplayOrder() {
+        assertTrue(NoellesNeutralWinPolicy.winnerScreenPriority(JesterWinPolicy.JESTER_ROLE)
+                < NoellesNeutralWinPolicy.winnerScreenPriority(VultureBodyFeastPolicy.VULTURE_ROLE));
+        assertTrue(NoellesNeutralWinPolicy.winnerScreenPriority(VultureBodyFeastPolicy.VULTURE_ROLE)
+                < NoellesNeutralWinPolicy.winnerScreenPriority(CorruptCopMomentPolicy.CORRUPT_COP_ROLE));
+        assertTrue(NoellesNeutralWinPolicy.winnerScreenPriority(CorruptCopMomentPolicy.CORRUPT_COP_ROLE)
+                < NoellesNeutralWinPolicy.winnerScreenPriority(PathogenWinPolicy.PATHOGEN_ROLE));
+        assertTrue(NoellesNeutralWinPolicy.winnerScreenPriority(PathogenWinPolicy.PATHOGEN_ROLE)
+                < NoellesNeutralWinPolicy.winnerScreenPriority(TaotieSwallowPolicy.TAOTIE_ROLE));
     }
 
     @Test

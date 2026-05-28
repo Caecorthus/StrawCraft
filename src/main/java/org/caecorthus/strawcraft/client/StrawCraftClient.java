@@ -19,6 +19,7 @@ import org.caecorthus.strawcraft.CoronerInspectPayload;
 import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
 import org.caecorthus.strawcraft.MorphlingCorpseTogglePayload;
 import org.caecorthus.strawcraft.MorphlingDisguisePayload;
+import org.caecorthus.strawcraft.NoellesNeutralWinResultPayload;
 import org.caecorthus.strawcraft.NoellesRoleStateComponent;
 import org.caecorthus.strawcraft.PathogenInfectionPayload;
 import org.caecorthus.strawcraft.PhantomInvisibilityPayload;
@@ -59,6 +60,8 @@ public final class StrawCraftClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         EntityRendererRegistry.register(StrawCraftEntities.THROWING_AXE, FlyingItemEntityRenderer::new);
+        ClientPlayNetworking.registerGlobalReceiver(NoellesNeutralWinResultPayload.ID, (payload, context) ->
+                NoellesNeutralWinClientState.accept(payload));
 
         mapVoteKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.strawcraft.map_vote",

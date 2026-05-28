@@ -19,6 +19,7 @@ class InsaneParanoidKillerFoundationArchitectureTest {
     private static final Path CATALOG = MAIN_ROOT.resolve("NoellesRoleCatalog.java");
     private static final Path INITIALIZER = MAIN_ROOT.resolve("StrawCraft.java");
     private static final Path CLIENT = MAIN_ROOT.resolve("client/StrawCraftClient.java");
+    private static final Path VOICE_PLUGIN = MAIN_ROOT.resolve("voice/StrawCraftVoiceChatPlugin.java");
     private static final Path MIXIN_CONFIG = Path.of("src/main/resources/strawcraft.mixins.json");
     private static final Path FABRIC_MOD = Path.of("src/main/resources/fabric.mod.json");
 
@@ -41,25 +42,26 @@ class InsaneParanoidKillerFoundationArchitectureTest {
     }
 
     @Test
-    void insaneParanoidKillerRemainsDisabledAndOutOfRuntimeSelection() throws IOException {
+    void insaneParanoidKillerIsSelectableAfterVoiceRuntimeIsWired() throws IOException {
         NoellesRoleCatalog.Entry entry = NoellesRoleCatalog.find(InsaneParanoidKillerPolicy.ROLE_ID).orElseThrow();
         Set<net.minecraft.util.Identifier> runtimeIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
                 .map(org.caecorthus.strawcraft.role.StrawRoleDefinition::id)
                 .collect(java.util.stream.Collectors.toSet());
         String catalog = Files.readString(CATALOG, StandardCharsets.UTF_8);
 
-        assertEquals(NoellesRoleCatalog.Readiness.DISABLED, entry.readiness());
-        assertFalse(entry.firstRoundEligible());
-        assertFalse(entry.isRuntimeReady());
-        assertTrue(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
-        assertFalse(runtimeIds.contains(entry.id()));
-        assertTrue(catalog.contains("disabledKiller(\"the_insane_damned_paranoid_killer\")"));
+        assertEquals(NoellesRoleCatalog.Readiness.RUNTIME_READY, entry.readiness());
+        assertTrue(entry.firstRoundEligible());
+        assertTrue(entry.isRuntimeReady());
+        assertFalse(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
+        assertTrue(runtimeIds.contains(entry.id()));
+        assertTrue(catalog.contains("selectableKiller(\"the_insane_damned_paranoid_killer\")"));
     }
 
     @Test
-    void noRuntimeVoicePluginOrClientHallucinationHookIsWired() throws IOException {
+    void voicePluginIsWiredWithoutClientHallucinationHook() throws IOException {
         String initializer = Files.readString(INITIALIZER, StandardCharsets.UTF_8);
         String client = Files.readString(CLIENT, StandardCharsets.UTF_8);
+        String voicePlugin = Files.readString(VOICE_PLUGIN, StandardCharsets.UTF_8);
         String mixinConfig = Files.readString(MIXIN_CONFIG, StandardCharsets.UTF_8);
         String fabricMod = Files.readString(FABRIC_MOD, StandardCharsets.UTF_8);
 
@@ -67,10 +69,18 @@ class InsaneParanoidKillerFoundationArchitectureTest {
         assertFalse(client.contains("InsaneParanoidKiller"));
         assertFalse(client.contains("insaneSeesMorphs"));
         assertFalse(mixinConfig.contains("InsaneParanoidKiller"));
-        assertFalse(fabricMod.contains("VoicechatPlugin"));
+        assertTrue(fabricMod.contains("\"voicechat\""));
+        assertTrue(fabricMod.contains("org.caecorthus.strawcraft.voice.StrawCraftVoiceChatPlugin"));
+        assertTrue(voicePlugin.contains("implements VoicechatPlugin"));
+        assertTrue(voicePlugin.contains("MicrophonePacketEvent.class"));
+        assertTrue(voicePlugin.contains("sendLocationalSoundPacketTo"));
+        assertTrue(voicePlugin.contains("api.createPosition(sender.getX(), sender.getY(), sender.getZ())"));
         assertFalse(fabricMod.contains("NoellesrolesVoiceChatPlugin"));
 
         for (Path path : mainJavaSources()) {
+            if (path.equals(VOICE_PLUGIN)) {
+                continue;
+            }
             String source = Files.readString(path, StandardCharsets.UTF_8);
             assertFalse(source.contains("MicrophonePacketEvent"), path + " must not wire Simple Voice Chat microphone hooks");
             assertFalse(source.contains("VoicechatPlugin"), path + " must not wire Simple Voice Chat plugins");

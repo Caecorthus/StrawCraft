@@ -29,6 +29,7 @@
     "client.MorphlingPlayerEntityRendererMixin",
     "client.MorphlingRoleNameRendererMixin",
     "client.PlayerBodyEntityRendererMixin",
+    "client.RoleAnnouncementTextMixin",
     "client.SpiritualistKeyboardInputMixin",
     "client.VanillaInventoryScreenMixin"
   ],

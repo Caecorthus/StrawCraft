@@ -70,7 +70,12 @@ class VultureBodyFeastPolicyTest {
         StrawWinEvents.WinContribution contribution =
                 NoellesNeutralWinPolicy.contributeRecordedNeutralWins(vulture, state);
         assertFalse(contribution.suppressDefaultWin());
-        assertTrue(contribution.extraWinners().isEmpty());
+        assertEquals(Optional.of(StrawWinEvents.DefaultWin.LOOSE_END), contribution.replacementDefaultWin());
+        assertEquals(1, contribution.extraWinners().size());
+        StrawWinEvents.ExtraWinner winner = contribution.extraWinners().iterator().next();
+        assertEquals(vulture, winner.playerUuid());
+        assertEquals(VultureBodyFeastPolicy.VULTURE_ROLE, winner.roleId());
+        assertEquals(VultureBodyFeastPolicy.BODY_FEAST_TRIGGER, winner.triggerId());
     }
 
     @Test

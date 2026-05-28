@@ -146,13 +146,13 @@ class RoleSelectionPolicyTest {
 
     @Test
     void runtimeNoellesDefinitionsAssignImplementedRolesButSkipDisabledAndDeferredRoles() {
-        List<UUID> players = players(30);
+        List<UUID> players = players(33);
         StrawRoleSelectionContext context = new StrawRoleSelectionContext(
                 players,
-                10,
+                11,
                 1,
                 0,
-                19,
+                21,
                 NoellesRoleCatalog.runtimeSelectionDisabledIds(),
                 Map.of()
         );
@@ -164,6 +164,7 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("swapper")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("phantom")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("morphling")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("the_insane_damned_paranoid_killer")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("bomber")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("assassin")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("scavenger")));
@@ -174,6 +175,7 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("time_keeper")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("undercover")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("conductor")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("awesome_binglus")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("bartender")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("noisemaker")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("voodoo")));
@@ -190,10 +192,10 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("survival_master")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("waiter")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("mermaid")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("demon_hunter")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("jester")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("vulture")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("timekeeper")));
-        assertFalse(plan.assignments().containsValue(StrawCraft.id("awesome_binglus")));
     }
 
     @Test
