@@ -142,6 +142,29 @@ class NoellesRuntimeRoleSelectionTest {
     }
 
     @Test
+    void legacyTimekeeperAliasStaysDesignRequiredWhileOfficialTimeKeeperIsRuntimeSelectable() {
+        Identifier legacy = StrawCraft.id("timekeeper");
+        Identifier official = StrawCraft.id("time_keeper");
+        Set<Identifier> candidateIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
+                .map(StrawRoleDefinition::id)
+                .collect(java.util.stream.Collectors.toSet());
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(linkedAssignments(
+                entry(new UUID(0, 1), WatheRoleIds.CIVILIAN),
+                entry(new UUID(0, 2), WatheRoleIds.KILLER)
+        )).assignments();
+
+        assertEquals(NoellesRoleCatalog.Readiness.RUNTIME_READY, NoellesRoleCatalog.find(official).orElseThrow().readiness());
+        assertEquals(NoellesRoleCatalog.Readiness.DESIGN_REQUIRED, NoellesRoleCatalog.find(legacy).orElseThrow().readiness());
+        assertTrue(candidateIds.contains(official));
+        assertFalse(candidateIds.contains(legacy));
+        assertTrue(selected.containsValue(official));
+        assertFalse(selected.containsValue(legacy));
+        assertEquals(1, selected.values().stream()
+                .filter(roleId -> roleId.equals(official) || roleId.equals(legacy))
+                .count());
+    }
+
+    @Test
     void runtimeSelectionReplacesOfficialLooseEndSeatWithVulture() {
         UUID civilian = new UUID(0, 1);
         UUID killer = new UUID(0, 2);
