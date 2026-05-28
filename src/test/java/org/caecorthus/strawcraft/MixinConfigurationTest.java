@@ -255,6 +255,24 @@ class MixinConfigurationTest {
     }
 
     @Test
+    void playerMoodTaskCompletionRewardRunsAfterOfficialNotificationWithoutCancellingIt() throws IOException {
+        String config = readMixinConfig();
+        String mixin = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/mixin/PlayerMoodComponentMixin.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(config.contains("\"PlayerMoodComponentMixin\""));
+        assertTrue(mixin.contains("method = \"serverTick\""));
+        assertTrue(mixin.contains("ServerPlayNetworking;send(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/packet/CustomPayload;)V"));
+        assertTrue(mixin.contains("shift = At.Shift.AFTER"));
+        assertTrue(mixin.contains("require = 0"));
+        assertTrue(mixin.contains("TaskCompletionRewardPayout.payoutTaskCompletion(serverPlayer)"));
+        assertFalse(mixin.contains("cancellable = true"));
+        assertFalse(mixin.contains("callback.cancel()"));
+    }
+
+    @Test
     void shopEntryBuilderCannotForkOrderByPlayerSpecificState() throws IOException {
         String events = Files.readString(
                 Path.of("src/main/java/org/caecorthus/strawcraft/api/StrawShopEvents.java"),

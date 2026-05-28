@@ -11,6 +11,7 @@
     "LivingEntityMixin",
     "PlayerBodyEntityMixin",
     "PlayerEntityMixin",
+    "PlayerMoodComponentMixin",
     "PlayerShopComponentMixin",
     "RevolverItemMixin",
     "ServerPlayerEntityMixin"

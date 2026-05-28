@@ -31,10 +31,34 @@ final class MixinTargetBytecode {
             String invokedName,
             String invokedDescriptor
     ) {
+        return countMethodInvocations(
+                ownerClass,
+                methodName,
+                descriptor,
+                invokedOwner,
+                invokedName,
+                invokedDescriptor
+        ) > 0;
+    }
+
+    static int countMethodInvocations(
+            String ownerClass,
+            String methodName,
+            String descriptor,
+            String invokedOwner,
+            String invokedName,
+            String invokedDescriptor
+    ) {
         MethodInvocationSearchVisitor visitor =
                 new MethodInvocationSearchVisitor(methodName, descriptor, invokedOwner, invokedName, invokedDescriptor);
         read(ownerClass, visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-        return visitor.found();
+        return visitor.count();
+    }
+
+    static int countTypeCreations(String ownerClass, String methodName, String descriptor, String createdOwner) {
+        TypeCreationSearchVisitor visitor = new TypeCreationSearchVisitor(methodName, descriptor, createdOwner);
+        read(ownerClass, visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        return visitor.count();
     }
 
     static boolean hasMixinTarget(String ownerClass, String targetOwnerClass) {
@@ -158,7 +182,7 @@ final class MixinTargetBytecode {
         private final String invokedOwner;
         private final String invokedName;
         private final String invokedDescriptor;
-        private boolean found;
+        private int count;
 
         private MethodInvocationSearchVisitor(
                 String methodName,
@@ -193,14 +217,48 @@ final class MixinTargetBytecode {
                     if (invokedOwner.equals(owner)
                             && invokedName.equals(name)
                             && invokedDescriptor.equals(descriptor)) {
-                        found = true;
+                        count++;
                     }
                 }
             };
         }
 
-        private boolean found() {
-            return found;
+        private int count() {
+            return count;
+        }
+    }
+
+    private static final class TypeCreationSearchVisitor extends ClassVisitor {
+        private final String methodName;
+        private final String descriptor;
+        private final String createdOwner;
+        private int count;
+
+        private TypeCreationSearchVisitor(String methodName, String descriptor, String createdOwner) {
+            super(ASM9);
+            this.methodName = methodName;
+            this.descriptor = descriptor;
+            this.createdOwner = createdOwner;
+        }
+
+        @Override
+        public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+            if (!methodName.equals(name) || !this.descriptor.equals(descriptor)) {
+                return null;
+            }
+
+            return new MethodVisitor(ASM9) {
+                @Override
+                public void visitTypeInsn(int opcode, String type) {
+                    if (createdOwner.equals(type)) {
+                        count++;
+                    }
+                }
+            };
+        }
+
+        private int count() {
+            return count;
         }
     }
 
@@ -368,18 +426,30 @@ final class MixinTargetBytecode {
 
         @Override
         public AnnotationVisitor visitArray(String name) {
-            if (!"method".equals(name)) {
-                return null;
+            if ("method".equals(name)) {
+                return new AnnotationVisitor(ASM9) {
+                    @Override
+                    public void visit(String name, Object value) {
+                        if (value instanceof String methodTarget) {
+                            methodTargets.add(methodTarget);
+                        }
+                    }
+                };
             }
 
-            return new AnnotationVisitor(ASM9) {
-                @Override
-                public void visit(String name, Object value) {
-                    if (value instanceof String methodTarget) {
-                        methodTargets.add(methodTarget);
+            if ("at".equals(name)) {
+                return new AnnotationVisitor(ASM9) {
+                    @Override
+                    public AnnotationVisitor visitAnnotation(String name, String descriptor) {
+                        if (!"Lorg/spongepowered/asm/mixin/injection/At;".equals(descriptor)) {
+                            return null;
+                        }
+                        return atAnnotationVisitor();
                     }
-                }
-            };
+                };
+            }
+
+            return null;
         }
 
         @Override
@@ -388,6 +458,10 @@ final class MixinTargetBytecode {
                 return null;
             }
 
+            return atAnnotationVisitor();
+        }
+
+        private AnnotationVisitor atAnnotationVisitor() {
             return new AnnotationVisitor(ASM9) {
                 @Override
                 public void visit(String name, Object value) {
