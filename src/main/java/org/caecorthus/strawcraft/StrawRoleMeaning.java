@@ -48,6 +48,10 @@ public final class StrawRoleMeaning {
         return matchesRoleId(role, StrawCraft.id("waiter"));
     }
 
+    public static boolean usesSilencerShop(Role role) {
+        return matchesRoleId(role, StrawCraft.id("silencer"));
+    }
+
     public static boolean usesPoisonerShop(Role role) {
         return matchesRoleId(role, StrawCraft.id("poisoner"));
     }

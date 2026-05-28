@@ -41,6 +41,9 @@ public final class PlayerShopCatalog {
         if (StrawRoleMeaning.usesWaiterShop(role)) {
             return waiterPresentation(materializedEntries);
         }
+        if (StrawRoleMeaning.usesSilencerShop(role)) {
+            return SilencerShopLoadout.presentation(materializedEntries);
+        }
         if (StrawRoleMeaning.usesPoisonerShop(role)) {
             return PoisonerShopLoadout.presentation(materializedEntries);
         }
@@ -77,7 +80,8 @@ public final class PlayerShopCatalog {
                     && !ReporterShopLoadout.isReporterNoteEntry(entry)
                     && !BomberTimedBombRuntime.isTimedBombEntry(entry)
                     && !BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)
-                    && !WaiterShopLoadout.isWaiterServiceEntry(entry)) {
+                    && !WaiterShopLoadout.isWaiterServiceEntry(entry)
+                    && !SilencerShopLoadout.isSilentPsychoEntry(entry)) {
                 visibleEntries.add(new VisibleEntry(index, entry));
             }
         }
@@ -184,6 +188,7 @@ public final class PlayerShopCatalog {
                 || ReporterShopLoadout.isReporterNoteEntry(entry)
                 || BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)
                 || WaiterShopLoadout.isWaiterServiceEntry(entry)
+                || SilencerShopLoadout.isSilentPsychoEntry(entry)
                 || matches(entry, "knife", stack -> stack.isOf(WatheItems.KNIFE))
                 || matches(entry, "p320", stack -> false)
                 || matches(entry, "revolver", stack -> stack.isOf(WatheItems.REVOLVER))
@@ -198,6 +203,7 @@ public final class PlayerShopCatalog {
                 || BomberTimedBombRuntime.isTimedBombEntry(entry)
                 || BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)
                 || WaiterShopLoadout.isWaiterServiceEntry(entry)
+                || SilencerShopLoadout.isSilentPsychoEntry(entry)
                 || matches(entry, "revolver", stack -> stack.isOf(WatheItems.REVOLVER))
                 || matches(entry, "grenade", stack -> stack.isOf(WatheItems.GRENADE))
                 || matches(entry, "poison_vial", stack -> stack.isOf(WatheItems.POISON_VIAL))

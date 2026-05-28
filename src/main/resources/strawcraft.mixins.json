@@ -12,6 +12,7 @@
     "PlayerBodyEntityMixin",
     "PlayerEntityMixin",
     "PlayerMoodComponentMixin",
+    "PlayerPsychoComponentMixin",
     "PlayerShopComponentMixin",
     "RevolverItemMixin",
     "ServerPlayerEntityMixin"

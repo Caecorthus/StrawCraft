@@ -26,7 +26,7 @@ public final class NoellesRoleCatalog {
             killer("assassin"),
             selectableKiller("scavenger"),
             killer("serial_killer"),
-            killer("silencer"),
+            selectableKiller("silencer"),
             selectableKiller("poisoner"),
             killer("bandit"),
             selectableGood("timekeeper"),

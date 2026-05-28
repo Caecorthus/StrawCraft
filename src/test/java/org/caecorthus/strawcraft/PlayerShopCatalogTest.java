@@ -150,19 +150,22 @@ class PlayerShopCatalogTest {
         ShopEntry grenade = entry("grenade", 350, ShopEntry.Type.WEAPON);
         ShopEntry poison = entry("poison_vial", 75, ShopEntry.Type.POISON);
         ShopEntry scorpion = entry("scorpion", 75, ShopEntry.Type.POISON);
+        ShopEntry psycho = entry("psycho_mode", 150, ShopEntry.Type.POISON);
         ShopEntry timedBomb = entry("timed_bomb", 300, ShopEntry.Type.WEAPON);
+        ShopEntry silentPsycho = entry(SilencerShopLoadout.SILENT_PSYCHO_ENTRY_ID, 350, ShopEntry.Type.POISON);
 
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
                 role("killer", true, false),
-                List.of(knife, p320, grenade, poison, scorpion, timedBomb)
+                List.of(knife, p320, grenade, poison, scorpion, psycho, timedBomb, silentPsycho)
         );
 
-        assertEquals(List.of(knife, p320, grenade, poison, scorpion), presentation.entries());
-        assertEquals(List.of(0, 1, 2, 3, 4), presentation.visibleEntries().stream()
+        assertEquals(List.of(knife, p320, grenade, poison, scorpion, psycho), presentation.entries());
+        assertEquals(List.of(0, 1, 2, 3, 4, 5), presentation.visibleEntries().stream()
                 .map(PlayerShopCatalog.VisibleEntry::wathePurchaseIndex)
                 .toList());
         assertEquals("p320", StrawShopEntry.idFor(presentation.entries().get(1)));
-        assertFalse(presentation.allowsWathePurchaseIndex(5));
+        assertFalse(presentation.allowsWathePurchaseIndex(6));
+        assertFalse(presentation.allowsWathePurchaseIndex(7));
     }
 
     @Test
@@ -202,6 +205,47 @@ class PlayerShopCatalogTest {
         assertFalse(presentation.allowsWathePurchaseIndex(8));
         assertEquals(75, poison.price());
         assertEquals(75, scorpion.price());
+    }
+
+    @Test
+    void silencerPresentationOnlyExposesSilentPsychoEntryAtSparkPriceWithOriginalPurchaseIndex() {
+        ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
+        ShopEntry officialPsycho = entry("psycho_mode", 150, ShopEntry.Type.POISON);
+        ShopEntry silentPsycho = entry(SilencerShopLoadout.SILENT_PSYCHO_ENTRY_ID, 350, ShopEntry.Type.POISON);
+        ShopEntry lockpick = entry("lockpick", 50, ShopEntry.Type.TOOL);
+        List<ShopEntry> entries = List.of(knife, officialPsycho, silentPsycho, lockpick);
+
+        PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
+                role("silencer", true, false),
+                entries
+        );
+
+        assertEquals(List.of(silentPsycho), presentation.entries());
+        assertEquals(List.of(SilencerShopLoadout.SILENT_PSYCHO_PRICE), presentation.entries().stream()
+                .map(ShopEntry::price)
+                .toList());
+        assertEquals(List.of(2), presentation.visibleEntries().stream()
+                .map(PlayerShopCatalog.VisibleEntry::wathePurchaseIndex)
+                .toList());
+        assertFalse(presentation.allowsWathePurchaseIndex(0));
+        assertFalse(presentation.allowsWathePurchaseIndex(1));
+        assertTrue(presentation.allowsWathePurchaseIndex(2));
+        assertFalse(presentation.allowsWathePurchaseIndex(3));
+    }
+
+    @Test
+    void nonSilencerRolesCannotSeeOrBuyHiddenSilentPsychoEntryByStaleIndex() {
+        ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
+        ShopEntry silentPsycho = entry(SilencerShopLoadout.SILENT_PSYCHO_ENTRY_ID, 350, ShopEntry.Type.POISON);
+        ShopEntry poison = entry("poison_vial", 75, ShopEntry.Type.POISON);
+        List<ShopEntry> entries = List.of(knife, silentPsycho, poison);
+
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("killer", true, false), entries, 1));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("bomber", true, false), entries, 1));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("scavenger", true, false), entries, 1));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("poisoner", true, false), entries, 1));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("waiter", false, true), entries, 1));
+        assertTrue(PlayerShopCatalog.allowsPurchaseForRole(role("silencer", true, false), entries, 1));
     }
 
     @Test
