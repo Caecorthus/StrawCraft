@@ -17,6 +17,8 @@ import net.minecraft.util.hit.EntityHitResult;
 import org.caecorthus.strawcraft.AssassinGuessPolicy;
 import org.caecorthus.strawcraft.CoronerInspectPayload;
 import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
+import org.caecorthus.strawcraft.MorphlingCorpseTogglePayload;
+import org.caecorthus.strawcraft.MorphlingDisguisePayload;
 import org.caecorthus.strawcraft.NoellesRoleStateComponent;
 import org.caecorthus.strawcraft.PathogenInfectionPayload;
 import org.caecorthus.strawcraft.PhantomInvisibilityPayload;
@@ -46,6 +48,8 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding spiritualistProjectionKey;
     private static KeyBinding pathogenInfectionKey;
     private static KeyBinding assassinGuessKey;
+    private static KeyBinding morphlingDisguiseKey;
+    private static KeyBinding morphlingCorpseKey;
     private static UUID pendingSwapperTarget;
     private static boolean wasVotingActive;
     private static boolean autoOpenedVotingScreen;
@@ -126,6 +130,18 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_Y,
                 "category.strawcraft.keybinds"
         ));
+        morphlingDisguiseKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.morphling_disguise",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_M,
+                "category.strawcraft.keybinds"
+        ));
+        morphlingCorpseKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.morphling_corpse",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_C,
+                "category.strawcraft.keybinds"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVotingScreen);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickDetectiveInvestigation);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickCoronerInspection);
@@ -138,6 +154,8 @@ public final class StrawCraftClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickSpiritualistProjection);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPathogenInfection);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickAssassinGuess);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickMorphlingDisguise);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickMorphlingCorpse);
     }
 
     private static void tickVotingScreen(MinecraftClient client) {
@@ -375,5 +393,39 @@ public final class StrawCraftClient implements ClientModInitializer {
         }
 
         client.setScreen(new AssassinGuessScreen());
+    }
+
+    private static void tickMorphlingDisguise(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (!morphlingDisguiseKey.wasPressed()) {
+            return;
+        }
+
+        if (!(client.crosshairTarget instanceof EntityHitResult hitResult)
+                || !(hitResult.getEntity() instanceof PlayerEntity target)
+                || target == client.player) {
+            client.player.sendMessage(Text.translatable("message.strawcraft.morphling.select_target")
+                    .formatted(Formatting.YELLOW), true);
+            return;
+        }
+
+        // Morphling sends only the aimed player's UUID; the server owns role, target, timers, and cooldown checks.
+        // 变形者只发送准星指向玩家的 UUID；身份、目标、计时器和冷却判定都由服务端掌控。
+        ClientPlayNetworking.send(new MorphlingDisguisePayload(target.getUuid()));
+    }
+
+    private static void tickMorphlingCorpse(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (morphlingCorpseKey.wasPressed()) {
+            // Corpse mode sends only toggle intent; the server owns role, life, swallowed, and synced visual state.
+            // 尸体模式只发送切换意图；身份、生存、吞噬状态和同步视觉状态都由服务端掌控。
+            ClientPlayNetworking.send(new MorphlingCorpseTogglePayload());
+        }
     }
 }

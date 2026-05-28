@@ -6,6 +6,8 @@ import dev.doctor4t.wathe.game.GameFunctions;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -79,7 +81,8 @@ public final class MorphlingDisguiseRuntime {
         GameWorldComponent game = GameWorldComponent.KEY.get(world);
         if (!game.isRunning()
                 || !isMorphlingRole(game.getRole(morphling))
-                || !GameFunctions.isPlayerAliveAndSurvival(morphling)) {
+                || !GameFunctions.isPlayerAliveAndSurvival(morphling)
+                || isSwallowed(morphling)) {
             return;
         }
 
@@ -118,6 +121,9 @@ public final class MorphlingDisguiseRuntime {
             }
             return;
         }
+        if (current.corpseMode()) {
+            applyCorpseModeEffect(morphling);
+        }
 
         boolean targetStillValid = current.disguiseUuid()
                 .filter(targetUuid -> disguiseTargetStillValid(world, game, morphling, targetUuid))
@@ -130,6 +136,12 @@ public final class MorphlingDisguiseRuntime {
             roleState.setAbilityCooldown(MorphlingDisguisePolicy.ABILITY_ID, world.getTime(), MorphlingDisguisePolicy.RECOVERY_TICKS);
         }
         roleState.setMorphlingDisguiseState(next);
+    }
+
+    private static void applyCorpseModeEffect(ServerPlayerEntity morphling) {
+        // Corpse mode is a visual fake-death stance; movement penalty is reapplied server-side while active.
+        // 尸体模式只是伪装死亡姿态；移动惩罚在启用期间持续由服务端补发。
+        morphling.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 4, 2, true, false, false));
     }
 
     private static boolean disguiseTargetStillValid(

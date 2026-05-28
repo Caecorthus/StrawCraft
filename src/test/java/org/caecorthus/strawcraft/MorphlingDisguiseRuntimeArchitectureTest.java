@@ -19,6 +19,7 @@ class MorphlingDisguiseRuntimeArchitectureTest {
     private static final Path CORPSE_PAYLOAD = Path.of("src/main/java/org/caecorthus/strawcraft/MorphlingCorpseTogglePayload.java");
     private static final Path CLIENT = Path.of("src/main/java/org/caecorthus/strawcraft/client/StrawCraftClient.java");
     private static final Path MOD_INITIALIZER = Path.of("src/main/java/org/caecorthus/strawcraft/StrawCraft.java");
+    private static final Path MIXIN_CONFIG = Path.of("src/main/resources/strawcraft.mixins.json");
 
     @Test
     void payloadsCarryOnlyServerValidatedIntent() throws IOException {
@@ -64,23 +65,46 @@ class MorphlingDisguiseRuntimeArchitectureTest {
         assertTrue(runtime.contains("MorphlingDisguisePolicy.tick"));
         assertTrue(runtime.contains("roleState.setAbilityCooldown(MorphlingDisguisePolicy.ABILITY_ID"));
         assertTrue(runtime.contains("isTaotieSwallowed()"));
+        assertTrue(runtime.contains("isSwallowed(morphling)"));
+        assertTrue(runtime.contains("StatusEffects.SLOWNESS"));
         assertTrue(runtime.indexOf("MorphlingDisguisePolicy.validateStart") < runtime.indexOf("MorphlingDisguisePolicy.startMorph"));
     }
 
     @Test
-    void commonRegistrationIsServerOnlyAndMorphlingStaysOutOfRuntimeSelection() throws IOException {
-        String initializer = Files.readString(MOD_INITIALIZER, StandardCharsets.UTF_8);
+    void clientSendsOnlyAimedPlayerDisguiseAndEmptyCorpseToggleIntent() throws IOException {
         String client = Files.readString(CLIENT, StandardCharsets.UTF_8);
+
+        assertTrue(client.contains("MorphlingDisguisePayload"));
+        assertTrue(client.contains("MorphlingCorpseTogglePayload"));
+        assertTrue(client.contains("key.strawcraft.morphling_disguise"));
+        assertTrue(client.contains("key.strawcraft.morphling_corpse"));
+        assertTrue(client.contains("ClientPlayNetworking.send(new MorphlingDisguisePayload(target.getUuid()))"));
+        assertTrue(client.contains("ClientPlayNetworking.send(new MorphlingCorpseTogglePayload())"));
+    }
+
+    @Test
+    void clientRendererHooksCoverMorphlingPlayableMvpVisuals() throws IOException {
+        String mixinConfig = Files.readString(MIXIN_CONFIG, StandardCharsets.UTF_8);
+
+        assertTrue(mixinConfig.contains("\"client.MorphlingPlayerEntityRendererMixin\""));
+        assertTrue(mixinConfig.contains("\"client.MorphlingEntityRenderDispatcherMixin\""));
+        assertTrue(mixinConfig.contains("\"client.MorphlingCorpseAnglesMixin\""));
+        assertTrue(mixinConfig.contains("\"client.MorphlingCapeFeatureRendererMixin\""));
+        assertTrue(mixinConfig.contains("\"client.MorphlingElytraFeatureRendererMixin\""));
+        assertTrue(mixinConfig.contains("\"client.MorphlingRoleNameRendererMixin\""));
+    }
+
+    @Test
+    void commonRegistrationAndClientLoopMakeMorphlingRuntimeSelectable() throws IOException {
+        String initializer = Files.readString(MOD_INITIALIZER, StandardCharsets.UTF_8);
         Set<net.minecraft.util.Identifier> runtimeIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
                 .map(org.caecorthus.strawcraft.role.StrawRoleDefinition::id)
                 .collect(Collectors.toSet());
 
         assertTrue(initializer.contains("MorphlingDisguiseRuntime.register()"));
-        assertFalse(client.contains("MorphlingDisguisePayload"));
-        assertFalse(client.contains("MorphlingCorpseTogglePayload"));
-        assertEquals(NoellesRoleCatalog.Readiness.DESIGN_REQUIRED,
+        assertEquals(NoellesRoleCatalog.Readiness.RUNTIME_READY,
                 NoellesRoleCatalog.find(StrawCraft.id("morphling")).orElseThrow().readiness());
-        assertFalse(runtimeIds.contains(StrawCraft.id("morphling")));
+        assertTrue(runtimeIds.contains(StrawCraft.id("morphling")));
     }
 
     @Test

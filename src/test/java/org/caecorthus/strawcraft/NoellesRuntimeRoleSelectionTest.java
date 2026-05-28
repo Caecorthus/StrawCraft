@@ -42,6 +42,7 @@ class NoellesRuntimeRoleSelectionTest {
         UUID seventeenthCivilian = new UUID(0, 22);
         UUID eighteenthCivilian = new UUID(0, 23);
         UUID nineteenthCivilian = new UUID(0, 24);
+        UUID fifthKiller = new UUID(0, 25);
         Map<UUID, Identifier> officialAssignments = linkedAssignments(
                 entry(firstCivilian, WatheRoleIds.CIVILIAN),
                 entry(firstKiller, WatheRoleIds.KILLER),
@@ -66,15 +67,17 @@ class NoellesRuntimeRoleSelectionTest {
                 entry(sixteenthCivilian, WatheRoleIds.CIVILIAN),
                 entry(seventeenthCivilian, WatheRoleIds.CIVILIAN),
                 entry(eighteenthCivilian, WatheRoleIds.CIVILIAN),
-                entry(nineteenthCivilian, WatheRoleIds.CIVILIAN)
+                entry(nineteenthCivilian, WatheRoleIds.CIVILIAN),
+                entry(fifthKiller, WatheRoleIds.KILLER)
         );
 
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
 
         assertEquals(StrawCraft.id("swapper"), selected.get(firstKiller));
         assertEquals(StrawCraft.id("phantom"), selected.get(secondKiller));
-        assertEquals(StrawCraft.id("bomber"), selected.get(thirdKiller));
-        assertEquals(StrawCraft.id("assassin"), selected.get(fourthKiller));
+        assertEquals(StrawCraft.id("morphling"), selected.get(thirdKiller));
+        assertEquals(StrawCraft.id("bomber"), selected.get(fourthKiller));
+        assertEquals(StrawCraft.id("assassin"), selected.get(fifthKiller));
         assertEquals(WatheRoleIds.VIGILANTE, selected.get(vigilante));
         assertEquals(StrawCraft.id("time_keeper"), selected.get(firstCivilian));
         assertEquals(StrawCraft.id("undercover"), selected.get(secondCivilian));
@@ -106,6 +109,7 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(Set.of(
                 StrawCraft.id("swapper"),
                 StrawCraft.id("phantom"),
+                StrawCraft.id("morphling"),
                 StrawCraft.id("bomber"),
                 StrawCraft.id("assassin"),
                 StrawCraft.id("scavenger"),

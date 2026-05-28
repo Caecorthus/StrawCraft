@@ -20,6 +20,12 @@
   ],
   "client": [
     "client.InventoryShopTabMixin",
+    "client.MorphlingCapeFeatureRendererMixin",
+    "client.MorphlingCorpseAnglesMixin",
+    "client.MorphlingElytraFeatureRendererMixin",
+    "client.MorphlingEntityRenderDispatcherMixin",
+    "client.MorphlingPlayerEntityRendererMixin",
+    "client.MorphlingRoleNameRendererMixin",
     "client.PlayerBodyEntityRendererMixin",
     "client.VanillaInventoryScreenMixin"
   ],

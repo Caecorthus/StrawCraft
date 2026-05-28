@@ -1,5 +1,8 @@
 {
   "category.strawcraft.keybinds": "StrawCraft",
+  "key.strawcraft.morphling_disguise": "变形者伪装",
+  "key.strawcraft.morphling_corpse": "变形者尸体模式",
+  "message.strawcraft.morphling.select_target": "请准星指向一名玩家来变形。",
   "key.strawcraft.spiritualist_project": "通灵者投射",
   "key.strawcraft.assassin_guess": "刺客猜测",
   "message.strawcraft.assassin.correct": "猜对了：%s 已被刺杀。",

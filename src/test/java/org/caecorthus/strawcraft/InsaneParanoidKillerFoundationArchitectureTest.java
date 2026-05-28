@@ -66,8 +66,7 @@ class InsaneParanoidKillerFoundationArchitectureTest {
         assertFalse(initializer.contains("InsaneParanoidKiller"));
         assertFalse(client.contains("InsaneParanoidKiller"));
         assertFalse(client.contains("insaneSeesMorphs"));
-        assertFalse(mixinConfig.contains("RoleNameRenderer"));
-        assertFalse(mixinConfig.contains("Morphling"));
+        assertFalse(mixinConfig.contains("InsaneParanoidKiller"));
         assertFalse(fabricMod.contains("VoicechatPlugin"));
         assertFalse(fabricMod.contains("NoellesrolesVoiceChatPlugin"));
 
