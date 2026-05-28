@@ -35,7 +35,8 @@ class NoellesRoleCatalogTest {
             "detective",
             "survival_master",
             "waiter",
-            "mermaid"
+            "mermaid",
+            "vulture"
     );
     private static final Set<String> EXPECTED_DESIGN_REQUIRED_ROLE_PATHS = Set.of(
             "morphling",
@@ -45,7 +46,6 @@ class NoellesRoleCatalogTest {
             "time_keeper",
             "spiritualist",
             "demon_hunter",
-            "vulture",
             "corrupt_cop",
             "pathogen",
             "taotie"
@@ -153,7 +153,8 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("detective"),
                 StrawCraft.id("survival_master"),
                 StrawCraft.id("waiter"),
-                StrawCraft.id("mermaid")
+                StrawCraft.id("mermaid"),
+                StrawCraft.id("vulture")
         ), runtimeIds);
     }
 

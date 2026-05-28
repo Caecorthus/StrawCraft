@@ -72,16 +72,29 @@ public final class NoellesRuntimeRoleSelection {
         List<UUID> players = orderedPlayers(officialAssignments);
         Map<UUID, Identifier> preservedAssignments = preservedAssignments(officialAssignments);
         List<StrawRoleDefinition> definitions = selectionDefinitions(runtimeDefinitions);
+        Set<Identifier> selectionDisabledRoles = selectionDisabledRoles(disabledRoles, preservedAssignments);
         StrawRoleSelectionContext context = new StrawRoleSelectionContext(
                 players,
                 countFactionSeats(officialAssignments, StrawFaction.KILLER),
-                0,
+                countFactionSeats(officialAssignments, StrawFaction.NEUTRAL),
                 0,
                 countGoodSeats(officialAssignments),
-                disabledRoles,
+                selectionDisabledRoles,
                 preservedAssignments
         );
         return RoleSelectionPolicy.assign(context, definitions);
+    }
+
+    private static Set<Identifier> selectionDisabledRoles(
+            Set<Identifier> disabledRoles,
+            Map<UUID, Identifier> preservedAssignments
+    ) {
+        // Disabled gates block new selection, not explicit non-vanilla assignments already present.
+        // 禁用门槛只阻止新分配，不覆盖已经存在的显式非原版职业。
+        Set<Identifier> preservedRoleIds = Set.copyOf(preservedAssignments.values());
+        return disabledRoles.stream()
+                .filter(roleId -> !preservedRoleIds.contains(roleId))
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     private static List<StrawRoleDefinition> selectionDefinitions(List<StrawRoleDefinition> runtimeDefinitions) {
@@ -89,6 +102,7 @@ public final class NoellesRuntimeRoleSelection {
         // Vanilla roles stay as fallbacks; vigilante is counted if Wathe already assigned it, but not newly replaced.
         // 原版职业保留作兜底；警探只统计官方已分配的席位，不在这里被替换生成。
         definitions.add(new StrawRoleDefinition(WatheRoleIds.KILLER, StrawFaction.KILLER, false, false, context -> true));
+        definitions.add(new StrawRoleDefinition(WatheRoleIds.LOOSE_END, StrawFaction.NEUTRAL, false, true, context -> true));
         definitions.add(new StrawRoleDefinition(WatheRoleIds.VIGILANTE, StrawFaction.GOOD, false, true, context -> false));
         definitions.add(new StrawRoleDefinition(WatheRoleIds.CIVILIAN, StrawFaction.GOOD, true, false, context -> true));
         return definitions;
@@ -113,7 +127,9 @@ public final class NoellesRuntimeRoleSelection {
         if (WatheRoleIds.VIGILANTE.equals(roleId)) {
             return true;
         }
-        return !WatheRoleIds.KILLER.equals(roleId) && !WatheRoleIds.CIVILIAN.equals(roleId);
+        return !WatheRoleIds.KILLER.equals(roleId)
+                && !WatheRoleIds.CIVILIAN.equals(roleId)
+                && !WatheRoleIds.LOOSE_END.equals(roleId);
     }
 
     private static List<UUID> orderedPlayers(Map<UUID, Identifier> officialAssignments) {
@@ -129,13 +145,16 @@ public final class NoellesRuntimeRoleSelection {
         if (WatheRoleIds.KILLER.equals(roleId)) {
             return 0;
         }
-        if (WatheRoleIds.VIGILANTE.equals(roleId)) {
+        if (WatheRoleIds.LOOSE_END.equals(roleId)) {
             return 1;
         }
-        if (WatheRoleIds.CIVILIAN.equals(roleId)) {
+        if (WatheRoleIds.VIGILANTE.equals(roleId)) {
             return 2;
         }
-        return 3;
+        if (WatheRoleIds.CIVILIAN.equals(roleId)) {
+            return 3;
+        }
+        return 4;
     }
 
     private static int countFactionSeats(Map<UUID, Identifier> assignments, StrawFaction faction) {
@@ -163,6 +182,9 @@ public final class NoellesRuntimeRoleSelection {
         if (WatheRoleIds.KILLER.equals(roleId)) {
             return StrawFaction.KILLER;
         }
+        if (WatheRoleIds.LOOSE_END.equals(roleId)) {
+            return StrawFaction.NEUTRAL;
+        }
         if (WatheRoleIds.CIVILIAN.equals(roleId) || WatheRoleIds.VIGILANTE.equals(roleId)) {
             return StrawFaction.GOOD;
         }
@@ -187,6 +209,9 @@ public final class NoellesRuntimeRoleSelection {
         }
         if (WatheRoleIds.VIGILANTE.equals(roleId)) {
             return WatheRoles.VIGILANTE;
+        }
+        if (WatheRoleIds.LOOSE_END.equals(roleId)) {
+            return WatheRoles.LOOSE_END;
         }
         return WatheRoles.CIVILIAN;
     }

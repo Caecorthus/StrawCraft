@@ -146,11 +146,11 @@ class RoleSelectionPolicyTest {
 
     @Test
     void runtimeNoellesDefinitionsAssignImplementedRolesButSkipDisabledAndDeferredRoles() {
-        List<UUID> players = players(23);
+        List<UUID> players = players(24);
         StrawRoleSelectionContext context = new StrawRoleSelectionContext(
                 players,
                 6,
-                0,
+                1,
                 0,
                 17,
                 NoellesRoleCatalog.runtimeSelectionDisabledIds(),
@@ -184,10 +184,30 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("survival_master")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("waiter")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("mermaid")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("vulture")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("time_keeper")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("awesome_binglus")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("undercover")));
         assertFalse(plan.assignments().containsValue(StrawCraft.id("jester")));
+    }
+
+    @Test
+    void runtimeNoellesDefinitionsDoNotAssignVultureWithoutNeutralSeat() {
+        List<UUID> players = players(24);
+        StrawRoleSelectionContext context = new StrawRoleSelectionContext(
+                players,
+                6,
+                0,
+                0,
+                17,
+                NoellesRoleCatalog.runtimeSelectionDisabledIds(),
+                Map.of()
+        );
+        List<StrawRoleDefinition> definitions = new java.util.ArrayList<>(NoellesRoleCatalog.runtimeSelectionDefinitions());
+        definitions.add(new StrawRoleDefinition(CIVILIAN, StrawFaction.GOOD, true, false, unused -> true));
+
+        RoleSelectionPolicy.SelectionPlan plan = RoleSelectionPolicy.assign(context, definitions);
+
         assertFalse(plan.assignments().containsValue(StrawCraft.id("vulture")));
     }
 

@@ -52,7 +52,7 @@ public final class NoellesRoleCatalog {
             selectableGood("mermaid"),
             good("demon_hunter"),
             disabledNeutral("jester"),
-            neutral("vulture"),
+            selectableNeutral("vulture"),
             neutral("corrupt_cop"),
             neutral("pathogen"),
             neutral("taotie")
@@ -161,6 +161,10 @@ public final class NoellesRoleCatalog {
 
     private static Entry neutral(String path) {
         return entry(path, StrawFaction.NEUTRAL, true, Readiness.DESIGN_REQUIRED);
+    }
+
+    private static Entry selectableNeutral(String path) {
+        return entry(path, StrawFaction.NEUTRAL, true, Readiness.RUNTIME_READY);
     }
 
     private static Entry disabledNeutral(String path) {

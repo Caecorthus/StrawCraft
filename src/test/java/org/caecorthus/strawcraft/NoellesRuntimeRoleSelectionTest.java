@@ -120,14 +120,64 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("detective"),
                 StrawCraft.id("survival_master"),
                 StrawCraft.id("waiter"),
-                StrawCraft.id("mermaid")
+                StrawCraft.id("mermaid"),
+                StrawCraft.id("vulture")
         ), candidateIds);
         assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));
         assertFalse(candidateIds.contains(StrawCraft.id("undercover")));
         assertFalse(candidateIds.contains(StrawCraft.id("time_keeper")));
         assertFalse(candidateIds.contains(StrawCraft.id("jester")));
-        assertFalse(candidateIds.contains(StrawCraft.id("vulture")));
         assertFalse(candidateIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
+    }
+
+    @Test
+    void runtimeSelectionReplacesOfficialLooseEndSeatWithVulture() {
+        UUID civilian = new UUID(0, 1);
+        UUID killer = new UUID(0, 2);
+        UUID looseEnd = new UUID(0, 3);
+        Map<UUID, Identifier> officialAssignments = linkedAssignments(
+                entry(civilian, WatheRoleIds.CIVILIAN),
+                entry(killer, WatheRoleIds.KILLER),
+                entry(looseEnd, WatheRoleIds.LOOSE_END)
+        );
+
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
+
+        assertEquals(StrawCraft.id("swapper"), selected.get(killer));
+        assertEquals(StrawCraft.id("vulture"), selected.get(looseEnd));
+        assertEquals(StrawCraft.id("timekeeper"), selected.get(civilian));
+    }
+
+    @Test
+    void runtimeSelectionDoesNotAssignVultureWithoutOfficialNeutralSeat() {
+        UUID civilian = new UUID(0, 1);
+        UUID killer = new UUID(0, 2);
+        Map<UUID, Identifier> officialAssignments = linkedAssignments(
+                entry(civilian, WatheRoleIds.CIVILIAN),
+                entry(killer, WatheRoleIds.KILLER)
+        );
+
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
+
+        assertFalse(selected.containsValue(StrawCraft.id("vulture")));
+    }
+
+    @Test
+    void runtimeSelectionPreservesExistingNonVanillaAssignmentsWhileReplacingLooseEnd() {
+        UUID existingNeutral = new UUID(0, 1);
+        UUID looseEnd = new UUID(0, 2);
+        UUID killer = new UUID(0, 3);
+        Map<UUID, Identifier> officialAssignments = linkedAssignments(
+                entry(existingNeutral, StrawCraft.id("corrupt_cop")),
+                entry(looseEnd, WatheRoleIds.LOOSE_END),
+                entry(killer, WatheRoleIds.KILLER)
+        );
+
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
+
+        assertEquals(StrawCraft.id("corrupt_cop"), selected.get(existingNeutral));
+        assertEquals(StrawCraft.id("vulture"), selected.get(looseEnd));
+        assertEquals(StrawCraft.id("swapper"), selected.get(killer));
     }
 
     @Test
@@ -135,10 +185,12 @@ class NoellesRuntimeRoleSelectionTest {
         UUID civilian = new UUID(0, 1);
         UUID killer = new UUID(0, 2);
         UUID vigilante = new UUID(0, 3);
+        UUID looseEnd = new UUID(0, 4);
         Map<UUID, Identifier> officialAssignments = linkedAssignments(
                 entry(civilian, WatheRoleIds.CIVILIAN),
                 entry(killer, WatheRoleIds.KILLER),
-                entry(vigilante, WatheRoleIds.VIGILANTE)
+                entry(vigilante, WatheRoleIds.VIGILANTE),
+                entry(looseEnd, WatheRoleIds.LOOSE_END)
         );
 
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(
@@ -150,6 +202,7 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(WatheRoleIds.CIVILIAN, selected.get(civilian));
         assertEquals(WatheRoleIds.KILLER, selected.get(killer));
         assertEquals(WatheRoleIds.VIGILANTE, selected.get(vigilante));
+        assertEquals(WatheRoleIds.LOOSE_END, selected.get(looseEnd));
     }
 
     @Test
