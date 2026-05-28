@@ -40,6 +40,10 @@ public final class StrawRoleMeaning {
         return matchesRoleId(role, StrawCraft.id("reporter"));
     }
 
+    public static boolean usesBartenderShop(Role role) {
+        return matchesRoleId(role, StrawCraft.id("bartender"));
+    }
+
     public static boolean usesPoisonerShop(Role role) {
         return matchesRoleId(role, StrawCraft.id("poisoner"));
     }

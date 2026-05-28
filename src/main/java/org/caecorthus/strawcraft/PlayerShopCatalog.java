@@ -35,6 +35,9 @@ public final class PlayerShopCatalog {
         if (StrawRoleMeaning.usesReporterShop(role)) {
             return reporterPresentation(materializedEntries);
         }
+        if (StrawRoleMeaning.usesBartenderShop(role)) {
+            return bartenderPresentation(materializedEntries);
+        }
         if (StrawRoleMeaning.usesPoisonerShop(role)) {
             return PoisonerShopLoadout.presentation(materializedEntries);
         }
@@ -69,7 +72,8 @@ public final class PlayerShopCatalog {
             ShopEntry entry = materializedEntries.get(index);
             if (!ScavengerShopLoadout.isResetKnifeCooldownEntry(entry)
                     && !ReporterShopLoadout.isReporterNoteEntry(entry)
-                    && !BomberTimedBombRuntime.isTimedBombEntry(entry)) {
+                    && !BomberTimedBombRuntime.isTimedBombEntry(entry)
+                    && !BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)) {
                 visibleEntries.add(new VisibleEntry(index, entry));
             }
         }
@@ -149,9 +153,21 @@ public final class PlayerShopCatalog {
         return new Presentation(noteEntries);
     }
 
+    private static Presentation bartenderPresentation(List<ShopEntry> materializedEntries) {
+        List<VisibleEntry> vialEntries = new ArrayList<>();
+        for (int index = 0; index < materializedEntries.size(); index++) {
+            ShopEntry entry = materializedEntries.get(index);
+            if (BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)) {
+                vialEntries.add(new VisibleEntry(index, entry));
+            }
+        }
+        return new Presentation(vialEntries);
+    }
+
     private static boolean isBomberDeniedEntry(ShopEntry entry) {
         return ScavengerShopLoadout.isResetKnifeCooldownEntry(entry)
                 || ReporterShopLoadout.isReporterNoteEntry(entry)
+                || BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)
                 || matches(entry, "knife", stack -> stack.isOf(WatheItems.KNIFE))
                 || matches(entry, "p320", stack -> false)
                 || matches(entry, "revolver", stack -> stack.isOf(WatheItems.REVOLVER))
@@ -164,6 +180,7 @@ public final class PlayerShopCatalog {
         return matches(entry, "p320", stack -> false)
                 || ReporterShopLoadout.isReporterNoteEntry(entry)
                 || BomberTimedBombRuntime.isTimedBombEntry(entry)
+                || BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)
                 || matches(entry, "revolver", stack -> stack.isOf(WatheItems.REVOLVER))
                 || matches(entry, "grenade", stack -> stack.isOf(WatheItems.GRENADE))
                 || matches(entry, "poison_vial", stack -> stack.isOf(WatheItems.POISON_VIAL))
