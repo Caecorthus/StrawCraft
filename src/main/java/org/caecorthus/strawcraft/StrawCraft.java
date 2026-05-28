@@ -46,6 +46,7 @@ public final class StrawCraft implements ModInitializer {
         BartenderDefenseVialShopLoadout.registerShopEntriesHandler();
         WaiterShopLoadout.registerShopEntriesHandler();
         SilencerShopLoadout.registerShopEntriesHandler();
+        PoisonerShopLoadout.registerShopEntriesHandler();
         WaiterServiceRuntime.register();
         PoisonerShopLoadout.registerPurchasePriceHandler();
         BomberTimedBombRuntime.register();

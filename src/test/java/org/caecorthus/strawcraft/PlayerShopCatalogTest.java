@@ -153,10 +153,11 @@ class PlayerShopCatalogTest {
         ShopEntry psycho = entry("psycho_mode", 150, ShopEntry.Type.POISON);
         ShopEntry timedBomb = entry("timed_bomb", 300, ShopEntry.Type.WEAPON);
         ShopEntry silentPsycho = entry(SilencerShopLoadout.SILENT_PSYCHO_ENTRY_ID, 350, ShopEntry.Type.POISON);
+        ShopEntry poisonNeedle = entry(PoisonerShopLoadout.POISON_NEEDLE_ENTRY_ID, 50, ShopEntry.Type.POISON);
 
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
                 role("killer", true, false),
-                List.of(knife, p320, grenade, poison, scorpion, psycho, timedBomb, silentPsycho)
+                List.of(knife, p320, grenade, poison, scorpion, psycho, timedBomb, silentPsycho, poisonNeedle)
         );
 
         assertEquals(List.of(knife, p320, grenade, poison, scorpion, psycho), presentation.entries());
@@ -166,14 +167,16 @@ class PlayerShopCatalogTest {
         assertEquals("p320", StrawShopEntry.idFor(presentation.entries().get(1)));
         assertFalse(presentation.allowsWathePurchaseIndex(6));
         assertFalse(presentation.allowsWathePurchaseIndex(7));
+        assertFalse(presentation.allowsWathePurchaseIndex(8));
     }
 
     @Test
-    void poisonerPresentationOnlyExposesOfficialPoisonEntriesWithOriginalPurchaseIndices() {
+    void poisonerPresentationOnlyExposesPoisonEntriesWithOriginalPurchaseIndices() {
         ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
         ShopEntry p320 = entry("p320", 300, ShopEntry.Type.WEAPON);
         ShopEntry poison = entry("poison_vial", 75, ShopEntry.Type.POISON);
         ShopEntry scorpion = entry("scorpion", 75, ShopEntry.Type.POISON);
+        ShopEntry poisonNeedle = entry(PoisonerShopLoadout.POISON_NEEDLE_ENTRY_ID, 50, ShopEntry.Type.POISON);
         ShopEntry psycho = entry("psycho_mode", 150, ShopEntry.Type.POISON);
         ShopEntry defenseVial = entry("defense_vial", 100, ShopEntry.Type.TOOL);
         ShopEntry lockpick = entry("lockpick", 50, ShopEntry.Type.TOOL);
@@ -182,29 +185,44 @@ class PlayerShopCatalogTest {
 
         PlayerShopCatalog.Presentation presentation = PlayerShopCatalog.presentationFor(
                 role("poisoner", true, false),
-                List.of(knife, p320, poison, scorpion, psycho, defenseVial, lockpick, reset, reporterNote)
+                List.of(knife, p320, poison, scorpion, poisonNeedle, psycho, defenseVial, lockpick, reset, reporterNote)
         );
 
-        assertEquals(List.of("poison_vial", "scorpion"), presentation.entries().stream()
+        assertEquals(List.of("poison_vial", "scorpion", PoisonerShopLoadout.POISON_NEEDLE_ENTRY_ID), presentation.entries().stream()
                 .map(StrawShopEntry::idFor)
                 .toList());
-        assertEquals(List.of(50, 50), presentation.entries().stream()
+        assertEquals(List.of(50, 50, PoisonerShopLoadout.POISON_NEEDLE_PRICE), presentation.entries().stream()
                 .map(ShopEntry::price)
                 .toList());
-        assertEquals(List.of(2, 3), presentation.visibleEntries().stream()
+        assertEquals(List.of(2, 3, 4), presentation.visibleEntries().stream()
                 .map(PlayerShopCatalog.VisibleEntry::wathePurchaseIndex)
                 .toList());
         assertTrue(presentation.allowsWathePurchaseIndex(2));
         assertTrue(presentation.allowsWathePurchaseIndex(3));
+        assertTrue(presentation.allowsWathePurchaseIndex(4));
         assertFalse(presentation.allowsWathePurchaseIndex(0));
         assertFalse(presentation.allowsWathePurchaseIndex(1));
-        assertFalse(presentation.allowsWathePurchaseIndex(4));
         assertFalse(presentation.allowsWathePurchaseIndex(5));
         assertFalse(presentation.allowsWathePurchaseIndex(6));
         assertFalse(presentation.allowsWathePurchaseIndex(7));
         assertFalse(presentation.allowsWathePurchaseIndex(8));
+        assertFalse(presentation.allowsWathePurchaseIndex(9));
         assertEquals(75, poison.price());
         assertEquals(75, scorpion.price());
+    }
+
+    @Test
+    void nonPoisonerRolesCannotSeeOrBuyHiddenPoisonNeedleEntryByStaleIndex() {
+        ShopEntry knife = entry("knife", 100, ShopEntry.Type.WEAPON);
+        ShopEntry poisonNeedle = entry(PoisonerShopLoadout.POISON_NEEDLE_ENTRY_ID, 50, ShopEntry.Type.POISON);
+        ShopEntry poison = entry("poison_vial", 75, ShopEntry.Type.POISON);
+        List<ShopEntry> entries = List.of(knife, poisonNeedle, poison);
+
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("killer", true, false), entries, 1));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("bomber", true, false), entries, 1));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("scavenger", true, false), entries, 1));
+        assertFalse(PlayerShopCatalog.allowsPurchaseForRole(role("waiter", false, true), entries, 1));
+        assertTrue(PlayerShopCatalog.allowsPurchaseForRole(role("poisoner", true, false), entries, 1));
     }
 
     @Test

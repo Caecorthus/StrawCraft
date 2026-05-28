@@ -81,7 +81,8 @@ public final class PlayerShopCatalog {
                     && !BomberTimedBombRuntime.isTimedBombEntry(entry)
                     && !BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)
                     && !WaiterShopLoadout.isWaiterServiceEntry(entry)
-                    && !SilencerShopLoadout.isSilentPsychoEntry(entry)) {
+                    && !SilencerShopLoadout.isSilentPsychoEntry(entry)
+                    && !PoisonerShopLoadout.isPoisonNeedleEntry(entry)) {
                 visibleEntries.add(new VisibleEntry(index, entry));
             }
         }
@@ -189,6 +190,7 @@ public final class PlayerShopCatalog {
                 || BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)
                 || WaiterShopLoadout.isWaiterServiceEntry(entry)
                 || SilencerShopLoadout.isSilentPsychoEntry(entry)
+                || PoisonerShopLoadout.isPoisonNeedleEntry(entry)
                 || matches(entry, "knife", stack -> stack.isOf(WatheItems.KNIFE))
                 || matches(entry, "p320", stack -> false)
                 || matches(entry, "revolver", stack -> stack.isOf(WatheItems.REVOLVER))
@@ -204,6 +206,7 @@ public final class PlayerShopCatalog {
                 || BartenderDefenseVialShopLoadout.isDefenseVialEntry(entry)
                 || WaiterShopLoadout.isWaiterServiceEntry(entry)
                 || SilencerShopLoadout.isSilentPsychoEntry(entry)
+                || PoisonerShopLoadout.isPoisonNeedleEntry(entry)
                 || matches(entry, "revolver", stack -> stack.isOf(WatheItems.REVOLVER))
                 || matches(entry, "grenade", stack -> stack.isOf(WatheItems.GRENADE))
                 || matches(entry, "poison_vial", stack -> stack.isOf(WatheItems.POISON_VIAL))

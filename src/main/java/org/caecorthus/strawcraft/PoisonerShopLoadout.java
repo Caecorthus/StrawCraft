@@ -4,17 +4,22 @@ import dev.doctor4t.wathe.api.Role;
 import dev.doctor4t.wathe.cca.GameWorldComponent;
 import dev.doctor4t.wathe.index.WatheItems;
 import dev.doctor4t.wathe.util.ShopEntry;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 import org.caecorthus.strawcraft.api.StrawShopEvents;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public final class PoisonerShopLoadout {
     static final int POISON_PRICE = 50;
+    static final String POISON_NEEDLE_ENTRY_ID = "poison_needle";
+    static final int POISON_NEEDLE_PRICE = 50;
 
     private PoisonerShopLoadout() {
     }
@@ -23,12 +28,36 @@ public final class PoisonerShopLoadout {
         StrawShopEvents.BEFORE_PURCHASE.register(PoisonerShopLoadout::applyPoisonerPrice);
     }
 
+    public static void registerShopEntriesHandler() {
+        StrawShopEvents.BUILD_ENTRIES.register(PoisonerShopLoadout::addPoisonNeedleEntry);
+    }
+
+    static void addPoisonNeedleEntry(StrawShopEvents.ShopContext context) {
+        context.replaceEntries(withPoisonNeedleEntry(context.getEntries()));
+    }
+
+    static List<ShopEntry> withPoisonNeedleEntry(List<? extends ShopEntry> entries) {
+        return withPoisonNeedleEntry(entries, PoisonerShopLoadout::poisonNeedleStack);
+    }
+
+    static List<ShopEntry> withPoisonNeedleEntry(List<? extends ShopEntry> entries, Supplier<ItemStack> stackFactory) {
+        if (entries.stream().anyMatch(PoisonerShopLoadout::isPoisonNeedleEntry)) {
+            return List.copyOf(entries);
+        }
+        List<ShopEntry> nextEntries = new ArrayList<>(entries.size() + 1);
+        nextEntries.addAll(entries);
+        nextEntries.add(poisonNeedleEntry(stackFactory));
+        return List.copyOf(nextEntries);
+    }
+
     static PlayerShopCatalog.Presentation presentation(List<ShopEntry> materializedEntries) {
         List<PlayerShopCatalog.VisibleEntry> visibleEntries = new ArrayList<>();
         for (int index = 0; index < materializedEntries.size(); index++) {
             ShopEntry entry = materializedEntries.get(index);
             if (isOfficialPoisonEntry(entry)) {
                 visibleEntries.add(new PlayerShopCatalog.VisibleEntry(index, visibleEntry(entry)));
+            } else if (isPoisonNeedleEntry(entry)) {
+                visibleEntries.add(new PlayerShopCatalog.VisibleEntry(index, entry));
             }
         }
         return new PlayerShopCatalog.Presentation(visibleEntries);
@@ -43,6 +72,10 @@ public final class PoisonerShopLoadout {
     static boolean isOfficialPoisonEntry(ShopEntry entry) {
         return matchesOfficialPoison(entry, "poison_vial", stack -> stack.isOf(WatheItems.POISON_VIAL))
                 || matchesOfficialPoison(entry, "scorpion", stack -> stack.isOf(WatheItems.SCORPION));
+    }
+
+    static boolean isPoisonNeedleEntry(ShopEntry entry) {
+        return POISON_NEEDLE_ENTRY_ID.equals(StrawShopEntry.idFor(entry));
     }
 
     private static ShopEntry visibleEntry(ShopEntry entry) {
@@ -70,6 +103,31 @@ public final class PoisonerShopLoadout {
         }
         ItemStack stack = entry.stack();
         return stack != null && !stack.isEmpty() && stackPredicate.test(stack);
+    }
+
+    private static ItemStack poisonNeedleStack() {
+        ItemStack stack = StrawCraftItems.POISON_NEEDLE.getDefaultStack();
+        stack.set(
+                DataComponentTypes.CUSTOM_NAME,
+                Text.translatable("item.strawcraft." + POISON_NEEDLE_ENTRY_ID)
+        );
+        return stack;
+    }
+
+    private static ShopEntry poisonNeedleEntry(Supplier<ItemStack> stackFactory) {
+        ItemStack stack = stackFactory.get();
+        ShopEntry delivery = new ShopEntry(stack, POISON_NEEDLE_PRICE, ShopEntry.Type.POISON);
+        return new StrawShopEntry(
+                POISON_NEEDLE_ENTRY_ID,
+                stack,
+                stack,
+                POISON_NEEDLE_PRICE,
+                ShopEntry.Type.POISON,
+                0,
+                0,
+                -1,
+                delivery
+        );
     }
 
     private static void applyPoisonerPrice(@Nullable PlayerEntity player, StrawShopEvents.PurchaseContext context) {
