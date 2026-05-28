@@ -1,0 +1,143 @@
+package org.caecorthus.strawcraft;
+
+import dev.doctor4t.wathe.api.Role;
+import net.minecraft.util.Identifier;
+import org.caecorthus.strawcraft.role.StrawRoleDefinition;
+import org.junit.jupiter.api.Test;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class NoellesRuntimeRoleSelectionTest {
+    @Test
+    void runtimeSelectionKeepsOfficialSeatsAndReplacesEligibleRolesWithImplementedNoellesRoles() {
+        UUID civilian = new UUID(0, 1);
+        UUID killer = new UUID(0, 2);
+        UUID vigilante = new UUID(0, 3);
+        UUID secondCivilian = new UUID(0, 4);
+        Map<UUID, Identifier> officialAssignments = linkedAssignments(
+                entry(civilian, WatheRoleIds.CIVILIAN),
+                entry(killer, WatheRoleIds.KILLER),
+                entry(vigilante, WatheRoleIds.VIGILANTE),
+                entry(secondCivilian, WatheRoleIds.CIVILIAN)
+        );
+
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
+
+        assertEquals(StrawCraft.id("bomber"), selected.get(killer));
+        assertTrue(selected.containsValue(StrawCraft.id("toxicologist")));
+        assertTrue(selected.containsValue(StrawCraft.id("professor")));
+        assertEquals(WatheRoleIds.VIGILANTE, selected.get(vigilante));
+    }
+
+    @Test
+    void disabledAndDeferredNoellesRolesAreNotRuntimeSelectionCandidates() {
+        Set<Identifier> candidateIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
+                .map(StrawRoleDefinition::id)
+                .collect(java.util.stream.Collectors.toSet());
+
+        assertTrue(candidateIds.contains(StrawCraft.id("bomber")));
+        assertTrue(candidateIds.contains(StrawCraft.id("toxicologist")));
+        assertTrue(candidateIds.contains(StrawCraft.id("detective")));
+        assertTrue(candidateIds.contains(StrawCraft.id("professor")));
+        assertFalse(candidateIds.contains(StrawCraft.id("timekeeper")));
+        assertFalse(candidateIds.contains(StrawCraft.id("scavenger")));
+        assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));
+        assertFalse(candidateIds.contains(StrawCraft.id("undercover")));
+        assertFalse(candidateIds.contains(StrawCraft.id("conductor")));
+        assertFalse(candidateIds.contains(StrawCraft.id("reporter")));
+        assertFalse(candidateIds.contains(StrawCraft.id("jester")));
+        assertFalse(candidateIds.contains(StrawCraft.id("vulture")));
+        assertFalse(candidateIds.contains(StrawCraft.id("the_insane_damned_paranoid_killer")));
+    }
+
+    @Test
+    void vanillaRolesRemainValidFallbacksWhenNoNoellesRoleIsEligible() {
+        UUID civilian = new UUID(0, 1);
+        UUID killer = new UUID(0, 2);
+        UUID vigilante = new UUID(0, 3);
+        Map<UUID, Identifier> officialAssignments = linkedAssignments(
+                entry(civilian, WatheRoleIds.CIVILIAN),
+                entry(killer, WatheRoleIds.KILLER),
+                entry(vigilante, WatheRoleIds.VIGILANTE)
+        );
+
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(
+                officialAssignments,
+                List.of(),
+                Set.of()
+        ).assignments();
+
+        assertEquals(WatheRoleIds.CIVILIAN, selected.get(civilian));
+        assertEquals(WatheRoleIds.KILLER, selected.get(killer));
+        assertEquals(WatheRoleIds.VIGILANTE, selected.get(vigilante));
+    }
+
+    @Test
+    void runtimeRoleObjectsResolveToRegisteredWatheRolesForLoadoutEvents() {
+        UUID killer = new UUID(0, 1);
+        Map<UUID, Role> selected = NoellesRuntimeRoleSelection.planAssignments(linkedRoleAssignments(
+                roleEntry(killer, role(WatheRoleIds.KILLER, false, true))
+        ));
+
+        Role assignedRole = selected.get(killer);
+        assertEquals(StrawCraft.id("bomber"), assignedRole.identifier());
+        assertTrue(StrawRoleMeaning.canUseKillerShop(assignedRole));
+    }
+
+    @Test
+    void postAssignmentForcedVanillaKillerOrCivilianCannotBeDistinguishedButKeepsSeatSemantics() {
+        UUID maybeForcedKiller = new UUID(0, 1);
+        UUID maybeForcedCivilian = new UUID(0, 2);
+        Map<UUID, Identifier> officialAssignments = linkedAssignments(
+                entry(maybeForcedKiller, WatheRoleIds.KILLER),
+                entry(maybeForcedCivilian, WatheRoleIds.CIVILIAN)
+        );
+
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
+
+        assertEquals(StrawCraft.id("bomber"), selected.get(maybeForcedKiller));
+        assertTrue(Set.of(StrawCraft.id("toxicologist"), StrawCraft.id("professor"), StrawCraft.id("detective"), WatheRoleIds.CIVILIAN)
+                .contains(selected.get(maybeForcedCivilian)));
+        assertEquals(1, selected.values().stream()
+                .filter(roleId -> StrawCraft.id("bomber").equals(roleId) || WatheRoleIds.KILLER.equals(roleId))
+                .count());
+    }
+
+    @SafeVarargs
+    private static Map<UUID, Identifier> linkedAssignments(Map.Entry<UUID, Identifier>... entries) {
+        LinkedHashMap<UUID, Identifier> assignments = new LinkedHashMap<>();
+        for (Map.Entry<UUID, Identifier> entry : entries) {
+            assignments.put(entry.getKey(), entry.getValue());
+        }
+        return assignments;
+    }
+
+    @SafeVarargs
+    private static Map<UUID, Role> linkedRoleAssignments(Map.Entry<UUID, Role>... entries) {
+        LinkedHashMap<UUID, Role> assignments = new LinkedHashMap<>();
+        for (Map.Entry<UUID, Role> entry : entries) {
+            assignments.put(entry.getKey(), entry.getValue());
+        }
+        return assignments;
+    }
+
+    private static Map.Entry<UUID, Identifier> entry(UUID player, Identifier role) {
+        return Map.entry(player, role);
+    }
+
+    private static Map.Entry<UUID, Role> roleEntry(UUID player, Role role) {
+        return Map.entry(player, role);
+    }
+
+    private static Role role(Identifier id, boolean innocent, boolean killerTools) {
+        return new Role(id, 0xFFFFFF, innocent, killerTools, Role.MoodType.REAL, 200, false);
+    }
+}

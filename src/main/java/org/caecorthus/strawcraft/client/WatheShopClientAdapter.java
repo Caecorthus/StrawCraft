@@ -14,6 +14,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import org.caecorthus.strawcraft.PlayerShopCatalog;
 import org.caecorthus.strawcraft.StrawPlayerShopComponent;
 import org.caecorthus.strawcraft.StrawShopEntry;
 
@@ -41,7 +42,7 @@ public final class WatheShopClientAdapter {
         if (player == null) {
             return false;
         }
-        return canAccessShop(player) && !entriesFor(player).isEmpty();
+        return !presentationFor(player).entries().isEmpty();
     }
 
     public ShopSnapshot snapshot(MinecraftClient client) {
@@ -49,7 +50,7 @@ public final class WatheShopClientAdapter {
         if (player == null) {
             return remember(ShopSnapshot.empty());
         }
-        return remember(snapshotFrom(entriesFor(player), new PlayerShopState(
+        return remember(snapshotFrom(presentationFor(player), new PlayerShopState(
                 PlayerShopComponent.KEY.get(player),
                 StrawPlayerShopComponent.KEY.get(player),
                 player.getWorld().getTime()
@@ -78,11 +79,17 @@ public final class WatheShopClientAdapter {
     }
 
     public static ShopSnapshot snapshotFrom(List<ShopEntry> entries, ShopState shopState) {
+        return snapshotFrom(PlayerShopCatalog.Presentation.fromWatheOrder(entries), shopState);
+    }
+
+    public static ShopSnapshot snapshotFrom(PlayerShopCatalog.Presentation presentation, ShopState shopState) {
+        List<ShopEntry> entries = presentation.entries();
         List<ShopEntryViewState> entryStates = new ArrayList<>(entries.size());
         List<EntryKey> entryKeys = new ArrayList<>(entries.size());
         for (int index = 0; index < entries.size(); index++) {
             ShopEntry entry = entries.get(index);
-            entryStates.add(viewStateFor(index, entry, shopState));
+            int wathePurchaseIndex = presentation.visibleEntries().get(index).wathePurchaseIndex();
+            entryStates.add(viewStateFor(wathePurchaseIndex, entry, shopState));
             // Entry keys capture identity only; price/cooldown/stock can update without
             // rebuilding buttons and disturbing Wathe's server-side StoreBuyPayload(index).
             // 条目键只记录身份；价格、冷却和库存可以更新，
@@ -112,31 +119,22 @@ public final class WatheShopClientAdapter {
         return client == null ? null : client.player;
     }
 
-    private static List<ShopEntry> entriesFor(ClientPlayerEntity player) {
-        if (!canAccessShop(player)) {
-            return List.of();
-        }
+    private static PlayerShopCatalog.Presentation presentationFor(ClientPlayerEntity player) {
         try {
             // The official/global list is rewritten once during Wathe initialization.
-            // Client snapshots only render that materialized order so purchase indices
-            // stay aligned with Wathe's server-side buy path.
+            // Client snapshots project that materialized order for the current role, while
+            // each visible button still stores the original Wathe purchase index.
             // 官方/全局列表会在 Wathe 初始化时统一改写一次。
-            // 客户端快照只渲染这个已物化顺序，确保购买编号和 Wathe 服务端路径一致。
-            return List.copyOf(GameConstants.SHOP_ENTRIES);
+            // 客户端快照会按当前职业投影这个已物化顺序，
+            // 但每个可见按钮仍保存原始 Wathe 购买编号。
+            return PlayerShopCatalog.presentationFor(
+                    GameWorldComponent.KEY.get(player.getWorld()).getRole(player),
+                    List.copyOf(GameConstants.SHOP_ENTRIES)
+            );
         } catch (RuntimeException ignored) {
             // Wathe can throw while client-side role/shop components are still catching up.
             // 客户端角色或商店组件还在同步时，Wathe 可能会暂时抛错。
-            return List.of();
-        }
-    }
-
-    private static boolean canAccessShop(ClientPlayerEntity player) {
-        try {
-            // Match official Wathe's shop visibility: only killer-feature roles see the store.
-            // 对齐官方 Wathe 的商店显示条件：只有能使用杀手功能的职业能看到商店。
-            return GameWorldComponent.KEY.get(player.getWorld()).canUseKillerFeatures(player);
-        } catch (RuntimeException ignored) {
-            return false;
+            return PlayerShopCatalog.Presentation.empty();
         }
     }
 

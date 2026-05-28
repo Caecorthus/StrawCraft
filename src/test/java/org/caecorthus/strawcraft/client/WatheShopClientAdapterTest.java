@@ -1,6 +1,7 @@
 package org.caecorthus.strawcraft.client;
 
 import dev.doctor4t.wathe.util.ShopEntry;
+import org.caecorthus.strawcraft.PlayerShopCatalog;
 import org.caecorthus.strawcraft.StrawShopEntry;
 import org.junit.jupiter.api.Test;
 
@@ -112,6 +113,22 @@ class WatheShopClientAdapterTest {
         new WatheShopClientAdapter(visibleOrder, sentIndices::add).buy(0);
 
         assertEquals(List.of(1), sentIndices);
+    }
+
+    @Test
+    void snapshotFromPlayerPresentationUsesWathePurchaseIndexInsteadOfVisibleIndex() {
+        ShopEntry visibleGrenade = new ShopEntry(null, 350, ShopEntry.Type.WEAPON);
+        PlayerShopCatalog.Presentation presentation = new PlayerShopCatalog.Presentation(List.of(
+                new PlayerShopCatalog.VisibleEntry(1, visibleGrenade)
+        ));
+
+        WatheShopClientAdapter.ShopSnapshot snapshot = WatheShopClientAdapter.snapshotFrom(
+                presentation,
+                new FakeShopState()
+        );
+
+        assertEquals(List.of(visibleGrenade), snapshot.entries());
+        assertEquals(1, snapshot.entryStates().getFirst().wathePurchaseIndex());
     }
 
     @Test

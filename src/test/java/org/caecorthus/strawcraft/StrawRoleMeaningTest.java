@@ -84,15 +84,42 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void onlyUndercoverReceivesNoellesWalkieTalkieMeaning() {
+        assertTrue(receivesUndercoverWalkieTalkie(noellesRole("undercover")));
+        assertFalse(receivesUndercoverWalkieTalkie(noellesRole("conductor")));
+        assertFalse(receivesUndercoverWalkieTalkie(noellesRole("scavenger")));
+    }
+
+    @Test
+    void onlyNoellesDetectiveReceivesDetectiveInvestigation() {
+        assertTrue(receivesDetectiveInvestigation(noellesRole("detective")));
+        assertFalse(receivesDetectiveInvestigation(role(WatheRoleIds.VIGILANTE, true, false)));
+        assertFalse(receivesDetectiveInvestigation(noellesRole("undercover")));
+    }
+
+    @Test
+    void onlyNoellesVultureReceivesBodyFeast() {
+        assertTrue(receivesVultureBodyFeast(noellesRole("vulture")));
+        assertFalse(receivesVultureBodyFeast(noellesRole("detective")));
+        assertFalse(receivesVultureBodyFeast(role(WatheRoleIds.CIVILIAN, true, false)));
+    }
+
+    @Test
     void nullAndUnknownRoleDoNotReceivePrivilegedBehavior() {
         Role unknownRole = role(Identifier.of("strawcraft", "unknown_fixture"), false, false);
 
         assertEquals(StrawFaction.NONE, factionFor(null));
         assertFalse(canUseKillerShop(null));
         assertFalse(receivesVigilanteLoadout(null));
+        assertFalse(receivesUndercoverWalkieTalkie(null));
+        assertFalse(receivesDetectiveInvestigation(null));
+        assertFalse(receivesVultureBodyFeast(null));
         assertTrue(ammoFactionFor(null).isEmpty());
         assertFalse(canUseKillerShop(unknownRole));
         assertFalse(receivesVigilanteLoadout(unknownRole));
+        assertFalse(receivesUndercoverWalkieTalkie(unknownRole));
+        assertFalse(receivesDetectiveInvestigation(unknownRole));
+        assertFalse(receivesVultureBodyFeast(unknownRole));
         assertTrue(ammoFactionFor(unknownRole).isEmpty());
     }
 
@@ -102,6 +129,18 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesVigilanteLoadout(Role role) {
         return invokeBoolean("receivesVigilanteLoadout", role);
+    }
+
+    private static boolean receivesUndercoverWalkieTalkie(Role role) {
+        return invokeBoolean("receivesUndercoverWalkieTalkie", role);
+    }
+
+    private static boolean receivesDetectiveInvestigation(Role role) {
+        return invokeBoolean("receivesDetectiveInvestigation", role);
+    }
+
+    private static boolean receivesVultureBodyFeast(Role role) {
+        return invokeBoolean("receivesVultureBodyFeast", role);
     }
 
     private static Optional<GunAmmoFaction> ammoFactionFor(Role role) {

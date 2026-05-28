@@ -1,6 +1,8 @@
 package org.caecorthus.strawcraft.role;
 
 import net.minecraft.util.Identifier;
+import org.caecorthus.strawcraft.NoellesRoleCatalog;
+import org.caecorthus.strawcraft.StrawCraft;
 import org.caecorthus.strawcraft.WatheRoleIds;
 import org.junit.jupiter.api.Test;
 
@@ -140,6 +142,31 @@ class RoleSelectionPolicyTest {
 
         assertEquals(StrawFaction.WITCH, witch.faction());
         assertFalse(witch.id().getNamespace().equals("noellesroles"));
+    }
+
+    @Test
+    void runtimeNoellesDefinitionsAssignImplementedRolesButSkipDisabledAndDeferredRoles() {
+        List<UUID> players = players(4);
+        StrawRoleSelectionContext context = new StrawRoleSelectionContext(
+                players,
+                1,
+                0,
+                0,
+                2,
+                NoellesRoleCatalog.runtimeSelectionDisabledIds(),
+                Map.of()
+        );
+        List<StrawRoleDefinition> definitions = new java.util.ArrayList<>(NoellesRoleCatalog.runtimeSelectionDefinitions());
+        definitions.add(new StrawRoleDefinition(CIVILIAN, StrawFaction.GOOD, true, false, unused -> true));
+
+        RoleSelectionPolicy.SelectionPlan plan = RoleSelectionPolicy.assign(context, definitions);
+
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("bomber")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("toxicologist")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("professor")));
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("awesome_binglus")));
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("undercover")));
+        assertFalse(plan.assignments().containsValue(StrawCraft.id("jester")));
     }
 
     private static List<StrawRoleDefinition> definitions() {

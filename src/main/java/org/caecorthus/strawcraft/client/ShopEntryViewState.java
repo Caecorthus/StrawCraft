@@ -71,6 +71,14 @@ public record ShopEntryViewState(
         return this.cooldownStatus.or(() -> this.stockStatus);
     }
 
+    /**
+     * Compatibility alias for UI/tests that still use the old presentation name.
+     * 兼容旧 UI/测试使用的展示层命名；语义仍然是 Wathe 原始购买编号。
+     */
+    public int purchaseIndex() {
+        return this.wathePurchaseIndex;
+    }
+
     private static Optional<Status> cooldownStatusFor(Snapshot snapshot) {
         if (snapshot.onCooldown()) {
             int remainingSeconds = Math.max(1, snapshot.remainingCooldownTicks() / TICKS_PER_SECOND);

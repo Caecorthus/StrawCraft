@@ -2,14 +2,21 @@ package org.caecorthus.strawcraft.mixin;
 
 import dev.doctor4t.wathe.api.GameMode;
 import dev.doctor4t.wathe.api.MapEffect;
+import dev.doctor4t.wathe.entity.PlayerBodyEntity;
 import dev.doctor4t.wathe.game.GameFunctions;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
+import org.caecorthus.strawcraft.ScavengerHiddenBodies;
 import org.caecorthus.strawcraft.map.StrawMapVoting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameFunctions.class)
@@ -34,5 +41,23 @@ public abstract class GameFunctionsMixin {
             player.sendMessage(Text.translatable("game.strawcraft.start_error.voting_active"), true);
         }
         ci.cancel();
+    }
+
+    @Redirect(
+            method = "killPlayer(Lnet/minecraft/entity/player/PlayerEntity;ZLnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Identifier;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z")
+    )
+    private static boolean strawcraft$markScavengerHiddenBodyBeforeSpawn(
+            World world,
+            Entity entity,
+            PlayerEntity victim,
+            boolean spawnBody,
+            PlayerEntity killer,
+            Identifier deathReason
+    ) {
+        if (entity instanceof PlayerBodyEntity body) {
+            ScavengerHiddenBodies.markSpawnedBody(victim, killer, body);
+        }
+        return world.spawnEntity(entity);
     }
 }

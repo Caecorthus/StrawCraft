@@ -20,6 +20,14 @@ class ShopEntryViewStateTest {
     }
 
     @Test
+    void purchaseIndexAliasesStoredWathePurchaseIndex() {
+        ShopEntryViewState state = ShopEntryViewState.withoutShop(7, null, null, null, 300);
+
+        assertEquals(state.wathePurchaseIndex(), state.purchaseIndex());
+        assertEquals(7, state.purchaseIndex());
+    }
+
+    @Test
     void cooldownEntryIsInactiveAndShowsRemainingSeconds() {
         ShopEntryViewState state = ShopEntryViewState.fromSnapshot(new ShopEntryViewState.Snapshot(
                 300,

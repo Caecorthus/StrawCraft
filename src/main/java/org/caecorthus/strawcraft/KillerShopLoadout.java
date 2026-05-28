@@ -18,7 +18,7 @@ public final class KillerShopLoadout {
 
     public static void registerShopEntriesHandler() {
         StrawShopEvents.BUILD_ENTRIES.register(KillerShopLoadout::replaceDisabledWatheGuns);
-        WatheOfficialBridge.rewriteGlobalShopEntries();
+        ScavengerShopLoadout.registerShopEntriesHandler();
     }
 
     static void replaceDisabledWatheGuns(StrawShopEvents.ShopContext context) {

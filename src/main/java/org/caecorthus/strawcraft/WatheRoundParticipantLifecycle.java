@@ -1,6 +1,7 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.cca.GameWorldComponent;
+import dev.doctor4t.wathe.api.Role;
 import dev.doctor4t.wathe.game.GameFunctions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -41,10 +42,11 @@ public final class WatheRoundParticipantLifecycle {
                             );
                         },
                         () -> officialDeathBaselineCompleted(player),
-                        context -> StrawDeathEvents.OFFICIAL_DEATH_COMPLETED.invoker().onOfficialDeathCompleted(context),
+                        context -> publishOfficialDeathCompleted(player, game, context),
                         () -> WatheDeathReasonTracker.clearDeathAttribution(player.getUuid()),
                         () -> clearRuntimeState(player),
                         game::sync,
+                        () -> player.getWorld().getRegistryKey().getValue(),
                         () -> player.getWorld().getTime()
                 )
         );
@@ -71,7 +73,12 @@ public final class WatheRoundParticipantLifecycle {
                 if (officialDeathCompleted) {
                     hooks.payRewards().accept(attribution);
                     rewardsPaid = true;
-                    completionContext = officialDeathContext(victimUuid, attribution, hooks.gameTime().getAsLong());
+                    completionContext = officialDeathContext(
+                            hooks.worldId().get(),
+                            victimUuid,
+                            attribution,
+                            hooks.gameTime().getAsLong()
+                    );
                 }
             }
         } finally {
@@ -96,6 +103,24 @@ public final class WatheRoundParticipantLifecycle {
         return GameFunctions.isPlayerSpectatingOrCreative(player);
     }
 
+    private static void publishOfficialDeathCompleted(
+            ServerPlayerEntity victim,
+            GameWorldComponent game,
+            StrawDeathEvents.OfficialDeathContext context
+    ) {
+        StrawDeathEvents.OFFICIAL_DEATH_COMPLETED.invoker().onOfficialDeathCompleted(context);
+        StrawDeathEvents.ROLE_DEATH_COMPLETED.invoker().onRoleDeathCompleted(new StrawDeathEvents.RoleDeathContext(
+                victim.getServerWorld(),
+                context,
+                roleId(game.getRole(context.victimUuid())),
+                context.killerUuid().flatMap(killerUuid -> roleId(game.getRole(killerUuid)))
+        ));
+    }
+
+    private static java.util.Optional<Identifier> roleId(Role role) {
+        return StrawRoleMeaning.roleIdFor(role);
+    }
+
     public static boolean shouldTrackRuntimeState(ServerPlayerEntity player, GameWorldComponent game) {
         boolean shouldTrack = shouldTrackRuntimeState(participantState(player, game));
         if (!shouldTrack) {
@@ -118,7 +143,17 @@ public final class WatheRoundParticipantLifecycle {
             WatheDeathReasonTracker.DeathAttribution attribution,
             long gameTime
     ) {
+        return officialDeathContext(StrawDeathEvents.UNKNOWN_WORLD, victimUuid, attribution, gameTime);
+    }
+
+    static StrawDeathEvents.OfficialDeathContext officialDeathContext(
+            Identifier worldId,
+            UUID victimUuid,
+            WatheDeathReasonTracker.DeathAttribution attribution,
+            long gameTime
+    ) {
         return new StrawDeathEvents.OfficialDeathContext(
+                worldId,
                 victimUuid,
                 attribution.killerUuid(),
                 attribution.indirect(),
@@ -173,6 +208,7 @@ public final class WatheRoundParticipantLifecycle {
             Runnable clearDeathAttribution,
             Runnable clearRuntimeState,
             Runnable syncWatheRound,
+            Supplier<Identifier> worldId,
             LongSupplier gameTime
     ) {
     }

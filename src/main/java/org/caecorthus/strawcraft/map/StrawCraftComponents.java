@@ -1,6 +1,7 @@
 package org.caecorthus.strawcraft.map;
 
 import net.minecraft.entity.player.PlayerEntity;
+import org.caecorthus.strawcraft.NoellesRoleStateComponent;
 import org.caecorthus.strawcraft.StrawPlayerShopComponent;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
@@ -15,6 +16,9 @@ public final class StrawCraftComponents implements ScoreboardComponentInitialize
         registry.beginRegistration(PlayerEntity.class, StrawPlayerShopComponent.KEY)
                 .respawnStrategy(RespawnCopyStrategy.NEVER_COPY)
                 .end(StrawPlayerShopComponent::new);
+        registry.beginRegistration(PlayerEntity.class, NoellesRoleStateComponent.KEY)
+                .respawnStrategy(RespawnCopyStrategy.NEVER_COPY)
+                .end(NoellesRoleStateComponent::new);
     }
 
     @Override

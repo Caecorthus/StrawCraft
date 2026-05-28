@@ -65,6 +65,9 @@ public final class StrawShopPurchaseFlow {
         if (index < 0 || index >= entries.size()) {
             return PurchaseStatus.INVALID_INDEX;
         }
+        if (!PlayerShopCatalog.allowsPurchase(player, entries, index)) {
+            return PurchaseStatus.SHOP_ACCESS_DENIED;
+        }
 
         ShopEntry entry = entries.get(index);
         @Nullable StrawShopEntry strawEntry = StrawShopEntry.metadata(entry).orElse(null);

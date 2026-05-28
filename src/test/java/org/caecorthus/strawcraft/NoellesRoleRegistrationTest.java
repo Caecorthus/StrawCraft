@@ -63,4 +63,24 @@ class NoellesRoleRegistrationTest {
         assertTrue(runtimeBridge >= 0);
         assertTrue(catalogRegistration < runtimeBridge);
     }
+
+    @Test
+    void startupRegistersShopEntryHandlersBeforeGlobalRewrite() throws java.io.IOException {
+        String source = java.nio.file.Files.readString(
+                java.nio.file.Path.of("src/main/java/org/caecorthus/strawcraft/StrawCraft.java"),
+                java.nio.charset.StandardCharsets.UTF_8
+        );
+        int killerShop = source.indexOf("KillerShopLoadout.registerShopEntriesHandler()");
+        int timekeeperShop = source.indexOf("TimekeeperShopLoadout.registerShopEntriesHandler()");
+        int reporterShop = source.indexOf("ReporterShopLoadout.registerShopEntriesHandler()");
+        int globalRewrite = source.indexOf("WatheOfficialBridge.rewriteGlobalShopEntries()");
+
+        assertTrue(killerShop >= 0);
+        assertTrue(timekeeperShop >= 0);
+        assertTrue(reporterShop >= 0);
+        assertTrue(globalRewrite >= 0);
+        assertTrue(killerShop < globalRewrite);
+        assertTrue(timekeeperShop < globalRewrite);
+        assertTrue(reporterShop < globalRewrite);
+    }
 }

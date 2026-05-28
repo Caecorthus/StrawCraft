@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WatheRoundParticipantLifecycleTest {
+    private static final Identifier OVERWORLD = Identifier.of("minecraft", "overworld");
+
     @Test
     void vanillaDeathClearsRuntimeStateAndMirrorsLiveRoundParticipantDeathIntoWathe() {
         WatheRoundParticipantLifecycle.ParticipantState state =
@@ -260,6 +262,7 @@ class WatheRoundParticipantLifecycleTest {
                 },
                 () -> {
                 },
+                () -> OVERWORLD,
                 () -> 100L
         );
     }
@@ -315,6 +318,7 @@ class WatheRoundParticipantLifecycleTest {
                     },
                     runtimeClears::incrementAndGet,
                     syncs::incrementAndGet,
+                    () -> OVERWORLD,
                     () -> gameTime
             );
         }

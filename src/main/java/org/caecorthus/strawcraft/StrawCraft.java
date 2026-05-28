@@ -18,16 +18,27 @@ public final class StrawCraft implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        StrawCraftItems.register();
         NoellesRoleCatalog.registerWithWathe();
         StrawMapConfigReloader.register();
         StrawMapVoting.register();
         StrawInteractionBlacklistAdapter.register();
         WatheOfficialBridge.register();
+        ConductorMasterKeyRuntime.register();
         StrawCorpseMetadata.registerEvents();
+        ScavengerHiddenBodies.registerEvents();
+        DetectiveKillHistoryRuntime.registerEvents();
+        VultureBodyFeastRuntime.register();
+        ProfessorIronManProtectionRuntime.registerEvents();
+        NoellesNeutralWinAdapter.registerEvents();
+        ToxicologistPoisonVisibility.registerEvents();
         WeaponBalance.registerItemAttributes();
         RoleAssignedLoadouts.register();
         VanillaHealthBridge.registerKillRequestHandler();
         KillerShopLoadout.registerShopEntriesHandler();
+        TimekeeperShopLoadout.registerShopEntriesHandler();
+        ReporterShopLoadout.registerShopEntriesHandler();
+        WatheOfficialBridge.rewriteGlobalShopEntries();
         TaczAmmoRefillTimers.register();
     }
 }

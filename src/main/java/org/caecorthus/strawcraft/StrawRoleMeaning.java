@@ -24,6 +24,22 @@ public final class StrawRoleMeaning {
         return meaningFor(role).faction() == StrawFaction.KILLER;
     }
 
+    public static boolean usesBomberShop(Role role) {
+        return matchesRoleId(role, StrawCraft.id("bomber"));
+    }
+
+    public static boolean usesScavengerShop(Role role) {
+        return matchesRoleId(role, StrawCraft.id("scavenger"));
+    }
+
+    public static boolean usesTimekeeperShop(Role role) {
+        return matchesRoleId(role, StrawCraft.id("timekeeper"));
+    }
+
+    public static boolean usesReporterShop(Role role) {
+        return matchesRoleId(role, StrawCraft.id("reporter"));
+    }
+
     public static Optional<GunAmmoFaction> ammoFactionFor(Role role) {
         return defaultAmmoFactionTags().resolveMeaning(meaningFor(role));
     }
@@ -32,8 +48,36 @@ public final class StrawRoleMeaning {
         return role != null && WatheRoleIds.VIGILANTE.equals(role.identifier());
     }
 
+    public static boolean receivesUndercoverWalkieTalkie(Role role) {
+        return role != null && StrawCraft.id("undercover").equals(role.identifier());
+    }
+
+    public static boolean receivesDetectiveInvestigation(Role role) {
+        return role != null && StrawCraft.id("detective").equals(role.identifier());
+    }
+
+    public static boolean receivesProfessorIronManProtection(Role role) {
+        return role != null && StrawCraft.id("professor").equals(role.identifier());
+    }
+
+    public static boolean receivesVultureBodyFeast(Role role) {
+        return role != null && VultureBodyFeastPolicy.VULTURE_ROLE.equals(role.identifier());
+    }
+
+    public static boolean receivesToxicologistPoisonVisibility(Role role) {
+        return role != null && StrawCraft.id("toxicologist").equals(role.identifier());
+    }
+
+    static boolean matchesRoleId(Role role, Identifier roleId) {
+        return role != null && roleId.equals(role.identifier());
+    }
+
     public static StrawFaction factionFor(Role role) {
         return meaningFor(role).faction();
+    }
+
+    public static Optional<Identifier> roleIdFor(Role role) {
+        return role == null ? Optional.empty() : Optional.of(role.identifier());
     }
 
     static Meaning meaningFor(Role role) {

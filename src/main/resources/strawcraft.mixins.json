@@ -9,6 +9,7 @@
     "GameFunctionsMixin",
     "GrenadeEntityMixin",
     "LivingEntityMixin",
+    "PlayerBodyEntityMixin",
     "PlayerEntityMixin",
     "PlayerShopComponentMixin",
     "RevolverItemMixin",
@@ -16,6 +17,7 @@
   ],
   "client": [
     "client.InventoryShopTabMixin",
+    "client.PlayerBodyEntityRendererMixin",
     "client.VanillaInventoryScreenMixin"
   ],
   "injectors": {

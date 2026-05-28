@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -105,9 +106,27 @@ class MixinConfigurationTest {
     }
 
     @Test
-    void strawCraftDoesNotSpawnOfficialWatheBodiesDirectly() throws IOException {
-        assertProductionSurfaceDoesNotContain("PlayerBodyEntity");
+    void strawCraftOnlyTargetsOfficialWatheBodiesForBodyOwnedRoleSlices() throws IOException {
+        Path vultureRuntime = Path.of("src/main/java/org/caecorthus/strawcraft/VultureBodyFeastRuntime.java");
+        Path scavengerRuntime = Path.of("src/main/java/org/caecorthus/strawcraft/ScavengerHiddenBodies.java");
+        Path scavengerClientVisibility =
+                Path.of("src/main/java/org/caecorthus/strawcraft/ScavengerHiddenBodyClientVisibility.java");
+        Path gameFunctionsMixin = Path.of("src/main/java/org/caecorthus/strawcraft/mixin/GameFunctionsMixin.java");
+        Path playerBodyMixin = Path.of("src/main/java/org/caecorthus/strawcraft/mixin/PlayerBodyEntityMixin.java");
+        Path playerBodyRendererMixin =
+                Path.of("src/main/java/org/caecorthus/strawcraft/mixin/client/PlayerBodyEntityRendererMixin.java");
+        assertSourceTreeDoesNotContainExcept("PlayerBodyEntity", Set.of(
+                vultureRuntime,
+                scavengerRuntime,
+                scavengerClientVisibility,
+                gameFunctionsMixin,
+                playerBodyMixin,
+                playerBodyRendererMixin
+        ));
         assertProductionSurfaceDoesNotContain("WatheEntities.PLAYER_BODY");
+        String runtime = Files.readString(vultureRuntime, StandardCharsets.UTF_8);
+        assertTrue(runtime.contains("dev.doctor4t.wathe.entity.PlayerBodyEntity"));
+        assertTrue(runtime.contains("TypeFilter.equals(PlayerBodyEntity.class)"));
     }
 
     @Test
@@ -120,6 +139,19 @@ class MixinConfigurationTest {
         assertTrue(officialBridge.contains("GameEvents.ON_FINISH_INITIALIZE"));
         assertTrue(officialBridge.contains("GameEvents.ON_FINISH_FINALIZE"));
         assertTrue(officialBridge.contains("StrawCorpseMetadata.clearAll();"));
+    }
+
+    @Test
+    void scavengerHiddenBodyStateClearsOnWatheRoundBoundaries() throws IOException {
+        String scavengerHiddenBodies = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/ScavengerHiddenBodies.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(scavengerHiddenBodies.contains("GameEvents.ON_FINISH_INITIALIZE.register((world, game) -> clearRoundWorld(world))"));
+        assertTrue(scavengerHiddenBodies.contains("GameEvents.ON_FINISH_FINALIZE.register((world, game) -> clearRoundWorld(world))"));
+        assertTrue(scavengerHiddenBodies.contains("body).strawcraft$setHiddenByScavenger(false)"));
+        assertTrue(scavengerHiddenBodies.contains("STATE.clearWorld(serverWorld.getRegistryKey().getValue())"));
     }
 
     @Test
@@ -151,7 +183,7 @@ class MixinConfigurationTest {
                 Path.of("src/main/java/org/caecorthus/strawcraft/client/WatheShopClientAdapter.java"),
                 StandardCharsets.UTF_8
         );
-        assertTrue(adapter.contains("canUseKillerFeatures"));
+        assertTrue(adapter.contains("PlayerShopCatalog.presentationFor"));
     }
 
     @Test
@@ -238,6 +270,7 @@ class MixinConfigurationTest {
     @Test
     void strawCraftDoesNotDependOnSparkOnlyWatheEventApis() throws IOException {
         assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.BuildShopEntries");
+        assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.CheckWinCondition");
         assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.KillPlayer");
         assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.RoleAssigned");
         assertSourceTreeDoesNotContain("dev.doctor4t.wathe.api.event.RoleAppearanceCondition");
@@ -245,12 +278,14 @@ class MixinConfigurationTest {
         assertSourceTreeDoesNotContain("dev.doctor4t.noellesroles");
         assertSourceTreeDoesNotContain("noellesroles.mixin");
         assertSourceTreeDoesNotContain("dev.doctor4t.wathe.util.ShopUtils");
+        assertSourceTreeDoesNotContain("neutral_master_key");
         assertSourceTreeDoesNotContain("new ShopEntry.Builder");
         assertSourceTreeDoesNotContain("WatheRoles.NO_ROLE");
         assertSourceTreeDoesNotContain("WatheRoles.VETERAN");
         assertSourceTreeDoesNotContain("game.markPlayerDead");
         assertSourceTreeDoesNotContain("game.hasAnyRole");
         assertSourceTreeDoesNotContain("game.isPlayerDead");
+        assertSourceTreeDoesNotContain("WinStatus.NEUTRAL");
     }
 
     @Test
@@ -272,14 +307,51 @@ class MixinConfigurationTest {
         assertFalse(source.contains("finalizeVoting"));
     }
 
+    @Test
+    void noellesRoleStateComponentIsRegisteredAsStrawCraftOwnedPlayerCca() throws IOException {
+        String modJson = Files.readString(Path.of("src/main/resources/fabric.mod.json"), StandardCharsets.UTF_8);
+        String components = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/map/StrawCraftComponents.java"),
+                StandardCharsets.UTF_8
+        );
+        String bridge = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/WatheOfficialBridge.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(modJson.contains("strawcraft:noelles_role_state"));
+        assertTrue(components.contains("NoellesRoleStateComponent.KEY"));
+        assertTrue(components.contains("RespawnCopyStrategy.NEVER_COPY"));
+        assertTrue(bridge.contains("resetNoellesRoleState"));
+    }
+
+    @Test
+    void noellesRuntimeRoleSelectionUsesPostAssignmentBridgeInsteadOfSparkSelectorMixins() throws IOException {
+        String mixinConfig = readMixinConfig();
+        String bridge = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/WatheOfficialBridge.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertFalse(mixinConfig.contains("ScoreboardRoleSelectorComponent"));
+        assertTrue(bridge.contains("NoellesRuntimeRoleSelection.replaceEligibleOfficialAssignments"));
+    }
+
     private static String readMixinConfig() throws IOException {
         return Files.readString(Path.of("src/main/resources/strawcraft.mixins.json"), StandardCharsets.UTF_8);
     }
 
     private static void assertSourceTreeDoesNotContain(String forbidden) throws IOException {
+        assertSourceTreeDoesNotContainExcept(forbidden, Set.of());
+    }
+
+    private static void assertSourceTreeDoesNotContainExcept(String forbidden, Set<Path> allowedPaths) throws IOException {
         try (var paths = Files.walk(Path.of("src/main/java"))) {
             for (Path path : paths.filter(path -> path.toString().endsWith(".java")).toList()) {
                 String source = Files.readString(path, StandardCharsets.UTF_8);
+                if (allowedPaths.contains(path) && source.contains(forbidden)) {
+                    continue;
+                }
                 assertFalse(source.contains(forbidden), path + " should not contain " + forbidden);
             }
         }

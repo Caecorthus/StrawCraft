@@ -30,7 +30,8 @@
   "custom": {
     "cardinal-components": [
       "strawcraft:map_voting",
-      "strawcraft:shop"
+      "strawcraft:shop",
+      "strawcraft:noelles_role_state"
     ]
   },
   "depends": {

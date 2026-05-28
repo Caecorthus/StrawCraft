@@ -1,8 +1,12 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.Role;
+import dev.doctor4t.wathe.cca.GameWorldComponent;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Identifier;
 import org.caecorthus.strawcraft.api.StrawRoleEvents;
+
+import java.util.List;
 
 public final class RoleAssignedLoadouts {
     private RoleAssignedLoadouts() {
@@ -16,7 +20,14 @@ public final class RoleAssignedLoadouts {
         if (clientWorld) {
             return AssignmentPlan.nothing();
         }
-        return new AssignmentPlan(true, VigilanteLoadout.shouldReplaceAssignedRole(role));
+        NoellesAssignedLoadouts.LoadoutPlan noellesPlan = NoellesAssignedLoadouts.assignmentPlan(role);
+        return new AssignmentPlan(
+                true,
+                VigilanteLoadout.shouldReplaceAssignedRole(role),
+                StrawRoleMeaning.receivesProfessorIronManProtection(role),
+                noellesPlan.itemGrants(),
+                noellesPlan.unsupportedItemGrants()
+        );
     }
 
     private static void applyAssignedLoadout(PlayerEntity player, Role role) {
@@ -27,11 +38,37 @@ public final class RoleAssignedLoadouts {
         if (plan.grantVigilanteGun()) {
             VigilanteLoadout.giveAssignedLoadout(player);
         }
+        if (plan.grantProfessorIronManProtection()) {
+            ProfessorIronManProtection.grant(NoellesRoleStateComponent.KEY.get(player), player.getWorld().getTime());
+        }
+        if (StrawRoleMeaning.matchesRoleId(role, VultureBodyFeastPolicy.VULTURE_ROLE)) {
+            int totalPlayers = GameWorldComponent.KEY.get(player.getWorld()).getRoles().size();
+            VultureBodyFeastPolicy.resetRoundState(NoellesRoleStateComponent.KEY.get(player), totalPlayers);
+        }
+        NoellesAssignedLoadouts.giveAssignedItems(player, plan.assignmentItemGrants());
+        if (grantsItem(plan.assignmentItemGrants(), StrawCraftItems.ANTIDOTE_ID)) {
+            ToxicologistAntidoteItem.applyInitialAssignmentCooldown(player);
+        }
     }
 
-    record AssignmentPlan(boolean removeDisabledWatheGuns, boolean grantVigilanteGun) {
+    private static boolean grantsItem(List<NoellesAssignedLoadouts.ItemGrant> itemGrants, Identifier itemId) {
+        return itemGrants.stream().anyMatch(grant -> itemId.equals(grant.itemId()));
+    }
+
+    record AssignmentPlan(
+            boolean removeDisabledWatheGuns,
+            boolean grantVigilanteGun,
+            boolean grantProfessorIronManProtection,
+            List<NoellesAssignedLoadouts.ItemGrant> assignmentItemGrants,
+            List<NoellesAssignedLoadouts.UnsupportedItemGrant> unsupportedItemGrants
+    ) {
+        AssignmentPlan {
+            assignmentItemGrants = List.copyOf(assignmentItemGrants);
+            unsupportedItemGrants = List.copyOf(unsupportedItemGrants);
+        }
+
         private static AssignmentPlan nothing() {
-            return new AssignmentPlan(false, false);
+            return new AssignmentPlan(false, false, false, List.of(), List.of());
         }
     }
 }

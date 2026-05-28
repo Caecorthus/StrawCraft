@@ -22,13 +22,14 @@ public final class NoellesRoleCatalog {
             killer("phantom"),
             killer("morphling"),
             disabledKiller("the_insane_damned_paranoid_killer"),
-            killer("bomber"),
+            selectableKiller("bomber"),
             killer("assassin"),
             killer("scavenger"),
             killer("serial_killer"),
             killer("silencer"),
             killer("poisoner"),
             killer("bandit"),
+            good("timekeeper"),
             good("time_keeper"),
             good("undercover"),
             good("conductor"),
@@ -38,15 +39,15 @@ public final class NoellesRoleCatalog {
             good("voodoo"),
             good("coroner"),
             good("recaller"),
-            good("toxicologist"),
+            selectableGood("toxicologist"),
             good("reporter"),
-            good("professor"),
+            selectableGood("professor"),
             good("attendant"),
             good("bodyguard"),
             good("survival_master"),
             good("engineer"),
             good("spiritualist"),
-            good("detective"),
+            selectableGood("detective"),
             good("waiter"),
             good("mermaid"),
             good("demon_hunter"),
@@ -59,6 +60,11 @@ public final class NoellesRoleCatalog {
 
     private static final Set<Identifier> FIRST_ROUND_DISABLED_IDS = ROLES.stream()
             .filter(entry -> !entry.firstRoundEligible())
+            .map(Entry::id)
+            .collect(java.util.stream.Collectors.toUnmodifiableSet());
+
+    private static final Set<Identifier> RUNTIME_SELECTION_DISABLED_IDS = ROLES.stream()
+            .filter(entry -> !entry.runtimeSelectable())
             .map(Entry::id)
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
 
@@ -94,8 +100,20 @@ public final class NoellesRoleCatalog {
                 .toList();
     }
 
+    public static List<StrawRoleDefinition> runtimeSelectionDefinitions() {
+        return ROLES.stream()
+                .filter(Entry::firstRoundEligible)
+                .filter(Entry::runtimeSelectable)
+                .map(Entry::definition)
+                .toList();
+    }
+
     public static Set<Identifier> firstRoundDisabledIds() {
         return FIRST_ROUND_DISABLED_IDS;
+    }
+
+    public static Set<Identifier> runtimeSelectionDisabledIds() {
+        return RUNTIME_SELECTION_DISABLED_IDS;
     }
 
     public static void registerWithWathe() {
@@ -114,30 +132,38 @@ public final class NoellesRoleCatalog {
     }
 
     private static Entry killer(String path) {
-        return entry(path, StrawFaction.KILLER, true);
+        return entry(path, StrawFaction.KILLER, true, false);
+    }
+
+    private static Entry selectableKiller(String path) {
+        return entry(path, StrawFaction.KILLER, true, true);
     }
 
     private static Entry disabledKiller(String path) {
-        return entry(path, StrawFaction.KILLER, false);
+        return entry(path, StrawFaction.KILLER, false, false);
     }
 
     private static Entry good(String path) {
-        return entry(path, StrawFaction.GOOD, true);
+        return entry(path, StrawFaction.GOOD, true, false);
+    }
+
+    private static Entry selectableGood(String path) {
+        return entry(path, StrawFaction.GOOD, true, true);
     }
 
     private static Entry disabledGood(String path) {
-        return entry(path, StrawFaction.GOOD, false);
+        return entry(path, StrawFaction.GOOD, false, false);
     }
 
     private static Entry neutral(String path) {
-        return entry(path, StrawFaction.NEUTRAL, true);
+        return entry(path, StrawFaction.NEUTRAL, true, false);
     }
 
     private static Entry disabledNeutral(String path) {
-        return entry(path, StrawFaction.NEUTRAL, false);
+        return entry(path, StrawFaction.NEUTRAL, false, false);
     }
 
-    private static Entry entry(String path, StrawFaction faction, boolean firstRoundEligible) {
+    private static Entry entry(String path, StrawFaction faction, boolean firstRoundEligible, boolean runtimeSelectable) {
         Identifier id = StrawCraft.id(path);
         boolean innocent = faction == StrawFaction.GOOD;
         boolean killerTools = faction == StrawFaction.KILLER;
@@ -146,6 +172,7 @@ public final class NoellesRoleCatalog {
                 id,
                 faction,
                 firstRoundEligible,
+                runtimeSelectable,
                 new Role(id, colorFor(faction), innocent, killerTools, moodType, DEFAULT_MAX_SPRINT_TICKS, false),
                 new StrawRoleDefinition(id, faction, false, true, context -> true)
         );
@@ -164,6 +191,7 @@ public final class NoellesRoleCatalog {
             Identifier id,
             StrawFaction faction,
             boolean firstRoundEligible,
+            boolean runtimeSelectable,
             Role watheRole,
             StrawRoleDefinition definition
     ) {

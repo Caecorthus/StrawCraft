@@ -28,7 +28,10 @@ class RoleMeaningArchitectureTest {
                     "Wathe 角色 id 常量；这里保存数据，不解释行为。",
             Path.of("src/main/java/org/caecorthus/strawcraft/WatheOfficialBridge.java"),
             "Runtime bridge from official Wathe events into StrawCraft events.\n" +
-                    "官方 Wathe 事件进入 StrawCraft 事件的运行时桥接边界。"
+                    "官方 Wathe 事件进入 StrawCraft 事件的运行时桥接边界。",
+            Path.of("src/main/java/org/caecorthus/strawcraft/NoellesRuntimeRoleSelection.java"),
+            "Runtime bridge that translates official Wathe role seats into StrawCraft role selection.\n" +
+                    "把官方 Wathe 职业席位转换成 StrawCraft 职业选择的运行时桥接边界。"
     );
 
     private static final List<String> WATHE_ROLE_INTERPRETATION_TOKENS = List.of(

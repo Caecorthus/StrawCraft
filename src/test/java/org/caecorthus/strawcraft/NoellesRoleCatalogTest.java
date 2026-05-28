@@ -24,6 +24,7 @@ class NoellesRoleCatalogTest {
             "silencer",
             "poisoner",
             "bandit",
+            "timekeeper",
             "time_keeper",
             "undercover",
             "conductor",
