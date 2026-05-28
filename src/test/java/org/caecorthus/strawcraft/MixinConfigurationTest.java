@@ -160,6 +160,26 @@ class MixinConfigurationTest {
     }
 
     @Test
+    void scavengerHiddenBodyTargetingIsOwnedByPlayerBodyMixin() throws IOException {
+        String config = readMixinConfig();
+        String playerBodyMixin = Files.readString(
+                Path.of("src/main/java/org/caecorthus/strawcraft/mixin/PlayerBodyEntityMixin.java"),
+                StandardCharsets.UTF_8
+        );
+
+        assertTrue(config.contains("\"PlayerBodyEntityMixin\""));
+        assertTrue(playerBodyMixin.contains("canBeHitByProjectile()"));
+        assertTrue(playerBodyMixin.contains("canHit()"));
+        assertTrue(playerBodyMixin.contains("isAttackable()"));
+        assertTrue(playerBodyMixin.contains("ScavengerHiddenBodyTargeting.allowsTargeting"));
+        assertTrue(playerBodyMixin.contains("strawcraft$isHiddenByScavenger()"));
+        assertTrue(playerBodyMixin.contains("super.canBeHitByProjectile()"));
+        assertTrue(playerBodyMixin.contains("super.canHit()"));
+        assertTrue(playerBodyMixin.contains("super.isAttackable()"));
+        assertFalse(playerBodyMixin.contains("return false;"));
+    }
+
+    @Test
     void customShopScreenDoesNotInstantiateWatheLimitedInventoryUi() throws IOException {
         String shopScreen = Files.readString(
                 Path.of("src/main/java/org/caecorthus/strawcraft/client/StrawCraftShopScreen.java"),

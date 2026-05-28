@@ -1,11 +1,15 @@
 package org.caecorthus.strawcraft.mixin;
 
 import dev.doctor4t.wathe.entity.PlayerBodyEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.world.World;
 import org.caecorthus.strawcraft.ScavengerHiddenBodyEntity;
+import org.caecorthus.strawcraft.ScavengerHiddenBodyTargeting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = PlayerBodyEntity.class, priority = 900)
-public abstract class PlayerBodyEntityMixin implements ScavengerHiddenBodyEntity {
+public abstract class PlayerBodyEntityMixin extends LivingEntity implements ScavengerHiddenBodyEntity {
     @Unique
     private static final String STRAWCRAFT_HIDDEN_BY_SCAVENGER_NBT_KEY = "StrawCraftHiddenByScavenger";
 
@@ -22,6 +26,30 @@ public abstract class PlayerBodyEntityMixin implements ScavengerHiddenBodyEntity
     @Unique
     private static final TrackedData<Boolean> STRAWCRAFT_HIDDEN_BY_SCAVENGER =
             DataTracker.registerData(PlayerBodyEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
+    protected PlayerBodyEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
+        super(entityType, world);
+    }
+
+    @Override
+    public boolean canBeHitByProjectile() {
+        return ScavengerHiddenBodyTargeting.allowsTargeting(
+                strawcraft$isHiddenByScavenger(),
+                super.canBeHitByProjectile()
+        );
+    }
+
+    @Override
+    public boolean canHit() {
+        return ScavengerHiddenBodyTargeting.allowsTargeting(strawcraft$isHiddenByScavenger(), super.canHit());
+    }
+
+    @Override
+    public boolean isAttackable() {
+        // Hidden Scavenger bodies should not consume attack, projectile, or crosshair checks.
+        // 被拾荒者隐藏的尸体不应拦截攻击、弹射物或准星检测。
+        return ScavengerHiddenBodyTargeting.allowsTargeting(strawcraft$isHiddenByScavenger(), super.isAttackable());
+    }
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void strawcraft$trackScavengerHiddenBody(DataTracker.Builder builder, CallbackInfo callbackInfo) {
