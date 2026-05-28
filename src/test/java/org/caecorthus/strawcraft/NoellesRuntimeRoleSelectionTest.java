@@ -43,6 +43,7 @@ class NoellesRuntimeRoleSelectionTest {
         UUID eighteenthCivilian = new UUID(0, 23);
         UUID nineteenthCivilian = new UUID(0, 24);
         UUID fifthKiller = new UUID(0, 25);
+        UUID twentiethCivilian = new UUID(0, 26);
         Map<UUID, Identifier> officialAssignments = linkedAssignments(
                 entry(firstCivilian, WatheRoleIds.CIVILIAN),
                 entry(firstKiller, WatheRoleIds.KILLER),
@@ -68,7 +69,8 @@ class NoellesRuntimeRoleSelectionTest {
                 entry(seventeenthCivilian, WatheRoleIds.CIVILIAN),
                 entry(eighteenthCivilian, WatheRoleIds.CIVILIAN),
                 entry(nineteenthCivilian, WatheRoleIds.CIVILIAN),
-                entry(fifthKiller, WatheRoleIds.KILLER)
+                entry(fifthKiller, WatheRoleIds.KILLER),
+                entry(twentiethCivilian, WatheRoleIds.CIVILIAN)
         );
 
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
@@ -94,10 +96,11 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("bodyguard"), selected.get(thirteenthCivilian));
         assertEquals(StrawCraft.id("survival_master"), selected.get(fourteenthCivilian));
         assertEquals(StrawCraft.id("engineer"), selected.get(fifteenthCivilian));
-        assertEquals(StrawCraft.id("detective"), selected.get(sixteenthCivilian));
-        assertEquals(StrawCraft.id("waiter"), selected.get(seventeenthCivilian));
-        assertEquals(StrawCraft.id("mermaid"), selected.get(eighteenthCivilian));
-        assertEquals(StrawCraft.id("demon_hunter"), selected.get(nineteenthCivilian));
+        assertEquals(StrawCraft.id("spiritualist"), selected.get(sixteenthCivilian));
+        assertEquals(StrawCraft.id("detective"), selected.get(seventeenthCivilian));
+        assertEquals(StrawCraft.id("waiter"), selected.get(eighteenthCivilian));
+        assertEquals(StrawCraft.id("mermaid"), selected.get(nineteenthCivilian));
+        assertEquals(StrawCraft.id("demon_hunter"), selected.get(twentiethCivilian));
     }
 
     @Test
@@ -131,6 +134,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("attendant"),
                 StrawCraft.id("bodyguard"),
                 StrawCraft.id("engineer"),
+                StrawCraft.id("spiritualist"),
                 StrawCraft.id("detective"),
                 StrawCraft.id("survival_master"),
                 StrawCraft.id("waiter"),

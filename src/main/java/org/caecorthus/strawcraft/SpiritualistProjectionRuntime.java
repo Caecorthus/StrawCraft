@@ -5,6 +5,7 @@ import dev.doctor4t.wathe.cca.GameWorldComponent;
 import dev.doctor4t.wathe.game.GameFunctions;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.PlaySoundFromEntityS2CPacket;
@@ -30,6 +31,7 @@ public final class SpiritualistProjectionRuntime {
         PayloadTypeRegistry.playC2S().register(SpiritualistProjectionPayload.ID, SpiritualistProjectionPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(SpiritualistProjectionPayload.ID, SpiritualistProjectionRuntime::handleProjection);
         ServerTickEvents.END_SERVER_TICK.register(SpiritualistProjectionRuntime::tickProjectingPlayers);
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> forceReturnOnDisconnect(handler.getPlayer()));
     }
 
     private static void handleProjection(SpiritualistProjectionPayload payload, ServerPlayNetworking.Context context) {
@@ -109,6 +111,14 @@ public final class SpiritualistProjectionRuntime {
     private static void tickProjectingPlayers(MinecraftServer server) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             tickProjection(player);
+        }
+    }
+
+    private static void forceReturnOnDisconnect(ServerPlayerEntity player) {
+        ServerWorld world = player.getServerWorld();
+        NoellesRoleStateComponent roleState = NoellesRoleStateComponent.KEY.get(player);
+        if (SpiritualistProjectionPolicy.isProjecting(roleState)) {
+            SpiritualistProjectionPolicy.forceReturn(roleState, world.getTime());
         }
     }
 

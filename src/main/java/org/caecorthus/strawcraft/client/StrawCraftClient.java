@@ -381,6 +381,8 @@ public final class StrawCraftClient implements ClientModInitializer {
     }
 
     private static void tickSpiritualistProjection(MinecraftClient client) {
+        SpiritualistProjectionClientView.tick(client);
+
         if (client.player == null || client.world == null) {
             return;
         }
