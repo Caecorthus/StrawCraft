@@ -79,6 +79,7 @@ class StrawRoleMeaningTest {
         assertEquals(StrawFaction.KILLER, factionFor(noellesRole("assassin")));
         assertEquals(StrawFaction.GOOD, factionFor(noellesRole("detective")));
         assertEquals(StrawFaction.GOOD, factionFor(noellesRole("bodyguard")));
+        assertEquals(StrawFaction.GOOD, factionFor(noellesRole("awesome_binglus")));
         assertEquals(StrawFaction.NEUTRAL, factionFor(noellesRole("jester")));
         assertEquals(StrawFaction.NEUTRAL, factionFor(noellesRole("taotie")));
     }
