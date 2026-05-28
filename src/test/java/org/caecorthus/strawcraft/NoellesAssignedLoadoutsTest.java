@@ -87,6 +87,15 @@ class NoellesAssignedLoadoutsTest {
     }
 
     @Test
+    void noisemakerReceivesOneRealStrawCraftNoisemakerGrant() {
+        RoleAssignedLoadouts.AssignmentPlan plan = RoleAssignedLoadouts.planAssignedLoadout(noellesRole("noisemaker"), false);
+
+        assertEquals(List.of(new NoellesAssignedLoadouts.ItemGrant(StrawCraft.id("noisemaker"), 1)),
+                plan.assignmentItemGrants());
+        assertTrue(plan.unsupportedItemGrants().isEmpty());
+    }
+
+    @Test
     void neutralRolesDoNotReceiveFakeMasterKeyPlaceholders() {
         for (String rolePath : List.of("vulture", "pathogen", "taotie", "corrupt_cop")) {
             RoleAssignedLoadouts.AssignmentPlan plan = RoleAssignedLoadouts.planAssignedLoadout(noellesRole(rolePath), false);
@@ -111,6 +120,6 @@ class NoellesAssignedLoadoutsTest {
     }
 
     private static Set<Identifier> registeredStrawCraftItemIds() {
-        return Set.of(StrawCraftItems.MASTER_KEY_ID, StrawCraftItems.ANTIDOTE_ID);
+        return Set.of(StrawCraftItems.MASTER_KEY_ID, StrawCraftItems.ANTIDOTE_ID, StrawCraftItems.NOISEMAKER_ID);
     }
 }

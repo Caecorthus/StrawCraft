@@ -17,6 +17,7 @@ final class NoellesAssignedLoadouts {
     static final Identifier WATHE_NOTE = Identifier.of("wathe", "note");
     static final Identifier STRAW_MASTER_KEY = StrawCraft.id("master_key");
     static final Identifier STRAW_ANTIDOTE = StrawCraft.id("antidote");
+    static final Identifier STRAW_NOISEMAKER = StrawCraft.id("noisemaker");
 
     private static final String UNDERCOVER_WALKIE_TALKIE_UNSUPPORTED =
             "XruiDD Undercover walkie-talkie depends on Spark-ver Wathe; official Wathe has no wathe:walkie_talkie item";
@@ -25,7 +26,8 @@ final class NoellesAssignedLoadouts {
             unsupported("undercover", WATHE_WALKIE_TALKIE, 1, UNDERCOVER_WALKIE_TALKIE_UNSUPPORTED),
             supported("awesome_binglus", WATHE_NOTE, 16),
             supported("conductor", STRAW_MASTER_KEY, 1),
-            supported("toxicologist", STRAW_ANTIDOTE, 1)
+            supported("toxicologist", STRAW_ANTIDOTE, 1),
+            supported("noisemaker", STRAW_NOISEMAKER, 1)
     );
 
     private NoellesAssignedLoadouts() {
