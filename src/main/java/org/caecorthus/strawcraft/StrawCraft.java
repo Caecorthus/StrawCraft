@@ -35,6 +35,7 @@ public final class StrawCraft implements ModInitializer {
         BodyguardProtectionRuntime.registerEvents();
         NoellesNeutralWinAdapter.registerEvents();
         SurvivalMasterCountdownRuntime.registerEvents();
+        MermaidWaterAdaptationRuntime.registerEvents();
         ToxicologistPoisonVisibility.registerEvents();
         WeaponBalance.registerItemAttributes();
         RoleAssignedLoadouts.register();

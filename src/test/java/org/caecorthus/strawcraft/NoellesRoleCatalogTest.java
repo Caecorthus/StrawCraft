@@ -106,7 +106,8 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("bodyguard"),
                 StrawCraft.id("engineer"),
                 StrawCraft.id("detective"),
-                StrawCraft.id("survival_master")
+                StrawCraft.id("survival_master"),
+                StrawCraft.id("mermaid")
         ), runtimeIds);
     }
 

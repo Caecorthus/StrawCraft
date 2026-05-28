@@ -118,6 +118,10 @@ public final class StrawRoleMeaning {
         return role != null && PhantomInvisibilityPolicy.PHANTOM_ROLE.equals(role.identifier());
     }
 
+    public static boolean receivesMermaidWaterAdaptation(Role role) {
+        return role != null && MermaidWaterAdaptationPolicy.MERMAID_ROLE.equals(role.identifier());
+    }
+
     static boolean matchesRoleId(Role role, Identifier roleId) {
         return role != null && roleId.equals(role.identifier());
     }
