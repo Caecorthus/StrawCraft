@@ -48,6 +48,7 @@ public final class StrawCraft implements ModInitializer {
         SwapperSwapRuntime.register();
         ReporterMarkRuntime.register();
         VoodooBondRuntime.register();
+        PhantomInvisibilityRuntime.register();
         WatheOfficialBridge.rewriteGlobalShopEntries();
         TaczAmmoRefillTimers.register();
     }

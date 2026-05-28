@@ -1,5 +1,8 @@
 {
   "category.strawcraft.keybinds": "StrawCraft",
+  "key.strawcraft.phantom_invisibility": "幽灵隐身",
+  "message.strawcraft.phantom.invisible": "隐身 30 秒。",
+  "message.strawcraft.phantom.cooldown": "隐身还需 %s 秒。",
   "key.strawcraft.reporter_mark": "记者标记",
   "message.strawcraft.reporter.select_target": "瞄准一名玩家来标记。",
   "message.strawcraft.reporter.marked": "已标记 %s。",

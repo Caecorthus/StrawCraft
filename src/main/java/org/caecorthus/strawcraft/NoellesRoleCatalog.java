@@ -19,7 +19,7 @@ public final class NoellesRoleCatalog {
 
     private static final List<Entry> ROLES = List.of(
             selectableKiller("swapper"),
-            killer("phantom"),
+            selectableKiller("phantom"),
             killer("morphling"),
             disabledKiller("the_insane_damned_paranoid_killer"),
             selectableKiller("bomber"),

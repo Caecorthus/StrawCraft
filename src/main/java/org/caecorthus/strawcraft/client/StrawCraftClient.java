@@ -13,6 +13,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.EntityHitResult;
 import org.caecorthus.strawcraft.CoronerInspectPayload;
 import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
+import org.caecorthus.strawcraft.PhantomInvisibilityPayload;
 import org.caecorthus.strawcraft.RecallerRecallPayload;
 import org.caecorthus.strawcraft.ReporterMarkPayload;
 import org.caecorthus.strawcraft.SwapperSwapPayload;
@@ -32,6 +33,7 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding swapperSwapKey;
     private static KeyBinding reporterMarkKey;
     private static KeyBinding voodooBondKey;
+    private static KeyBinding phantomInvisibilityKey;
     private static UUID pendingSwapperTarget;
     private static boolean wasVotingActive;
     private static boolean autoOpenedVotingScreen;
@@ -86,6 +88,12 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_Z,
                 "category.strawcraft.keybinds"
         ));
+        phantomInvisibilityKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.phantom_invisibility",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_I,
+                "category.strawcraft.keybinds"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVotingScreen);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickDetectiveInvestigation);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickCoronerInspection);
@@ -94,6 +102,7 @@ public final class StrawCraftClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickSwapperSwap);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickReporterMark);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVoodooBond);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPhantomInvisibility);
     }
 
     private static void tickVotingScreen(MinecraftClient client) {
@@ -273,5 +282,17 @@ public final class StrawCraftClient implements ClientModInitializer {
         // Voodoo sends only the aimed player's UUID; the server owns the bond and all gameplay checks.
         // 巫毒只发送准星指向玩家的 UUID；绑定状态和所有玩法判定都留在服务端。
         ClientPlayNetworking.send(new VoodooBondPayload(target.getUuid()));
+    }
+
+    private static void tickPhantomInvisibility(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (phantomInvisibilityKey.wasPressed()) {
+            // Phantom sends only empty intent; the server owns role, round, effect, and cooldown validation.
+            // 幽灵只发送空意图；身份、回合、效果和冷却判定全部留在服务端。
+            ClientPlayNetworking.send(new PhantomInvisibilityPayload());
+        }
     }
 }

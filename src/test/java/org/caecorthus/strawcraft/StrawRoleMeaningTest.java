@@ -140,6 +140,13 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void onlyNoellesPhantomReceivesInvisibilityMeaning() {
+        assertTrue(receivesPhantomInvisibility(noellesRole("phantom")));
+        assertFalse(receivesPhantomInvisibility(noellesRole("swapper")));
+        assertFalse(receivesPhantomInvisibility(role(WatheRoleIds.KILLER, false, true)));
+    }
+
+    @Test
     void nullAndUnknownRoleDoNotReceivePrivilegedBehavior() {
         Role unknownRole = role(Identifier.of("strawcraft", "unknown_fixture"), false, false);
 
@@ -154,6 +161,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesSwapperSwap(null));
         assertFalse(receivesReporterMark(null));
         assertFalse(receivesVoodooDeathBond(null));
+        assertFalse(receivesPhantomInvisibility(null));
         assertTrue(ammoFactionFor(null).isEmpty());
         assertFalse(canUseKillerShop(unknownRole));
         assertFalse(receivesVigilanteLoadout(unknownRole));
@@ -165,6 +173,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesSwapperSwap(unknownRole));
         assertFalse(receivesReporterMark(unknownRole));
         assertFalse(receivesVoodooDeathBond(unknownRole));
+        assertFalse(receivesPhantomInvisibility(unknownRole));
         assertTrue(ammoFactionFor(unknownRole).isEmpty());
     }
 
@@ -206,6 +215,10 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesVoodooDeathBond(Role role) {
         return invokeBoolean("receivesVoodooDeathBond", role);
+    }
+
+    private static boolean receivesPhantomInvisibility(Role role) {
+        return invokeBoolean("receivesPhantomInvisibility", role);
     }
 
     private static Optional<GunAmmoFaction> ammoFactionFor(Role role) {
