@@ -341,4 +341,38 @@ class NoellesRoleStateTest {
         loaded.readFromNbt(nbt);
         assertTrue(loaded.timedBomb().isEmpty());
     }
+
+    @Test
+    void morphlingDisguiseStateRoundTripsThroughNbtAndResetClearsIt() {
+        UUID disguise = UUID.randomUUID();
+        NoellesRoleState saved = new NoellesRoleState();
+        saved.setMorphlingDisguiseState(new NoellesRoleState.MorphlingDisguiseState(
+                Optional.of(disguise),
+                MorphlingDisguisePolicy.ACTIVE_TICKS,
+                900L,
+                true
+        ));
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        NoellesRoleState.MorphlingDisguiseState state = loaded.morphlingDisguiseState();
+        assertEquals(Optional.of(disguise), state.disguiseUuid());
+        assertEquals(MorphlingDisguisePolicy.ACTIVE_TICKS, state.morphTicks());
+        assertEquals(900L, state.activeDeadlineTick());
+        assertTrue(state.corpseMode());
+
+        loaded.reset();
+
+        assertEquals(NoellesRoleState.MorphlingDisguiseState.empty(), loaded.morphlingDisguiseState());
+
+        NoellesRoleState empty = new NoellesRoleState();
+        empty.writeToNbt(nbt);
+        loaded.readFromNbt(nbt);
+
+        assertEquals(NoellesRoleState.MorphlingDisguiseState.empty(), loaded.morphlingDisguiseState());
+    }
 }

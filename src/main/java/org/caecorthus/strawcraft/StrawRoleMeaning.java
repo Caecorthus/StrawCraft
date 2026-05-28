@@ -137,6 +137,10 @@ public final class StrawRoleMeaning {
         return role != null && StrawCraft.id("swapper").equals(role.identifier());
     }
 
+    public static boolean receivesMorphlingDisguise(Role role) {
+        return role != null && MorphlingDisguisePolicy.MORPHLING_ROLE.equals(role.identifier());
+    }
+
     public static boolean receivesReporterMark(Role role) {
         return role != null && StrawCraft.id("reporter").equals(role.identifier());
     }

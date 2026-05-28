@@ -55,6 +55,7 @@ public final class StrawCraft implements ModInitializer {
         BomberTimedBombRuntime.register();
         RecallerRecallRuntime.register();
         SwapperSwapRuntime.register();
+        MorphlingDisguiseRuntime.register();
         ReporterMarkRuntime.register();
         VoodooBondRuntime.register();
         PhantomInvisibilityRuntime.register();

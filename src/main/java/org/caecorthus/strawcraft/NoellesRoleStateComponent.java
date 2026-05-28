@@ -258,6 +258,20 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         sync();
     }
 
+    public void setMorphlingDisguiseState(NoellesRoleState.MorphlingDisguiseState disguiseState) {
+        state.setMorphlingDisguiseState(disguiseState);
+        sync();
+    }
+
+    public NoellesRoleState.MorphlingDisguiseState morphlingDisguiseState() {
+        return state.morphlingDisguiseState();
+    }
+
+    public void clearMorphlingDisguiseState() {
+        state.clearMorphlingDisguiseState();
+        sync();
+    }
+
     public void setAbilityCooldown(String abilityId, long now, int cooldownTicks) {
         state.setAbilityCooldown(abilityId, now, cooldownTicks);
         sync();

@@ -47,6 +47,11 @@ public final class NoellesRoleState {
     private static final String SPIRITUALIST_BODY_Y_KEY = "BodyY";
     private static final String SPIRITUALIST_BODY_Z_KEY = "BodyZ";
     private static final String SPIRITUALIST_STARTED_AT_KEY = "StartedAtTick";
+    private static final String MORPHLING_DISGUISE_KEY = "MorphlingDisguise";
+    private static final String MORPHLING_DISGUISE_UUID_KEY = "DisguiseUuid";
+    private static final String MORPHLING_MORPH_TICKS_KEY = "MorphTicks";
+    private static final String MORPHLING_ACTIVE_DEADLINE_KEY = "ActiveDeadlineTick";
+    private static final String MORPHLING_CORPSE_MODE_KEY = "CorpseMode";
     private static final String CLAIM_ROLE_ID_KEY = "RoleId";
     private static final String CLAIM_TRIGGER_KEY = "Trigger";
     private static final String CLAIM_OPPONENT_UUID_KEY = "OpponentUuid";
@@ -61,6 +66,7 @@ public final class NoellesRoleState {
     private Optional<TimedBomb> timedBomb = Optional.empty();
     private Optional<RecallPoint> recallerRecallPoint = Optional.empty();
     private Optional<SpiritualistProjection> spiritualistProjection = Optional.empty();
+    private MorphlingDisguiseState morphlingDisguiseState = MorphlingDisguiseState.empty();
 
     public void reset() {
         abilityCooldownDeadlines.clear();
@@ -72,6 +78,7 @@ public final class NoellesRoleState {
         timedBomb = Optional.empty();
         recallerRecallPoint = Optional.empty();
         spiritualistProjection = Optional.empty();
+        morphlingDisguiseState = MorphlingDisguiseState.empty();
     }
 
     public boolean tryBeginAbilityCooldown(String abilityId, long now, int cooldownTicks) {
@@ -303,6 +310,18 @@ public final class NoellesRoleState {
         spiritualistProjection = Optional.empty();
     }
 
+    public void setMorphlingDisguiseState(MorphlingDisguiseState state) {
+        morphlingDisguiseState = Objects.requireNonNull(state, "state");
+    }
+
+    public MorphlingDisguiseState morphlingDisguiseState() {
+        return morphlingDisguiseState;
+    }
+
+    public void clearMorphlingDisguiseState() {
+        morphlingDisguiseState = MorphlingDisguiseState.empty();
+    }
+
     public void readFromNbt(NbtCompound nbt) {
         abilityCooldownDeadlines.clear();
         flags.clear();
@@ -313,6 +332,7 @@ public final class NoellesRoleState {
         timedBomb = Optional.empty();
         recallerRecallPoint = Optional.empty();
         spiritualistProjection = Optional.empty();
+        morphlingDisguiseState = MorphlingDisguiseState.empty();
 
         NbtCompound cooldowns = nbt.getCompound(COOLDOWNS_KEY);
         for (String abilityId : cooldowns.getKeys()) {
@@ -365,6 +385,10 @@ public final class NoellesRoleState {
         if (nbt.contains(SPIRITUALIST_PROJECTION_KEY, NbtElement.COMPOUND_TYPE)) {
             spiritualistProjection = readSpiritualistProjection(nbt.getCompound(SPIRITUALIST_PROJECTION_KEY));
         }
+
+        if (nbt.contains(MORPHLING_DISGUISE_KEY, NbtElement.COMPOUND_TYPE)) {
+            morphlingDisguiseState = readMorphlingDisguiseState(nbt.getCompound(MORPHLING_DISGUISE_KEY));
+        }
     }
 
     public void writeToNbt(NbtCompound nbt) {
@@ -412,6 +436,12 @@ public final class NoellesRoleState {
             nbt.put(SPIRITUALIST_PROJECTION_KEY, writeSpiritualistProjection(spiritualistProjection.get()));
         } else {
             nbt.remove(SPIRITUALIST_PROJECTION_KEY);
+        }
+
+        if (morphlingDisguiseState.hasState()) {
+            nbt.put(MORPHLING_DISGUISE_KEY, writeMorphlingDisguiseState(morphlingDisguiseState));
+        } else {
+            nbt.remove(MORPHLING_DISGUISE_KEY);
         }
     }
 
@@ -486,6 +516,33 @@ public final class NoellesRoleState {
         nbt.putDouble(SPIRITUALIST_BODY_Y_KEY, projection.bodyY());
         nbt.putDouble(SPIRITUALIST_BODY_Z_KEY, projection.bodyZ());
         nbt.putLong(SPIRITUALIST_STARTED_AT_KEY, projection.startedAtTick());
+        return nbt;
+    }
+
+    private static MorphlingDisguiseState readMorphlingDisguiseState(NbtCompound nbt) {
+        Optional<UUID> disguiseUuid = Optional.empty();
+        String savedDisguiseUuid = nbt.getString(MORPHLING_DISGUISE_UUID_KEY);
+        if (!savedDisguiseUuid.isBlank()) {
+            try {
+                disguiseUuid = Optional.of(UUID.fromString(savedDisguiseUuid));
+            } catch (IllegalArgumentException ignored) {
+                disguiseUuid = Optional.empty();
+            }
+        }
+        return new MorphlingDisguiseState(
+                disguiseUuid,
+                nbt.getInt(MORPHLING_MORPH_TICKS_KEY),
+                nbt.getLong(MORPHLING_ACTIVE_DEADLINE_KEY),
+                nbt.getBoolean(MORPHLING_CORPSE_MODE_KEY)
+        );
+    }
+
+    private static NbtCompound writeMorphlingDisguiseState(MorphlingDisguiseState state) {
+        NbtCompound nbt = new NbtCompound();
+        state.disguiseUuid().ifPresent(uuid -> nbt.putString(MORPHLING_DISGUISE_UUID_KEY, uuid.toString()));
+        nbt.putInt(MORPHLING_MORPH_TICKS_KEY, state.morphTicks());
+        nbt.putLong(MORPHLING_ACTIVE_DEADLINE_KEY, state.activeDeadlineTick());
+        nbt.putBoolean(MORPHLING_CORPSE_MODE_KEY, state.corpseMode());
         return nbt;
     }
 
@@ -576,6 +633,27 @@ public final class NoellesRoleState {
         public SpiritualistProjection {
             // Spiritualist projection stores only server-owned body coordinates for cancellation checks.
             // 通灵者投射只保存服务端掌控的本体坐标，用于取消条件判定。
+        }
+    }
+
+    public record MorphlingDisguiseState(
+            Optional<UUID> disguiseUuid,
+            int morphTicks,
+            long activeDeadlineTick,
+            boolean corpseMode
+    ) {
+        public MorphlingDisguiseState {
+            // Morphling stores only server-accepted disguise intent until visual parity is designed.
+            // 变形者这里只保存服务端认可的伪装意图，视觉同步留给后续设计。
+            Objects.requireNonNull(disguiseUuid, "disguiseUuid");
+        }
+
+        public static MorphlingDisguiseState empty() {
+            return new MorphlingDisguiseState(Optional.empty(), 0, 0L, false);
+        }
+
+        public boolean hasState() {
+            return disguiseUuid.isPresent() || morphTicks != 0 || activeDeadlineTick != 0L || corpseMode;
         }
     }
 
