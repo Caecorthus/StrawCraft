@@ -1,5 +1,6 @@
 {
   "category.strawcraft.keybinds": "StrawCraft",
+  "key.strawcraft.spiritualist_project": "通灵者投射",
   "key.strawcraft.assassin_guess": "刺客猜测",
   "message.strawcraft.assassin.correct": "猜对了：%s 已被刺杀。",
   "message.strawcraft.assassin.wrong": "猜错了：%s 不是该职业。",
@@ -15,6 +16,10 @@
   "key.strawcraft.pathogen_infect": "病原体感染",
   "key.strawcraft.phantom_invisibility": "幽灵隐身",
   "message.strawcraft.phantom.invisible": "隐身 30 秒。",
+  "message.strawcraft.spiritualist.projecting": "正在投射。",
+  "message.strawcraft.spiritualist.returned": "已返回本体。",
+  "message.strawcraft.spiritualist.forced_return": "被强制拉回本体。",
+  "message.strawcraft.spiritualist.cooldown": "投射还需 %s 秒。",
   "message.strawcraft.phantom.cooldown": "隐身还需 %s 秒。",
   "message.strawcraft.pathogen.infected": "已感染 %s。",
   "message.strawcraft.pathogen.infected_claimed": "已感染 %s。已记录中立胜利宣称。",

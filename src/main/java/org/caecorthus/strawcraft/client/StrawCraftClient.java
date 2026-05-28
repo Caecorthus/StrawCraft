@@ -22,6 +22,7 @@ import org.caecorthus.strawcraft.PathogenInfectionPayload;
 import org.caecorthus.strawcraft.PhantomInvisibilityPayload;
 import org.caecorthus.strawcraft.RecallerRecallPayload;
 import org.caecorthus.strawcraft.ReporterMarkPayload;
+import org.caecorthus.strawcraft.SpiritualistProjectionPayload;
 import org.caecorthus.strawcraft.StrawCraftEntities;
 import org.caecorthus.strawcraft.StrawRoleMeaning;
 import org.caecorthus.strawcraft.SwapperSwapPayload;
@@ -42,6 +43,7 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding reporterMarkKey;
     private static KeyBinding voodooBondKey;
     private static KeyBinding phantomInvisibilityKey;
+    private static KeyBinding spiritualistProjectionKey;
     private static KeyBinding pathogenInfectionKey;
     private static KeyBinding assassinGuessKey;
     private static UUID pendingSwapperTarget;
@@ -106,6 +108,12 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_I,
                 "category.strawcraft.keybinds"
         ));
+        spiritualistProjectionKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.spiritualist_project",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_O,
+                "category.strawcraft.keybinds"
+        ));
         pathogenInfectionKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.strawcraft.pathogen_infect",
                 InputUtil.Type.KEYSYM,
@@ -127,6 +135,7 @@ public final class StrawCraftClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickReporterMark);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVoodooBond);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPhantomInvisibility);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickSpiritualistProjection);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPathogenInfection);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickAssassinGuess);
     }
@@ -319,6 +328,18 @@ public final class StrawCraftClient implements ClientModInitializer {
             // Phantom sends only empty intent; the server owns role, round, effect, and cooldown validation.
             // 幽灵只发送空意图；身份、回合、效果和冷却判定全部留在服务端。
             ClientPlayNetworking.send(new PhantomInvisibilityPayload());
+        }
+    }
+
+    private static void tickSpiritualistProjection(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (spiritualistProjectionKey.wasPressed()) {
+            // Spiritualist sends only empty intent; projection state and all forced-return checks stay server-owned.
+            // 通灵者只发送空意图；投射状态和所有强制返回判定都由服务端掌控。
+            ClientPlayNetworking.send(new SpiritualistProjectionPayload());
         }
     }
 

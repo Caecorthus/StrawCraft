@@ -166,6 +166,13 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void onlyNoellesSpiritualistReceivesProjectionMeaning() {
+        assertTrue(receivesSpiritualistProjection(noellesRole("spiritualist")));
+        assertFalse(receivesSpiritualistProjection(noellesRole("phantom")));
+        assertFalse(receivesSpiritualistProjection(role(WatheRoleIds.CIVILIAN, true, false)));
+    }
+
+    @Test
     void onlyNoellesMermaidReceivesWaterAdaptationMeaning() {
         assertTrue(receivesMermaidWaterAdaptation(noellesRole("mermaid")));
         assertFalse(receivesMermaidWaterAdaptation(noellesRole("detective")));
@@ -200,6 +207,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesReporterMark(null));
         assertFalse(receivesVoodooDeathBond(null));
         assertFalse(receivesPhantomInvisibility(null));
+        assertFalse(receivesSpiritualistProjection(null));
         assertFalse(receivesMermaidWaterAdaptation(null));
         assertFalse(receivesPoisonVisibility(null));
         assertFalse(receivesToxicologistPoisonVisibility(null));
@@ -217,6 +225,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesReporterMark(unknownRole));
         assertFalse(receivesVoodooDeathBond(unknownRole));
         assertFalse(receivesPhantomInvisibility(unknownRole));
+        assertFalse(receivesSpiritualistProjection(unknownRole));
         assertFalse(receivesMermaidWaterAdaptation(unknownRole));
         assertFalse(receivesPoisonVisibility(unknownRole));
         assertFalse(receivesToxicologistPoisonVisibility(unknownRole));
@@ -273,6 +282,10 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesPhantomInvisibility(Role role) {
         return invokeBoolean("receivesPhantomInvisibility", role);
+    }
+
+    private static boolean receivesSpiritualistProjection(Role role) {
+        return invokeBoolean("receivesSpiritualistProjection", role);
     }
 
     private static boolean receivesMermaidWaterAdaptation(Role role) {

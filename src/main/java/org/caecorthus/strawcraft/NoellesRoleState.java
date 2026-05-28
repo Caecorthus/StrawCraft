@@ -41,6 +41,11 @@ public final class NoellesRoleState {
     private static final String RECALL_POINT_Z_KEY = "Z";
     private static final String RECALL_POINT_YAW_KEY = "Yaw";
     private static final String RECALL_POINT_PITCH_KEY = "Pitch";
+    private static final String SPIRITUALIST_PROJECTION_KEY = "SpiritualistProjection";
+    private static final String SPIRITUALIST_BODY_X_KEY = "BodyX";
+    private static final String SPIRITUALIST_BODY_Y_KEY = "BodyY";
+    private static final String SPIRITUALIST_BODY_Z_KEY = "BodyZ";
+    private static final String SPIRITUALIST_STARTED_AT_KEY = "StartedAtTick";
     private static final String CLAIM_ROLE_ID_KEY = "RoleId";
     private static final String CLAIM_TRIGGER_KEY = "Trigger";
     private static final String CLAIM_OPPONENT_UUID_KEY = "OpponentUuid";
@@ -54,6 +59,7 @@ public final class NoellesRoleState {
     private final Map<String, NeutralWinClaim> neutralWinClaims = new HashMap<>();
     private Optional<TimedBomb> timedBomb = Optional.empty();
     private Optional<RecallPoint> recallerRecallPoint = Optional.empty();
+    private Optional<SpiritualistProjection> spiritualistProjection = Optional.empty();
 
     public void reset() {
         abilityCooldownDeadlines.clear();
@@ -64,6 +70,7 @@ public final class NoellesRoleState {
         neutralWinClaims.clear();
         timedBomb = Optional.empty();
         recallerRecallPoint = Optional.empty();
+        spiritualistProjection = Optional.empty();
     }
 
     public boolean tryBeginAbilityCooldown(String abilityId, long now, int cooldownTicks) {
@@ -269,6 +276,18 @@ public final class NoellesRoleState {
         recallerRecallPoint = Optional.empty();
     }
 
+    public void setSpiritualistProjection(SpiritualistProjection projection) {
+        spiritualistProjection = Optional.of(Objects.requireNonNull(projection, "projection"));
+    }
+
+    public Optional<SpiritualistProjection> spiritualistProjection() {
+        return spiritualistProjection;
+    }
+
+    public void clearSpiritualistProjection() {
+        spiritualistProjection = Optional.empty();
+    }
+
     public void readFromNbt(NbtCompound nbt) {
         abilityCooldownDeadlines.clear();
         flags.clear();
@@ -278,6 +297,7 @@ public final class NoellesRoleState {
         neutralWinClaims.clear();
         timedBomb = Optional.empty();
         recallerRecallPoint = Optional.empty();
+        spiritualistProjection = Optional.empty();
 
         NbtCompound cooldowns = nbt.getCompound(COOLDOWNS_KEY);
         for (String abilityId : cooldowns.getKeys()) {
@@ -326,6 +346,10 @@ public final class NoellesRoleState {
         if (nbt.contains(RECALL_POINT_KEY, NbtElement.COMPOUND_TYPE)) {
             recallerRecallPoint = readRecallPoint(nbt.getCompound(RECALL_POINT_KEY));
         }
+
+        if (nbt.contains(SPIRITUALIST_PROJECTION_KEY, NbtElement.COMPOUND_TYPE)) {
+            spiritualistProjection = readSpiritualistProjection(nbt.getCompound(SPIRITUALIST_PROJECTION_KEY));
+        }
     }
 
     public void writeToNbt(NbtCompound nbt) {
@@ -367,6 +391,12 @@ public final class NoellesRoleState {
             nbt.put(RECALL_POINT_KEY, writeRecallPoint(recallerRecallPoint.get()));
         } else {
             nbt.remove(RECALL_POINT_KEY);
+        }
+
+        if (spiritualistProjection.isPresent()) {
+            nbt.put(SPIRITUALIST_PROJECTION_KEY, writeSpiritualistProjection(spiritualistProjection.get()));
+        } else {
+            nbt.remove(SPIRITUALIST_PROJECTION_KEY);
         }
     }
 
@@ -423,6 +453,24 @@ public final class NoellesRoleState {
         nbt.putDouble(RECALL_POINT_Z_KEY, point.z());
         nbt.putFloat(RECALL_POINT_YAW_KEY, point.yaw());
         nbt.putFloat(RECALL_POINT_PITCH_KEY, point.pitch());
+        return nbt;
+    }
+
+    private static Optional<SpiritualistProjection> readSpiritualistProjection(NbtCompound nbt) {
+        return Optional.of(new SpiritualistProjection(
+                nbt.getDouble(SPIRITUALIST_BODY_X_KEY),
+                nbt.getDouble(SPIRITUALIST_BODY_Y_KEY),
+                nbt.getDouble(SPIRITUALIST_BODY_Z_KEY),
+                nbt.getLong(SPIRITUALIST_STARTED_AT_KEY)
+        ));
+    }
+
+    private static NbtCompound writeSpiritualistProjection(SpiritualistProjection projection) {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putDouble(SPIRITUALIST_BODY_X_KEY, projection.bodyX());
+        nbt.putDouble(SPIRITUALIST_BODY_Y_KEY, projection.bodyY());
+        nbt.putDouble(SPIRITUALIST_BODY_Z_KEY, projection.bodyZ());
+        nbt.putLong(SPIRITUALIST_STARTED_AT_KEY, projection.startedAtTick());
         return nbt;
     }
 
@@ -501,6 +549,18 @@ public final class NoellesRoleState {
             // Recaller stores server coordinates only; the saved world id blocks stale cross-dimension recalls.
             // Recaller 只保存服务端坐标；存档里的世界 id 用来阻止过期的跨维度传送。
             Objects.requireNonNull(worldId, "worldId");
+        }
+    }
+
+    public record SpiritualistProjection(
+            double bodyX,
+            double bodyY,
+            double bodyZ,
+            long startedAtTick
+    ) {
+        public SpiritualistProjection {
+            // Spiritualist projection stores only server-owned body coordinates for cancellation checks.
+            // 通灵者投射只保存服务端掌控的本体坐标，用于取消条件判定。
         }
     }
 

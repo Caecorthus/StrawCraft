@@ -31,6 +31,7 @@ class NoellesRoleStateTest {
         saved.setFlag("spirit_has_revealed", true);
         saved.setFlag("morphling_disguised", false);
         saved.setTimestamp("taotie_last_swallow", 260L);
+        saved.setSpiritualistProjection(new NoellesRoleState.SpiritualistProjection(1.5D, 64.0D, -3.25D, 320L));
         saved.tryBeginAbilityCooldown("detective_investigate", 100L, 1800);
 
         NbtCompound nbt = new NbtCompound();
@@ -42,6 +43,11 @@ class NoellesRoleStateTest {
         assertTrue(loaded.hasFlag("spirit_has_revealed"));
         assertFalse(loaded.hasFlag("morphling_disguised"));
         assertEquals(OptionalLong.of(260L), loaded.getTimestamp("taotie_last_swallow"));
+        NoellesRoleState.SpiritualistProjection projection = loaded.spiritualistProjection().orElseThrow();
+        assertEquals(1.5D, projection.bodyX());
+        assertEquals(64.0D, projection.bodyY());
+        assertEquals(-3.25D, projection.bodyZ());
+        assertEquals(320L, projection.startedAtTick());
         assertEquals(1800, loaded.getRemainingAbilityCooldown("detective_investigate", 100L));
     }
 
@@ -51,6 +57,7 @@ class NoellesRoleStateTest {
         state.setFlag("spirit_has_revealed", true);
         state.setFlag(ProfessorIronManProtection.PROTECTION_FLAG, true);
         state.setTimestamp("taotie_last_swallow", 260L);
+        state.setSpiritualistProjection(new NoellesRoleState.SpiritualistProjection(1.0D, 2.0D, 3.0D, 120L));
         state.tryBeginAbilityCooldown("detective_investigate", 100L, 1800);
         AssassinGuessPolicy.resetRoundState(state, 6, 100L);
         state.setVoodooBondedTarget(UUID.randomUUID());
@@ -67,6 +74,7 @@ class NoellesRoleStateTest {
         assertFalse(state.hasFlag("spirit_has_revealed"));
         assertFalse(state.hasFlag(ProfessorIronManProtection.PROTECTION_FLAG));
         assertEquals(OptionalLong.empty(), state.getTimestamp("taotie_last_swallow"));
+        assertTrue(state.spiritualistProjection().isEmpty());
         assertFalse(state.isAbilityOnCooldown("detective_investigate", 101L));
         assertEquals(0, AssassinGuessPolicy.guessesRemaining(state));
         assertFalse(state.isAbilityOnCooldown(AssassinGuessPolicy.ABILITY_ID, 101L));

@@ -230,6 +230,25 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         sync();
     }
 
+    public void setSpiritualistProjection(NoellesRoleState.SpiritualistProjection projection) {
+        state.setSpiritualistProjection(projection);
+        sync();
+    }
+
+    public java.util.Optional<NoellesRoleState.SpiritualistProjection> spiritualistProjection() {
+        return state.spiritualistProjection();
+    }
+
+    public void clearSpiritualistProjection() {
+        state.clearSpiritualistProjection();
+        sync();
+    }
+
+    public void setAbilityCooldown(String abilityId, long now, int cooldownTicks) {
+        state.setAbilityCooldown(abilityId, now, cooldownTicks);
+        sync();
+    }
+
     public void sync() {
         if (player != null && !player.getWorld().isClient()) {
             KEY.sync(player);

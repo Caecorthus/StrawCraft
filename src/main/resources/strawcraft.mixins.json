@@ -15,6 +15,7 @@
     "PlayerPsychoComponentMixin",
     "PlayerShopComponentMixin",
     "RevolverItemMixin",
+    "ServerCommonNetworkHandlerMixin",
     "ServerPlayerEntityMixin"
   ],
   "client": [
