@@ -130,7 +130,8 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("waiter"),
                 StrawCraft.id("mermaid"),
                 StrawCraft.id("demon_hunter"),
-                StrawCraft.id("vulture")
+                StrawCraft.id("vulture"),
+                StrawCraft.id("pathogen")
         ), candidateIds);
         assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));
         assertFalse(candidateIds.contains(StrawCraft.id("time_keeper")));
@@ -154,6 +155,25 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("swapper"), selected.get(killer));
         assertEquals(StrawCraft.id("vulture"), selected.get(looseEnd));
         assertEquals(StrawCraft.id("timekeeper"), selected.get(civilian));
+    }
+
+    @Test
+    void runtimeSelectionCanAssignPathogenAfterVultureWhenTwoNeutralSeatsExist() {
+        UUID civilian = new UUID(0, 1);
+        UUID killer = new UUID(0, 2);
+        UUID firstLooseEnd = new UUID(0, 3);
+        UUID secondLooseEnd = new UUID(0, 4);
+        Map<UUID, Identifier> officialAssignments = linkedAssignments(
+                entry(civilian, WatheRoleIds.CIVILIAN),
+                entry(killer, WatheRoleIds.KILLER),
+                entry(firstLooseEnd, WatheRoleIds.LOOSE_END),
+                entry(secondLooseEnd, WatheRoleIds.LOOSE_END)
+        );
+
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
+
+        assertEquals(StrawCraft.id("vulture"), selected.get(firstLooseEnd));
+        assertEquals(StrawCraft.id("pathogen"), selected.get(secondLooseEnd));
     }
 
     @Test

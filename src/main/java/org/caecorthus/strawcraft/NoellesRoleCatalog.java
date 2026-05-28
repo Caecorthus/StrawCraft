@@ -56,7 +56,7 @@ public final class NoellesRoleCatalog {
             disabledNeutral("jester"),
             selectableNeutral("vulture"),
             neutral("corrupt_cop"),
-            neutral("pathogen"),
+            selectableNeutral("pathogen"),
             neutral("taotie")
     );
 

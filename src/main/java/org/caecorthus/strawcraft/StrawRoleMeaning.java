@@ -92,6 +92,10 @@ public final class StrawRoleMeaning {
         return role != null && VultureBodyFeastPolicy.VULTURE_ROLE.equals(role.identifier());
     }
 
+    public static boolean receivesPathogenInfection(Role role) {
+        return role != null && PathogenInfectionPolicy.PATHOGEN_ROLE.equals(role.identifier());
+    }
+
     public static boolean receivesSurvivalMasterCountdown(Role role) {
         return role != null && StrawCraft.id("survival_master").equals(role.identifier());
     }

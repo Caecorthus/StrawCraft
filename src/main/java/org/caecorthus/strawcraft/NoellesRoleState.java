@@ -25,6 +25,7 @@ public final class NoellesRoleState {
     private static final String UUID_SETS_KEY = "UuidSets";
     private static final String REPORTER_MARKED_TARGET_KEY = "reporter_marked_target";
     private static final String VOODOO_BONDED_TARGET_KEY = "voodoo_bonded_target";
+    private static final String PATHOGEN_INFECTED_BY_KEY = "pathogen_infected_by";
     private static final String DEMON_HUNTER_FRENZIED_PLAYERS_KEY = "demon_hunter_frenzied_players";
     private static final String NEUTRAL_WIN_CLAIMS_KEY = "NeutralWinClaims";
     private static final String TIMED_BOMB_KEY = "TimedBomb";
@@ -81,6 +82,10 @@ public final class NoellesRoleState {
             return;
         }
         abilityCooldownDeadlines.put(abilityId, now + cooldownTicks);
+    }
+
+    public void clearAbilityCooldown(String abilityId) {
+        abilityCooldownDeadlines.remove(abilityId);
     }
 
     public boolean isAbilityOnCooldown(String abilityId, long now) {
@@ -186,6 +191,20 @@ public final class NoellesRoleState {
 
     public void clearVoodooBondedTarget() {
         clearUuidSet(VOODOO_BONDED_TARGET_KEY);
+    }
+
+    public void setPathogenInfectedBy(UUID pathogenUuid) {
+        Objects.requireNonNull(pathogenUuid, "pathogenUuid");
+        clearPathogenInfection();
+        addUuidToSet(PATHOGEN_INFECTED_BY_KEY, pathogenUuid);
+    }
+
+    public Optional<UUID> pathogenInfectedBy() {
+        return uuidSet(PATHOGEN_INFECTED_BY_KEY).stream().findFirst();
+    }
+
+    public void clearPathogenInfection() {
+        clearUuidSet(PATHOGEN_INFECTED_BY_KEY);
     }
 
     public boolean trackDemonHunterFrenziedPlayer(UUID targetUuid) {

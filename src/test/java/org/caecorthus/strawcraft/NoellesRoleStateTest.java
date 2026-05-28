@@ -53,6 +53,7 @@ class NoellesRoleStateTest {
         state.setTimestamp("taotie_last_swallow", 260L);
         state.tryBeginAbilityCooldown("detective_investigate", 100L, 1800);
         state.setVoodooBondedTarget(UUID.randomUUID());
+        state.setPathogenInfectedBy(UUID.randomUUID());
         state.recordNeutralWinClaim(new NoellesRoleState.NeutralWinClaim(
                 StrawCraft.id("jester"),
                 StrawCraft.id("jester_killed"),
@@ -67,6 +68,7 @@ class NoellesRoleStateTest {
         assertEquals(OptionalLong.empty(), state.getTimestamp("taotie_last_swallow"));
         assertFalse(state.isAbilityOnCooldown("detective_investigate", 101L));
         assertTrue(state.voodooBondedTarget().isEmpty());
+        assertTrue(state.pathogenInfectedBy().isEmpty());
         assertTrue(state.demonHunterFrenziedPlayers().isEmpty());
         assertTrue(state.neutralWinClaims().isEmpty());
     }
@@ -136,6 +138,26 @@ class NoellesRoleStateTest {
         assertEquals(Optional.of(secondTarget), loaded.voodooBondedTarget());
         loaded.clearVoodooBondedTarget();
         assertTrue(loaded.voodooBondedTarget().isEmpty());
+    }
+
+    @Test
+    void pathogenInfectionStoresInfectingPathogenAndRoundTripsThroughNbt() {
+        UUID firstPathogen = UUID.randomUUID();
+        UUID secondPathogen = UUID.randomUUID();
+        NoellesRoleState saved = new NoellesRoleState();
+        saved.setPathogenInfectedBy(firstPathogen);
+        saved.setPathogenInfectedBy(secondPathogen);
+
+        assertEquals(Optional.of(secondPathogen), saved.pathogenInfectedBy());
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        assertEquals(Optional.of(secondPathogen), loaded.pathogenInfectedBy());
+        loaded.clearPathogenInfection();
+        assertTrue(loaded.pathogenInfectedBy().isEmpty());
     }
 
     @Test

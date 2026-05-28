@@ -46,6 +46,11 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         return state.getRemainingAbilityCooldown(abilityId, now);
     }
 
+    public void clearAbilityCooldown(String abilityId) {
+        state.clearAbilityCooldown(abilityId);
+        sync();
+    }
+
     public void setFlag(String flag, boolean value) {
         state.setFlag(flag, value);
         sync();
@@ -133,6 +138,20 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
 
     public void clearVoodooBondedTarget() {
         state.clearVoodooBondedTarget();
+        sync();
+    }
+
+    public void setPathogenInfectedBy(UUID pathogenUuid) {
+        state.setPathogenInfectedBy(pathogenUuid);
+        sync();
+    }
+
+    public java.util.Optional<UUID> pathogenInfectedBy() {
+        return state.pathogenInfectedBy();
+    }
+
+    public void clearPathogenInfection() {
+        state.clearPathogenInfection();
         sync();
     }
 

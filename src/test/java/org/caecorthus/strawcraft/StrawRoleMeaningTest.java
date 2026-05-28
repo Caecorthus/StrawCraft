@@ -105,6 +105,13 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void onlyNoellesPathogenReceivesInfectionMeaning() {
+        assertTrue(receivesPathogenInfection(noellesRole("pathogen")));
+        assertFalse(receivesPathogenInfection(noellesRole("vulture")));
+        assertFalse(receivesPathogenInfection(role(WatheRoleIds.LOOSE_END, false, false)));
+    }
+
+    @Test
     void onlyNoellesBodyguardReceivesNearbyProtectionMeaning() {
         assertTrue(receivesBodyguardProtection(noellesRole("bodyguard")));
         assertFalse(receivesBodyguardProtection(noellesRole("professor")));
@@ -173,6 +180,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesUndercoverWalkieTalkie(null));
         assertFalse(receivesDetectiveInvestigation(null));
         assertFalse(receivesVultureBodyFeast(null));
+        assertFalse(receivesPathogenInfection(null));
         assertFalse(receivesBodyguardProtection(null));
         assertFalse(receivesRecallerRecall(null));
         assertFalse(receivesSwapperSwap(null));
@@ -188,6 +196,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesUndercoverWalkieTalkie(unknownRole));
         assertFalse(receivesDetectiveInvestigation(unknownRole));
         assertFalse(receivesVultureBodyFeast(unknownRole));
+        assertFalse(receivesPathogenInfection(unknownRole));
         assertFalse(receivesBodyguardProtection(unknownRole));
         assertFalse(receivesRecallerRecall(unknownRole));
         assertFalse(receivesSwapperSwap(unknownRole));
@@ -218,6 +227,10 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesVultureBodyFeast(Role role) {
         return invokeBoolean("receivesVultureBodyFeast", role);
+    }
+
+    private static boolean receivesPathogenInfection(Role role) {
+        return invokeBoolean("receivesPathogenInfection", role);
     }
 
     private static boolean receivesBodyguardProtection(Role role) {

@@ -33,6 +33,11 @@ public final class RoleAssignedLoadouts {
 
     private static void applyAssignedLoadout(PlayerEntity player, Role role) {
         AssignmentPlan plan = planAssignedLoadout(role, player.getWorld().isClient());
+        if (player.getWorld().isClient()) {
+            return;
+        }
+        NoellesRoleStateComponent roleState = NoellesRoleStateComponent.KEY.get(player);
+        PathogenInfectionPolicy.resetParticipantState(roleState);
         if (plan.removeDisabledWatheGuns()) {
             RoundInventoryCleanup.removeDisabledWatheGuns(player.getInventory());
         }
@@ -40,14 +45,18 @@ public final class RoleAssignedLoadouts {
             VigilanteLoadout.giveAssignedLoadout(player);
         }
         if (plan.grantProfessorIronManProtection()) {
-            ProfessorIronManProtection.grant(NoellesRoleStateComponent.KEY.get(player), player.getWorld().getTime());
+            ProfessorIronManProtection.grant(roleState, player.getWorld().getTime());
         }
         if (plan.grantBodyguardProtection()) {
-            BodyguardProtectionPolicy.grant(NoellesRoleStateComponent.KEY.get(player), player.getWorld().getTime());
+            BodyguardProtectionPolicy.grant(roleState, player.getWorld().getTime());
         }
         if (StrawRoleMeaning.matchesRoleId(role, VultureBodyFeastPolicy.VULTURE_ROLE)) {
             int totalPlayers = GameWorldComponent.KEY.get(player.getWorld()).getRoles().size();
-            VultureBodyFeastPolicy.resetRoundState(NoellesRoleStateComponent.KEY.get(player), totalPlayers);
+            VultureBodyFeastPolicy.resetRoundState(roleState, totalPlayers);
+        }
+        if (StrawRoleMeaning.receivesPathogenInfection(role)) {
+            int totalPlayers = GameWorldComponent.KEY.get(player.getWorld()).getRoles().size();
+            PathogenInfectionPolicy.resetPathogenState(roleState, totalPlayers);
         }
         NoellesAssignedLoadouts.giveAssignedItems(player, plan.assignmentItemGrants());
         if (grantsItem(plan.assignmentItemGrants(), StrawCraftItems.ANTIDOTE_ID)) {

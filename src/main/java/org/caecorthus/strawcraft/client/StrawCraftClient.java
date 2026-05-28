@@ -15,6 +15,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.EntityHitResult;
 import org.caecorthus.strawcraft.CoronerInspectPayload;
 import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
+import org.caecorthus.strawcraft.PathogenInfectionPayload;
 import org.caecorthus.strawcraft.PhantomInvisibilityPayload;
 import org.caecorthus.strawcraft.RecallerRecallPayload;
 import org.caecorthus.strawcraft.ReporterMarkPayload;
@@ -37,6 +38,7 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding reporterMarkKey;
     private static KeyBinding voodooBondKey;
     private static KeyBinding phantomInvisibilityKey;
+    private static KeyBinding pathogenInfectionKey;
     private static UUID pendingSwapperTarget;
     private static boolean wasVotingActive;
     private static boolean autoOpenedVotingScreen;
@@ -99,6 +101,12 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_I,
                 "category.strawcraft.keybinds"
         ));
+        pathogenInfectionKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.pathogen_infect",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_P,
+                "category.strawcraft.keybinds"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVotingScreen);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickDetectiveInvestigation);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickCoronerInspection);
@@ -108,6 +116,7 @@ public final class StrawCraftClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickReporterMark);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVoodooBond);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPhantomInvisibility);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPathogenInfection);
     }
 
     private static void tickVotingScreen(MinecraftClient client) {
@@ -298,6 +307,18 @@ public final class StrawCraftClient implements ClientModInitializer {
             // Phantom sends only empty intent; the server owns role, round, effect, and cooldown validation.
             // 幽灵只发送空意图；身份、回合、效果和冷却判定全部留在服务端。
             ClientPlayNetworking.send(new PhantomInvisibilityPayload());
+        }
+    }
+
+    private static void tickPathogenInfection(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (pathogenInfectionKey.wasPressed()) {
+            // Pathogen sends only empty intent; the server owns target selection, role, range, visibility, and cooldown.
+            // 病原体只发送空意图；目标选择、身份、距离、可见性和冷却都由服务端裁决。
+            ClientPlayNetworking.send(new PathogenInfectionPayload());
         }
     }
 }
