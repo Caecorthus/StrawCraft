@@ -1,6 +1,7 @@
 package org.caecorthus.strawcraft;
 
 import dev.doctor4t.wathe.api.Role;
+import dev.doctor4t.wathe.api.WatheRoles;
 import net.minecraft.util.Identifier;
 import org.caecorthus.strawcraft.role.StrawFaction;
 
@@ -96,6 +97,10 @@ public final class StrawRoleMeaning {
         return role != null && PathogenInfectionPolicy.PATHOGEN_ROLE.equals(role.identifier());
     }
 
+    public static boolean receivesAssassinGuess(Role role) {
+        return role != null && AssassinGuessPolicy.ASSASSIN_ROLE.equals(role.identifier());
+    }
+
     public static boolean receivesSurvivalMasterCountdown(Role role) {
         return role != null && StrawCraft.id("survival_master").equals(role.identifier());
     }
@@ -156,6 +161,35 @@ public final class StrawRoleMeaning {
 
     public static Optional<Identifier> roleIdFor(Role role) {
         return role == null ? Optional.empty() : Optional.of(role.identifier());
+    }
+
+    public static Optional<Role> registeredRole(Identifier roleId) {
+        if (roleId == null) {
+            return Optional.empty();
+        }
+        return WatheRoles.ROLES.stream()
+                .filter(role -> role.identifier().equals(roleId))
+                .findFirst();
+    }
+
+    public static boolean isAssassinGuessableRole(Role role, boolean roleEnabled) {
+        if (role == null || !roleEnabled) {
+            return false;
+        }
+        Identifier roleId = role.identifier();
+        if (WatheRoleIds.DISCOVERY_CIVILIAN.equals(roleId)
+                || WatheRoleIds.NO_ROLE.equals(roleId)
+                || WatheRoleIds.LOOSE_END.equals(roleId)
+                || WatheRoleIds.VIGILANTE.equals(roleId)
+                || role.canUseKiller()) {
+            return false;
+        }
+        if (WatheRoleIds.CIVILIAN.equals(roleId)) {
+            return true;
+        }
+        return NoellesRoleCatalog.find(roleId)
+                .map(entry -> entry.firstRoundEligible() && entry.isRuntimeReady())
+                .orElse(false);
     }
 
     static Meaning meaningFor(Role role) {

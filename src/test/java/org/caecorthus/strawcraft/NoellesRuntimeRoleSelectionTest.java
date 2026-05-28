@@ -74,7 +74,7 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("swapper"), selected.get(firstKiller));
         assertEquals(StrawCraft.id("phantom"), selected.get(secondKiller));
         assertEquals(StrawCraft.id("bomber"), selected.get(thirdKiller));
-        assertEquals(StrawCraft.id("scavenger"), selected.get(fourthKiller));
+        assertEquals(StrawCraft.id("assassin"), selected.get(fourthKiller));
         assertEquals(WatheRoleIds.VIGILANTE, selected.get(vigilante));
         assertEquals(StrawCraft.id("timekeeper"), selected.get(firstCivilian));
         assertEquals(StrawCraft.id("undercover"), selected.get(secondCivilian));
@@ -107,6 +107,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("swapper"),
                 StrawCraft.id("phantom"),
                 StrawCraft.id("bomber"),
+                StrawCraft.id("assassin"),
                 StrawCraft.id("scavenger"),
                 StrawCraft.id("silencer"),
                 StrawCraft.id("poisoner"),

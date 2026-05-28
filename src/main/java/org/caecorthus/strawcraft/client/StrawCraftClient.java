@@ -1,5 +1,6 @@
 package org.caecorthus.strawcraft.client;
 
+import dev.doctor4t.wathe.cca.GameWorldComponent;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -13,13 +14,16 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.EntityHitResult;
+import org.caecorthus.strawcraft.AssassinGuessPolicy;
 import org.caecorthus.strawcraft.CoronerInspectPayload;
 import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
+import org.caecorthus.strawcraft.NoellesRoleStateComponent;
 import org.caecorthus.strawcraft.PathogenInfectionPayload;
 import org.caecorthus.strawcraft.PhantomInvisibilityPayload;
 import org.caecorthus.strawcraft.RecallerRecallPayload;
 import org.caecorthus.strawcraft.ReporterMarkPayload;
 import org.caecorthus.strawcraft.StrawCraftEntities;
+import org.caecorthus.strawcraft.StrawRoleMeaning;
 import org.caecorthus.strawcraft.SwapperSwapPayload;
 import org.caecorthus.strawcraft.VoodooBondPayload;
 import org.caecorthus.strawcraft.VultureFeastPayload;
@@ -39,6 +43,7 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding voodooBondKey;
     private static KeyBinding phantomInvisibilityKey;
     private static KeyBinding pathogenInfectionKey;
+    private static KeyBinding assassinGuessKey;
     private static UUID pendingSwapperTarget;
     private static boolean wasVotingActive;
     private static boolean autoOpenedVotingScreen;
@@ -107,6 +112,12 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_P,
                 "category.strawcraft.keybinds"
         ));
+        assassinGuessKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.assassin_guess",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_Y,
+                "category.strawcraft.keybinds"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVotingScreen);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickDetectiveInvestigation);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickCoronerInspection);
@@ -117,6 +128,7 @@ public final class StrawCraftClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVoodooBond);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPhantomInvisibility);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickPathogenInfection);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickAssassinGuess);
     }
 
     private static void tickVotingScreen(MinecraftClient client) {
@@ -320,5 +332,27 @@ public final class StrawCraftClient implements ClientModInitializer {
             // 病原体只发送空意图；目标选择、身份、距离、可见性和冷却都由服务端裁决。
             ClientPlayNetworking.send(new PathogenInfectionPayload());
         }
+    }
+
+    private static void tickAssassinGuess(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (!assassinGuessKey.wasPressed()) {
+            return;
+        }
+
+        if (!StrawRoleMeaning.receivesAssassinGuess(GameWorldComponent.KEY.get(client.world).getRole(client.player))) {
+            return;
+        }
+
+        if (!AssassinGuessPolicy.canGuess(NoellesRoleStateComponent.KEY.get(client.player), client.world.getTime())) {
+            client.player.sendMessage(Text.translatable("message.strawcraft.assassin.not_ready")
+                    .formatted(Formatting.YELLOW), true);
+            return;
+        }
+
+        client.setScreen(new AssassinGuessScreen());
     }
 }

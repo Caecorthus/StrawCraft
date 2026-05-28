@@ -146,10 +146,10 @@ class RoleSelectionPolicyTest {
 
     @Test
     void runtimeNoellesDefinitionsAssignImplementedRolesButSkipDisabledAndDeferredRoles() {
-        List<UUID> players = players(25);
+        List<UUID> players = players(26);
         StrawRoleSelectionContext context = new StrawRoleSelectionContext(
                 players,
-                6,
+                7,
                 1,
                 0,
                 18,
@@ -164,6 +164,7 @@ class RoleSelectionPolicyTest {
         assertTrue(plan.assignments().containsValue(StrawCraft.id("swapper")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("phantom")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("bomber")));
+        assertTrue(plan.assignments().containsValue(StrawCraft.id("assassin")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("scavenger")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("silencer")));
         assertTrue(plan.assignments().containsValue(StrawCraft.id("poisoner")));

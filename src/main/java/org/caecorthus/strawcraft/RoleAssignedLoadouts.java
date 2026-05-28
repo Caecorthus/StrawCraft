@@ -58,6 +58,10 @@ public final class RoleAssignedLoadouts {
             int totalPlayers = GameWorldComponent.KEY.get(player.getWorld()).getRoles().size();
             PathogenInfectionPolicy.resetPathogenState(roleState, totalPlayers);
         }
+        if (StrawRoleMeaning.receivesAssassinGuess(role)) {
+            int totalPlayers = GameWorldComponent.KEY.get(player.getWorld()).getRoles().size();
+            AssassinGuessPolicy.resetRoundState(roleState, totalPlayers, player.getWorld().getTime());
+        }
         NoellesAssignedLoadouts.giveAssignedItems(player, plan.assignmentItemGrants());
         if (grantsItem(plan.assignmentItemGrants(), StrawCraftItems.ANTIDOTE_ID)) {
             ToxicologistAntidoteItem.applyInitialAssignmentCooldown(player);

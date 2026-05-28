@@ -52,6 +52,7 @@ class NoellesRoleStateTest {
         state.setFlag(ProfessorIronManProtection.PROTECTION_FLAG, true);
         state.setTimestamp("taotie_last_swallow", 260L);
         state.tryBeginAbilityCooldown("detective_investigate", 100L, 1800);
+        AssassinGuessPolicy.resetRoundState(state, 6, 100L);
         state.setVoodooBondedTarget(UUID.randomUUID());
         state.setPathogenInfectedBy(UUID.randomUUID());
         state.recordNeutralWinClaim(new NoellesRoleState.NeutralWinClaim(
@@ -67,10 +68,30 @@ class NoellesRoleStateTest {
         assertFalse(state.hasFlag(ProfessorIronManProtection.PROTECTION_FLAG));
         assertEquals(OptionalLong.empty(), state.getTimestamp("taotie_last_swallow"));
         assertFalse(state.isAbilityOnCooldown("detective_investigate", 101L));
+        assertEquals(0, AssassinGuessPolicy.guessesRemaining(state));
+        assertFalse(state.isAbilityOnCooldown(AssassinGuessPolicy.ABILITY_ID, 101L));
         assertTrue(state.voodooBondedTarget().isEmpty());
         assertTrue(state.pathogenInfectedBy().isEmpty());
         assertTrue(state.demonHunterFrenziedPlayers().isEmpty());
         assertTrue(state.neutralWinClaims().isEmpty());
+    }
+
+    @Test
+    void assassinGuessStateResetsAndRoundTripsThroughNbt() {
+        NoellesRoleState saved = new NoellesRoleState();
+        AssassinGuessPolicy.resetRoundState(saved, 9, 400L);
+        AssassinGuessPolicy.useGuess(saved, 1600L);
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        assertEquals(8, AssassinGuessPolicy.guessesRemaining(loaded));
+        assertEquals(9, AssassinGuessPolicy.maxGuesses(loaded));
+        assertTrue(loaded.isAbilityOnCooldown(AssassinGuessPolicy.ABILITY_ID, 1600L));
+        assertEquals(AssassinGuessPolicy.COOLDOWN_TICKS, loaded.getRemainingAbilityCooldown(AssassinGuessPolicy.ABILITY_ID, 1600L));
     }
 
     @Test

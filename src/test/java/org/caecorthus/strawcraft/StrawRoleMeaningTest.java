@@ -112,6 +112,18 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void onlyNoellesAssassinReceivesGuessMeaningAndKeepsKillerFaction() {
+        Role assassin = noellesRole("assassin");
+
+        assertTrue(receivesAssassinGuess(assassin));
+        assertEquals(StrawFaction.KILLER, factionFor(assassin));
+        assertTrue(canUseKillerShop(assassin));
+        assertFalse(receivesAssassinGuess(noellesRole("bomber")));
+        assertFalse(receivesAssassinGuess(noellesRole("detective")));
+        assertFalse(receivesAssassinGuess(role(WatheRoleIds.KILLER, false, true)));
+    }
+
+    @Test
     void onlyNoellesBodyguardReceivesNearbyProtectionMeaning() {
         assertTrue(receivesBodyguardProtection(noellesRole("bodyguard")));
         assertFalse(receivesBodyguardProtection(noellesRole("professor")));
@@ -181,6 +193,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesDetectiveInvestigation(null));
         assertFalse(receivesVultureBodyFeast(null));
         assertFalse(receivesPathogenInfection(null));
+        assertFalse(receivesAssassinGuess(null));
         assertFalse(receivesBodyguardProtection(null));
         assertFalse(receivesRecallerRecall(null));
         assertFalse(receivesSwapperSwap(null));
@@ -197,6 +210,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesDetectiveInvestigation(unknownRole));
         assertFalse(receivesVultureBodyFeast(unknownRole));
         assertFalse(receivesPathogenInfection(unknownRole));
+        assertFalse(receivesAssassinGuess(unknownRole));
         assertFalse(receivesBodyguardProtection(unknownRole));
         assertFalse(receivesRecallerRecall(unknownRole));
         assertFalse(receivesSwapperSwap(unknownRole));
@@ -231,6 +245,10 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesPathogenInfection(Role role) {
         return invokeBoolean("receivesPathogenInfection", role);
+    }
+
+    private static boolean receivesAssassinGuess(Role role) {
+        return invokeBoolean("receivesAssassinGuess", role);
     }
 
     private static boolean receivesBodyguardProtection(Role role) {
