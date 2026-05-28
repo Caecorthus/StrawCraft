@@ -123,6 +123,60 @@ class NoellesRoleStateTest {
     }
 
     @Test
+    void recallerRecallPointRoundTripsThroughNbtAndResetClearsIt() {
+        NoellesRoleState saved = new NoellesRoleState();
+        saved.setRecallerRecallPoint(new NoellesRoleState.RecallPoint(
+                StrawCraft.id("arena"),
+                10.5D,
+                64.0D,
+                -8.25D,
+                90.0F,
+                15.0F
+        ));
+
+        NbtCompound nbt = new NbtCompound();
+        saved.writeToNbt(nbt);
+
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        NoellesRoleState.RecallPoint point = loaded.recallerRecallPoint().orElseThrow();
+        assertEquals(StrawCraft.id("arena"), point.worldId());
+        assertEquals(10.5D, point.x());
+        assertEquals(64.0D, point.y());
+        assertEquals(-8.25D, point.z());
+        assertEquals(90.0F, point.yaw());
+        assertEquals(15.0F, point.pitch());
+
+        loaded.reset();
+        assertTrue(loaded.recallerRecallPoint().isEmpty());
+    }
+
+    @Test
+    void writingEmptyRecallerRecallPointClearsStaleNbtKey() {
+        NoellesRoleState withPoint = new NoellesRoleState();
+        withPoint.setRecallerRecallPoint(new NoellesRoleState.RecallPoint(
+                StrawCraft.id("arena"),
+                1.0D,
+                2.0D,
+                3.0D,
+                4.0F,
+                5.0F
+        ));
+
+        NbtCompound nbt = new NbtCompound();
+        withPoint.writeToNbt(nbt);
+
+        NoellesRoleState empty = new NoellesRoleState();
+        empty.writeToNbt(nbt);
+
+        NoellesRoleState loaded = new NoellesRoleState();
+        loaded.readFromNbt(nbt);
+
+        assertTrue(loaded.recallerRecallPoint().isEmpty());
+    }
+
+    @Test
     void writingEmptyTimedBombStateClearsStaleNbtKey() {
         UUID owner = UUID.randomUUID();
         UUID carrier = UUID.randomUUID();

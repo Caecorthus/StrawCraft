@@ -34,6 +34,7 @@ class NoellesRuntimeRoleSelectionTest {
         UUID tenthCivilian = new UUID(0, 14);
         UUID eleventhCivilian = new UUID(0, 15);
         UUID twelfthCivilian = new UUID(0, 16);
+        UUID thirteenthCivilian = new UUID(0, 17);
         Map<UUID, Identifier> officialAssignments = linkedAssignments(
                 entry(firstCivilian, WatheRoleIds.CIVILIAN),
                 entry(firstKiller, WatheRoleIds.KILLER),
@@ -50,7 +51,8 @@ class NoellesRuntimeRoleSelectionTest {
                 entry(ninthCivilian, WatheRoleIds.CIVILIAN),
                 entry(tenthCivilian, WatheRoleIds.CIVILIAN),
                 entry(eleventhCivilian, WatheRoleIds.CIVILIAN),
-                entry(twelfthCivilian, WatheRoleIds.CIVILIAN)
+                entry(twelfthCivilian, WatheRoleIds.CIVILIAN),
+                entry(thirteenthCivilian, WatheRoleIds.CIVILIAN)
         );
 
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
@@ -63,14 +65,15 @@ class NoellesRuntimeRoleSelectionTest {
         assertEquals(StrawCraft.id("conductor"), selected.get(secondCivilian));
         assertEquals(StrawCraft.id("noisemaker"), selected.get(thirdCivilian));
         assertEquals(StrawCraft.id("coroner"), selected.get(fourthCivilian));
-        assertEquals(StrawCraft.id("toxicologist"), selected.get(fifthCivilian));
-        assertEquals(StrawCraft.id("reporter"), selected.get(sixthCivilian));
-        assertEquals(StrawCraft.id("professor"), selected.get(seventhCivilian));
-        assertEquals(StrawCraft.id("attendant"), selected.get(eighthCivilian));
-        assertEquals(StrawCraft.id("bodyguard"), selected.get(ninthCivilian));
-        assertEquals(StrawCraft.id("survival_master"), selected.get(tenthCivilian));
-        assertEquals(StrawCraft.id("engineer"), selected.get(eleventhCivilian));
-        assertEquals(StrawCraft.id("detective"), selected.get(twelfthCivilian));
+        assertEquals(StrawCraft.id("recaller"), selected.get(fifthCivilian));
+        assertEquals(StrawCraft.id("toxicologist"), selected.get(sixthCivilian));
+        assertEquals(StrawCraft.id("reporter"), selected.get(seventhCivilian));
+        assertEquals(StrawCraft.id("professor"), selected.get(eighthCivilian));
+        assertEquals(StrawCraft.id("attendant"), selected.get(ninthCivilian));
+        assertEquals(StrawCraft.id("bodyguard"), selected.get(tenthCivilian));
+        assertEquals(StrawCraft.id("survival_master"), selected.get(eleventhCivilian));
+        assertEquals(StrawCraft.id("engineer"), selected.get(twelfthCivilian));
+        assertEquals(StrawCraft.id("detective"), selected.get(thirteenthCivilian));
     }
 
     @Test
@@ -87,6 +90,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("conductor"),
                 StrawCraft.id("noisemaker"),
                 StrawCraft.id("coroner"),
+                StrawCraft.id("recaller"),
                 StrawCraft.id("toxicologist"),
                 StrawCraft.id("reporter"),
                 StrawCraft.id("professor"),

@@ -112,6 +112,13 @@ class StrawRoleMeaningTest {
     }
 
     @Test
+    void onlyNoellesRecallerReceivesRecallMeaning() {
+        assertTrue(receivesRecallerRecall(noellesRole("recaller")));
+        assertFalse(receivesRecallerRecall(noellesRole("detective")));
+        assertFalse(receivesRecallerRecall(role(WatheRoleIds.CIVILIAN, true, false)));
+    }
+
+    @Test
     void nullAndUnknownRoleDoNotReceivePrivilegedBehavior() {
         Role unknownRole = role(Identifier.of("strawcraft", "unknown_fixture"), false, false);
 
@@ -122,6 +129,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesDetectiveInvestigation(null));
         assertFalse(receivesVultureBodyFeast(null));
         assertFalse(receivesBodyguardProtection(null));
+        assertFalse(receivesRecallerRecall(null));
         assertTrue(ammoFactionFor(null).isEmpty());
         assertFalse(canUseKillerShop(unknownRole));
         assertFalse(receivesVigilanteLoadout(unknownRole));
@@ -129,6 +137,7 @@ class StrawRoleMeaningTest {
         assertFalse(receivesDetectiveInvestigation(unknownRole));
         assertFalse(receivesVultureBodyFeast(unknownRole));
         assertFalse(receivesBodyguardProtection(unknownRole));
+        assertFalse(receivesRecallerRecall(unknownRole));
         assertTrue(ammoFactionFor(unknownRole).isEmpty());
     }
 
@@ -154,6 +163,10 @@ class StrawRoleMeaningTest {
 
     private static boolean receivesBodyguardProtection(Role role) {
         return invokeBoolean("receivesBodyguardProtection", role);
+    }
+
+    private static boolean receivesRecallerRecall(Role role) {
+        return invokeBoolean("receivesRecallerRecall", role);
     }
 
     private static Optional<GunAmmoFaction> ammoFactionFor(Role role) {

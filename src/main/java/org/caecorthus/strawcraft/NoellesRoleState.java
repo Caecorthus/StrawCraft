@@ -30,6 +30,13 @@ public final class NoellesRoleState {
     private static final String TIMED_BOMB_FUSE_DEADLINE_KEY = "FuseDeadlineTick";
     private static final String TIMED_BOMB_PHASE_KEY = "Phase";
     private static final String TIMED_BOMB_TRANSFER_COOLDOWN_KEY = "TransferCooldownDeadlineTick";
+    private static final String RECALL_POINT_KEY = "RecallerRecallPoint";
+    private static final String RECALL_POINT_WORLD_ID_KEY = "WorldId";
+    private static final String RECALL_POINT_X_KEY = "X";
+    private static final String RECALL_POINT_Y_KEY = "Y";
+    private static final String RECALL_POINT_Z_KEY = "Z";
+    private static final String RECALL_POINT_YAW_KEY = "Yaw";
+    private static final String RECALL_POINT_PITCH_KEY = "Pitch";
     private static final String CLAIM_ROLE_ID_KEY = "RoleId";
     private static final String CLAIM_TRIGGER_KEY = "Trigger";
     private static final String CLAIM_OPPONENT_UUID_KEY = "OpponentUuid";
@@ -42,6 +49,7 @@ public final class NoellesRoleState {
     private final Map<String, Set<UUID>> uuidSets = new HashMap<>();
     private final Map<String, NeutralWinClaim> neutralWinClaims = new HashMap<>();
     private Optional<TimedBomb> timedBomb = Optional.empty();
+    private Optional<RecallPoint> recallerRecallPoint = Optional.empty();
 
     public void reset() {
         abilityCooldownDeadlines.clear();
@@ -51,6 +59,7 @@ public final class NoellesRoleState {
         uuidSets.clear();
         neutralWinClaims.clear();
         timedBomb = Optional.empty();
+        recallerRecallPoint = Optional.empty();
     }
 
     public boolean tryBeginAbilityCooldown(String abilityId, long now, int cooldownTicks) {
@@ -164,6 +173,18 @@ public final class NoellesRoleState {
         timedBomb = Optional.empty();
     }
 
+    public void setRecallerRecallPoint(RecallPoint recallPoint) {
+        recallerRecallPoint = Optional.of(Objects.requireNonNull(recallPoint, "recallPoint"));
+    }
+
+    public Optional<RecallPoint> recallerRecallPoint() {
+        return recallerRecallPoint;
+    }
+
+    public void clearRecallerRecallPoint() {
+        recallerRecallPoint = Optional.empty();
+    }
+
     public void readFromNbt(NbtCompound nbt) {
         abilityCooldownDeadlines.clear();
         flags.clear();
@@ -172,6 +193,7 @@ public final class NoellesRoleState {
         uuidSets.clear();
         neutralWinClaims.clear();
         timedBomb = Optional.empty();
+        recallerRecallPoint = Optional.empty();
 
         NbtCompound cooldowns = nbt.getCompound(COOLDOWNS_KEY);
         for (String abilityId : cooldowns.getKeys()) {
@@ -216,6 +238,10 @@ public final class NoellesRoleState {
         if (nbt.contains(TIMED_BOMB_KEY, NbtElement.COMPOUND_TYPE)) {
             timedBomb = readTimedBomb(nbt.getCompound(TIMED_BOMB_KEY));
         }
+
+        if (nbt.contains(RECALL_POINT_KEY, NbtElement.COMPOUND_TYPE)) {
+            recallerRecallPoint = readRecallPoint(nbt.getCompound(RECALL_POINT_KEY));
+        }
     }
 
     public void writeToNbt(NbtCompound nbt) {
@@ -252,6 +278,12 @@ public final class NoellesRoleState {
         } else {
             nbt.remove(TIMED_BOMB_KEY);
         }
+
+        if (recallerRecallPoint.isPresent()) {
+            nbt.put(RECALL_POINT_KEY, writeRecallPoint(recallerRecallPoint.get()));
+        } else {
+            nbt.remove(RECALL_POINT_KEY);
+        }
     }
 
     private static Optional<TimedBomb> readTimedBomb(NbtCompound nbt) {
@@ -281,6 +313,32 @@ public final class NoellesRoleState {
         nbt.putLong(TIMED_BOMB_FUSE_DEADLINE_KEY, bomb.fuseDeadlineTick());
         nbt.putString(TIMED_BOMB_PHASE_KEY, bomb.phase().serializedName());
         nbt.putLong(TIMED_BOMB_TRANSFER_COOLDOWN_KEY, bomb.transferCooldownDeadlineTick());
+        return nbt;
+    }
+
+    private static Optional<RecallPoint> readRecallPoint(NbtCompound nbt) {
+        Identifier worldId = Identifier.tryParse(nbt.getString(RECALL_POINT_WORLD_ID_KEY));
+        if (worldId == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new RecallPoint(
+                worldId,
+                nbt.getDouble(RECALL_POINT_X_KEY),
+                nbt.getDouble(RECALL_POINT_Y_KEY),
+                nbt.getDouble(RECALL_POINT_Z_KEY),
+                nbt.getFloat(RECALL_POINT_YAW_KEY),
+                nbt.getFloat(RECALL_POINT_PITCH_KEY)
+        ));
+    }
+
+    private static NbtCompound writeRecallPoint(RecallPoint point) {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putString(RECALL_POINT_WORLD_ID_KEY, point.worldId().toString());
+        nbt.putDouble(RECALL_POINT_X_KEY, point.x());
+        nbt.putDouble(RECALL_POINT_Y_KEY, point.y());
+        nbt.putDouble(RECALL_POINT_Z_KEY, point.z());
+        nbt.putFloat(RECALL_POINT_YAW_KEY, point.yaw());
+        nbt.putFloat(RECALL_POINT_PITCH_KEY, point.pitch());
         return nbt;
     }
 
@@ -344,6 +402,21 @@ public final class NoellesRoleState {
             Objects.requireNonNull(ownerUuid, "ownerUuid");
             Objects.requireNonNull(carrierUuid, "carrierUuid");
             Objects.requireNonNull(phase, "phase");
+        }
+    }
+
+    public record RecallPoint(
+            Identifier worldId,
+            double x,
+            double y,
+            double z,
+            float yaw,
+            float pitch
+    ) {
+        public RecallPoint {
+            // Recaller stores server coordinates only; the saved world id blocks stale cross-dimension recalls.
+            // Recaller 只保存服务端坐标；存档里的世界 id 用来阻止过期的跨维度传送。
+            Objects.requireNonNull(worldId, "worldId");
         }
     }
 

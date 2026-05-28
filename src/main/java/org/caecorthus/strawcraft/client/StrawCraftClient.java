@@ -11,6 +11,7 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.hit.EntityHitResult;
 import org.caecorthus.strawcraft.CoronerInspectPayload;
 import org.caecorthus.strawcraft.DetectiveInvestigationPayload;
+import org.caecorthus.strawcraft.RecallerRecallPayload;
 import org.caecorthus.strawcraft.VultureFeastPayload;
 import org.caecorthus.strawcraft.map.StrawMapVotingComponent;
 import org.lwjgl.glfw.GLFW;
@@ -20,6 +21,7 @@ public final class StrawCraftClient implements ClientModInitializer {
     private static KeyBinding detectiveInvestigateKey;
     private static KeyBinding coronerInspectKey;
     private static KeyBinding vultureFeastKey;
+    private static KeyBinding recallerRecallKey;
     private static boolean wasVotingActive;
     private static boolean autoOpenedVotingScreen;
 
@@ -49,10 +51,17 @@ public final class StrawCraftClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_V,
                 "category.strawcraft.keybinds"
         ));
+        recallerRecallKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.strawcraft.recaller_recall",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_R,
+                "category.strawcraft.keybinds"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVotingScreen);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickDetectiveInvestigation);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickCoronerInspection);
         ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickVultureFeast);
+        ClientTickEvents.END_CLIENT_TICK.register(StrawCraftClient::tickRecallerRecall);
     }
 
     private static void tickVotingScreen(MinecraftClient client) {
@@ -131,6 +140,18 @@ public final class StrawCraftClient implements ClientModInitializer {
             // The server searches official Wathe bodies and owns all Coroner inspection validation.
             // 服务端搜索官方 Wathe 尸体，并拥有验尸能力的全部校验逻辑。
             ClientPlayNetworking.send(new CoronerInspectPayload());
+        }
+    }
+
+    private static void tickRecallerRecall(MinecraftClient client) {
+        if (client.player == null || client.world == null) {
+            return;
+        }
+
+        if (recallerRecallKey.wasPressed()) {
+            // Recaller sends no coordinates; the server stores and consumes the authoritative recall point.
+            // Recaller 不发送坐标；服务端负责保存并消耗权威传送点。
+            ClientPlayNetworking.send(new RecallerRecallPayload());
         }
     }
 }

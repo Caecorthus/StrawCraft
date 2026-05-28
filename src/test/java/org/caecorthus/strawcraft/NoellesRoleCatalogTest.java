@@ -94,6 +94,7 @@ class NoellesRoleCatalogTest {
                 StrawCraft.id("conductor"),
                 StrawCraft.id("noisemaker"),
                 StrawCraft.id("coroner"),
+                StrawCraft.id("recaller"),
                 StrawCraft.id("toxicologist"),
                 StrawCraft.id("reporter"),
                 StrawCraft.id("professor"),

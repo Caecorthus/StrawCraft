@@ -132,6 +132,20 @@ public final class NoellesRoleStateComponent implements AutoSyncedComponent {
         sync();
     }
 
+    public void setRecallerRecallPoint(NoellesRoleState.RecallPoint recallPoint) {
+        state.setRecallerRecallPoint(recallPoint);
+        sync();
+    }
+
+    public java.util.Optional<NoellesRoleState.RecallPoint> recallerRecallPoint() {
+        return state.recallerRecallPoint();
+    }
+
+    public void clearRecallerRecallPoint() {
+        state.clearRecallerRecallPoint();
+        sync();
+    }
+
     public void sync() {
         if (player != null && !player.getWorld().isClient()) {
             KEY.sync(player);
