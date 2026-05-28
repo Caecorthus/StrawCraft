@@ -6,9 +6,11 @@
   "priority": 900,
   "mixins": [
     "DerringerItemMixin",
+    "GameRoundEndComponentMixin",
     "GameFunctionsMixin",
     "GrenadeEntityMixin",
     "LivingEntityMixin",
+    "MurderGameModeMixin",
     "PlayerBodyEntityMixin",
     "PlayerEntityMixin",
     "PlayerMoodComponentMixin",

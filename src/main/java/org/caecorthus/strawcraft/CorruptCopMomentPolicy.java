@@ -5,6 +5,7 @@ import org.caecorthus.strawcraft.api.StrawKillEvents;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class CorruptCopMomentPolicy {
@@ -135,6 +136,10 @@ public final class CorruptCopMomentPolicy {
     }
 
     public static WinDecision evaluateWin(List<Participant> participants, DefaultWin defaultWin) {
+        return evaluateWinResult(participants, defaultWin).decision();
+    }
+
+    public static WinResult evaluateWinResult(List<Participant> participants, DefaultWin defaultWin) {
         Objects.requireNonNull(participants, "participants");
         Objects.requireNonNull(defaultWin, "defaultWin");
         List<Participant> livingAssigned = participants.stream()
@@ -143,15 +148,15 @@ public final class CorruptCopMomentPolicy {
                 .toList();
         boolean livingCorruptCop = livingAssigned.stream().anyMatch(Participant::corruptCop);
         if (!livingCorruptCop) {
-            return WinDecision.PASS;
+            return WinResult.pass();
         }
         if (livingAssigned.size() == 1) {
-            return WinDecision.NEUTRAL_WIN;
+            return new WinResult(WinDecision.NEUTRAL_WIN, Optional.of(livingAssigned.getFirst().uuid()));
         }
         if (defaultWin == DefaultWin.KILLERS || defaultWin == DefaultWin.PASSENGERS) {
-            return WinDecision.BLOCK_DEFAULT;
+            return WinResult.blockDefault();
         }
-        return WinDecision.PASS;
+        return WinResult.pass();
     }
 
     public enum DefaultWin {
@@ -166,6 +171,21 @@ public final class CorruptCopMomentPolicy {
         PASS,
         BLOCK_DEFAULT,
         NEUTRAL_WIN
+    }
+
+    public record WinResult(WinDecision decision, Optional<UUID> neutralWinner) {
+        public WinResult {
+            Objects.requireNonNull(decision, "decision");
+            Objects.requireNonNull(neutralWinner, "neutralWinner");
+        }
+
+        static WinResult pass() {
+            return new WinResult(WinDecision.PASS, Optional.empty());
+        }
+
+        static WinResult blockDefault() {
+            return new WinResult(WinDecision.BLOCK_DEFAULT, Optional.empty());
+        }
     }
 
     public record Participant(UUID uuid, boolean assigned, boolean alive, boolean corruptCop) {

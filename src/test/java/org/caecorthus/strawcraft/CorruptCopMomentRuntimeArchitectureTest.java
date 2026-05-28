@@ -25,6 +25,7 @@ class CorruptCopMomentRuntimeArchitectureTest {
         assertTrue(source.contains("ServerTickEvents.END_SERVER_TICK.register"));
         assertTrue(source.contains("StrawKillEvents.BEFORE_KILL.register"));
         assertTrue(source.contains("StrawDeathEvents.ROLE_DEATH_COMPLETED.register"));
+        assertTrue(source.contains("StrawWinEvents.COLLECT_WIN_CONTRIBUTIONS.register"));
         assertTrue(source.contains("GameFunctions.isPlayerAliveAndSurvival"));
         assertFalse(source.contains("CheckWinCondition"));
         assertFalse(source.contains("KillPlayer.AFTER"));
@@ -74,13 +75,15 @@ class CorruptCopMomentRuntimeArchitectureTest {
     }
 
     @Test
-    void corruptCopRemainsUnselectableUntilDefaultWinHookIsRuntimeOwned() throws IOException {
+    void corruptCopIsSelectableAfterDefaultWinHookIsRuntimeOwned() throws IOException {
         NoellesRoleCatalog.Entry entry = NoellesRoleCatalog.find(CorruptCopMomentPolicy.CORRUPT_COP_ROLE).orElseThrow();
         String runtime = Files.readString(RUNTIME, StandardCharsets.UTF_8);
 
-        assertEquals(NoellesRoleCatalog.Readiness.DESIGN_REQUIRED, entry.readiness());
-        assertTrue(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
-        assertFalse(runtime.contains("StrawWinEvents.COLLECT_WIN_CONTRIBUTIONS.register"));
+        assertEquals(NoellesRoleCatalog.Readiness.RUNTIME_READY, entry.readiness());
+        assertFalse(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
+        assertTrue(NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
+                .anyMatch(definition -> definition.id().equals(entry.id())));
+        assertTrue(runtime.contains("StrawWinEvents.COLLECT_WIN_CONTRIBUTIONS.register"));
         assertFalse(runtime.contains("CheckWinCondition.EVENT.register"));
     }
 

@@ -137,6 +137,7 @@ class NoellesRuntimeRoleSelectionTest {
                 StrawCraft.id("mermaid"),
                 StrawCraft.id("demon_hunter"),
                 StrawCraft.id("vulture"),
+                StrawCraft.id("corrupt_cop"),
                 StrawCraft.id("pathogen")
         ), candidateIds);
         assertFalse(candidateIds.contains(StrawCraft.id("awesome_binglus")));
@@ -187,7 +188,7 @@ class NoellesRuntimeRoleSelectionTest {
     }
 
     @Test
-    void runtimeSelectionCanAssignPathogenAfterVultureWhenTwoNeutralSeatsExist() {
+    void runtimeSelectionCanAssignCorruptCopAfterVultureWhenTwoNeutralSeatsExist() {
         UUID civilian = new UUID(0, 1);
         UUID killer = new UUID(0, 2);
         UUID firstLooseEnd = new UUID(0, 3);
@@ -202,7 +203,29 @@ class NoellesRuntimeRoleSelectionTest {
         Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
 
         assertEquals(StrawCraft.id("vulture"), selected.get(firstLooseEnd));
-        assertEquals(StrawCraft.id("pathogen"), selected.get(secondLooseEnd));
+        assertEquals(StrawCraft.id("corrupt_cop"), selected.get(secondLooseEnd));
+    }
+
+    @Test
+    void runtimeSelectionCanAssignPathogenAfterCorruptCopWhenThreeNeutralSeatsExist() {
+        UUID civilian = new UUID(0, 1);
+        UUID killer = new UUID(0, 2);
+        UUID firstLooseEnd = new UUID(0, 3);
+        UUID secondLooseEnd = new UUID(0, 4);
+        UUID thirdLooseEnd = new UUID(0, 5);
+        Map<UUID, Identifier> officialAssignments = linkedAssignments(
+                entry(civilian, WatheRoleIds.CIVILIAN),
+                entry(killer, WatheRoleIds.KILLER),
+                entry(firstLooseEnd, WatheRoleIds.LOOSE_END),
+                entry(secondLooseEnd, WatheRoleIds.LOOSE_END),
+                entry(thirdLooseEnd, WatheRoleIds.LOOSE_END)
+        );
+
+        Map<UUID, Identifier> selected = NoellesRuntimeRoleSelection.planAssignmentIds(officialAssignments).assignments();
+
+        assertEquals(StrawCraft.id("vulture"), selected.get(firstLooseEnd));
+        assertEquals(StrawCraft.id("corrupt_cop"), selected.get(secondLooseEnd));
+        assertEquals(StrawCraft.id("pathogen"), selected.get(thirdLooseEnd));
     }
 
     @Test

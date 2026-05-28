@@ -3,6 +3,7 @@ package org.caecorthus.strawcraft.mixincontract;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
@@ -65,6 +66,19 @@ final class MixinTargetBytecode {
         MixinTargetSearchVisitor visitor = new MixinTargetSearchVisitor(targetOwnerClass.replace('.', '/'));
         read(ownerClass, visitor);
         return visitor.found();
+    }
+
+    static int localVariableSlot(
+            String ownerClass,
+            String methodName,
+            String descriptor,
+            String localName,
+            String localDescriptor
+    ) {
+        LocalVariableSearchVisitor visitor =
+                new LocalVariableSearchVisitor(methodName, descriptor, localName, localDescriptor);
+        read(ownerClass, visitor, ClassReader.SKIP_FRAMES);
+        return visitor.slot();
     }
 
     static MixinClassInspection inspectMixinClass(String ownerClass, String targetOwnerClass) {
@@ -259,6 +273,54 @@ final class MixinTargetBytecode {
 
         private int count() {
             return count;
+        }
+    }
+
+    private static final class LocalVariableSearchVisitor extends ClassVisitor {
+        private final String methodName;
+        private final String descriptor;
+        private final String localName;
+        private final String localDescriptor;
+        private int slot = -1;
+
+        private LocalVariableSearchVisitor(
+                String methodName,
+                String descriptor,
+                String localName,
+                String localDescriptor
+        ) {
+            super(ASM9);
+            this.methodName = methodName;
+            this.descriptor = descriptor;
+            this.localName = localName;
+            this.localDescriptor = localDescriptor;
+        }
+
+        @Override
+        public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+            if (!methodName.equals(name) || !this.descriptor.equals(descriptor)) {
+                return null;
+            }
+
+            return new MethodVisitor(ASM9) {
+                @Override
+                public void visitLocalVariable(
+                        String name,
+                        String descriptor,
+                        String signature,
+                        Label start,
+                        Label end,
+                        int index
+                ) {
+                    if (localName.equals(name) && localDescriptor.equals(descriptor)) {
+                        slot = index;
+                    }
+                }
+            };
+        }
+
+        private int slot() {
+            return slot;
         }
     }
 

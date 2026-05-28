@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.util.Identifier;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -41,17 +42,40 @@ public final class StrawWinEvents {
         LOOSE_END
     }
 
-    public record WinContext(Identifier worldId, DefaultWin defaultWin) {
+    public record WinContext(
+            Identifier worldId,
+            DefaultWin defaultWin,
+            List<Participant> participants,
+            long gameTime
+    ) {
+        public WinContext(Identifier worldId, DefaultWin defaultWin) {
+            this(worldId, defaultWin, List.of(), 0L);
+        }
+
         public WinContext {
             Objects.requireNonNull(worldId, "worldId");
             Objects.requireNonNull(defaultWin, "defaultWin");
+            participants = List.copyOf(participants);
         }
     }
 
-    public record ExtraWinner(UUID playerUuid, Identifier roleId) {
+    public record Participant(
+            UUID playerUuid,
+            boolean assigned,
+            boolean alive,
+            Optional<Identifier> roleId
+    ) {
+        public Participant {
+            Objects.requireNonNull(playerUuid, "playerUuid");
+            Objects.requireNonNull(roleId, "roleId");
+        }
+    }
+
+    public record ExtraWinner(UUID playerUuid, Identifier roleId, Identifier triggerId) {
         public ExtraWinner {
             Objects.requireNonNull(playerUuid, "playerUuid");
             Objects.requireNonNull(roleId, "roleId");
+            Objects.requireNonNull(triggerId, "triggerId");
         }
     }
 
@@ -82,7 +106,11 @@ public final class StrawWinEvents {
             }
 
             public Builder addExtraWinner(UUID playerUuid, Identifier roleId) {
-                extraWinners.add(new ExtraWinner(playerUuid, roleId));
+                return addExtraWinner(playerUuid, roleId, roleId);
+            }
+
+            public Builder addExtraWinner(UUID playerUuid, Identifier roleId, Identifier triggerId) {
+                extraWinners.add(new ExtraWinner(playerUuid, roleId, triggerId));
                 return this;
             }
 

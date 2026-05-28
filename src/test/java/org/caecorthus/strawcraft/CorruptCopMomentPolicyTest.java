@@ -3,6 +3,7 @@ package org.caecorthus.strawcraft;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -126,6 +127,35 @@ class CorruptCopMomentPolicyTest {
                         CorruptCopMomentPolicy.DefaultWin.NONE
                 )
         );
+    }
+
+    @Test
+    void soloNeutralWinExposesTheLivingCorruptCopWinner() {
+        CorruptCopMomentPolicy.WinResult result = CorruptCopMomentPolicy.evaluateWinResult(
+                List.of(
+                        participant(CORRUPT_COP, true, true, true),
+                        participant(PASSENGER, true, false, false),
+                        participant(KILLER, true, false, false)
+                ),
+                CorruptCopMomentPolicy.DefaultWin.KILLERS
+        );
+
+        assertEquals(CorruptCopMomentPolicy.WinDecision.NEUTRAL_WIN, result.decision());
+        assertEquals(Optional.of(CORRUPT_COP), result.neutralWinner());
+    }
+
+    @Test
+    void blockedDefaultWinDoesNotNameANeutralWinnerYet() {
+        CorruptCopMomentPolicy.WinResult result = CorruptCopMomentPolicy.evaluateWinResult(
+                List.of(
+                        participant(CORRUPT_COP, true, true, true),
+                        participant(PASSENGER, true, true, false)
+                ),
+                CorruptCopMomentPolicy.DefaultWin.PASSENGERS
+        );
+
+        assertEquals(CorruptCopMomentPolicy.WinDecision.BLOCK_DEFAULT, result.decision());
+        assertEquals(Optional.empty(), result.neutralWinner());
     }
 
     private static CorruptCopMomentPolicy.Participant participant(

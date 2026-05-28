@@ -15,6 +15,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.caecorthus.strawcraft.api.StrawDeathEvents;
 import org.caecorthus.strawcraft.api.StrawKillEvents;
+import org.caecorthus.strawcraft.api.StrawWinEvents;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public final class CorruptCopMomentRuntime {
         ServerTickEvents.END_SERVER_TICK.register(CorruptCopMomentRuntime::tickServer);
         StrawKillEvents.BEFORE_KILL.register(CorruptCopMomentRuntime::beforeKill);
         StrawDeathEvents.ROLE_DEATH_COMPLETED.register(CorruptCopMomentRuntime::handleRoleDeath);
+        StrawWinEvents.COLLECT_WIN_CONTRIBUTIONS.register(CorruptCopMomentRuntime::collectWinContributions);
     }
 
     private static void tickServer(MinecraftServer server) {
@@ -103,6 +105,49 @@ public final class CorruptCopMomentRuntime {
         if (victim instanceof ServerPlayerEntity) {
             CorruptCopMomentPolicy.endMoment(NoellesRoleStateComponent.KEY.get(victim));
         }
+    }
+
+    private static void collectWinContributions(
+            StrawWinEvents.WinContext context,
+            StrawWinEvents.WinContribution.Builder contribution
+    ) {
+        CorruptCopMomentPolicy.WinResult result = CorruptCopMomentPolicy.evaluateWinResult(
+                context.participants().stream()
+                        .map(CorruptCopMomentRuntime::participant)
+                        .toList(),
+                defaultWinFor(context.defaultWin())
+        );
+        if (result.decision() == CorruptCopMomentPolicy.WinDecision.BLOCK_DEFAULT) {
+            contribution.suppressDefaultWin();
+        }
+        if (result.decision() == CorruptCopMomentPolicy.WinDecision.NEUTRAL_WIN) {
+            result.neutralWinner().ifPresent(winner -> contribution
+                    .replaceDefaultWin(StrawWinEvents.DefaultWin.LOOSE_END)
+                    .addExtraWinner(
+                            winner,
+                            CorruptCopMomentPolicy.CORRUPT_COP_ROLE,
+                            CorruptCopMomentPolicy.LAST_STAND_TRIGGER
+                    ));
+        }
+    }
+
+    private static CorruptCopMomentPolicy.Participant participant(StrawWinEvents.Participant participant) {
+        return new CorruptCopMomentPolicy.Participant(
+                participant.playerUuid(),
+                participant.assigned(),
+                participant.alive(),
+                participant.roleId().filter(CorruptCopMomentPolicy.CORRUPT_COP_ROLE::equals).isPresent()
+        );
+    }
+
+    private static CorruptCopMomentPolicy.DefaultWin defaultWinFor(StrawWinEvents.DefaultWin defaultWin) {
+        return switch (defaultWin) {
+            case NONE -> CorruptCopMomentPolicy.DefaultWin.NONE;
+            case KILLERS -> CorruptCopMomentPolicy.DefaultWin.KILLERS;
+            case PASSENGERS -> CorruptCopMomentPolicy.DefaultWin.PASSENGERS;
+            case TIME -> CorruptCopMomentPolicy.DefaultWin.TIME;
+            case LOOSE_END -> CorruptCopMomentPolicy.DefaultWin.LOOSE_END;
+        };
     }
 
     private static void grantCrowbarIfMissing(ServerPlayerEntity player) {
