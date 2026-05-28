@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NoellesNeutralWinPolicyTest {
     @Test
-    void jesterOfficialDeathRecordsDeferredNeutralWinClaim() {
+    void jesterOfficialDeathDoesNotFakeSparkStasisWinClaim() {
         NoellesRoleState state = new NoellesRoleState();
         UUID killer = UUID.randomUUID();
 
@@ -25,12 +25,8 @@ class NoellesNeutralWinPolicyTest {
                 officialDeath(Optional.of(killer), GameConstants.DeathReasons.GUN)
         );
 
-        assertTrue(recorded);
-        NoellesRoleState.NeutralWinClaim claim = state.neutralWinClaim(StrawCraft.id("jester")).orElseThrow();
-        assertEquals(StrawCraft.id("jester"), claim.roleId());
-        assertEquals(NoellesNeutralWinPolicy.JESTER_KILLED_TRIGGER, claim.trigger());
-        assertEquals(Optional.of(killer), claim.opponentUuid());
-        assertEquals(300L, claim.gameTime());
+        assertFalse(recorded);
+        assertTrue(state.neutralWinClaims().isEmpty());
     }
 
     @Test

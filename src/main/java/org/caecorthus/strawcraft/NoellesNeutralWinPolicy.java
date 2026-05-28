@@ -29,18 +29,13 @@ public final class NoellesNeutralWinPolicy {
             Optional<Identifier> victimRoleId,
             StrawDeathEvents.OfficialDeathContext context
     ) {
-        if (victimRoleId.filter(JESTER_ROLE::equals).isEmpty() || context.killerUuid().isEmpty()) {
+        if (victimRoleId.filter(JESTER_ROLE::equals).isPresent()) {
+            // EN: Spark Jester cancels the first innocent shot into stasis and wins only if that target later dies.
+            // ZH: Spark 小丑会把第一次无辜者枪击转为停滞，只有该目标之后死亡才算胜利。
             return Optional.empty();
         }
 
-        // XruiDD Jester depends on Spark win hooks; StrawCraft records the death-triggered claim only.
-        // XruiDD 小丑依赖 Spark 胜利 hook；StrawCraft 这里只记录由死亡触发的胜利主张。
-        return Optional.of(new NoellesRoleState.NeutralWinClaim(
-                JESTER_ROLE,
-                JESTER_KILLED_TRIGGER,
-                context.killerUuid(),
-                context.gameTime()
-        ));
+        return Optional.empty();
     }
 
     public static StrawWinEvents.WinContribution contributeRecordedNeutralWins(UUID playerUuid, NoellesRoleState state) {

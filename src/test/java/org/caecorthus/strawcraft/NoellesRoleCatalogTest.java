@@ -142,6 +142,21 @@ class NoellesRoleCatalogTest {
     }
 
     @Test
+    void jesterRemainsDisabledUntilStasisPsychoAndNeutralWinHooksAreRuntimeOwned() {
+        NoellesRoleCatalog.Entry entry = NoellesRoleCatalog.find(StrawCraft.id("jester")).orElseThrow();
+        Set<Identifier> runtimeSelectionIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
+                .map(org.caecorthus.strawcraft.role.StrawRoleDefinition::id)
+                .collect(Collectors.toSet());
+
+        assertEquals(org.caecorthus.strawcraft.role.StrawFaction.NEUTRAL, entry.faction());
+        assertEquals(NoellesRoleCatalog.Readiness.DISABLED, entry.readiness());
+        assertFalse(entry.firstRoundEligible());
+        assertFalse(entry.isRuntimeReady());
+        assertTrue(NoellesRoleCatalog.runtimeSelectionDisabledIds().contains(entry.id()));
+        assertFalse(runtimeSelectionIds.contains(entry.id()));
+    }
+
+    @Test
     void runtimeSelectionDefinitionsAreExactlyTheHardenedSafeRoles() {
         Set<Identifier> runtimeIds = NoellesRoleCatalog.runtimeSelectionDefinitions().stream()
                 .map(org.caecorthus.strawcraft.role.StrawRoleDefinition::id)
